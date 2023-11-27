@@ -1,6 +1,6 @@
 # Super-Garde
 
-This is a project is inspired by [pocketbase-sveltekit-auth](https://github.com/jianyuan/pocketbase-sveltekit-auth), thanks to him.
+This project is inspired by [pocketbase-sveltekit-auth](https://github.com/jianyuan/pocketbase-sveltekit-auth), thanks to him.
 
 ## Developing
 
