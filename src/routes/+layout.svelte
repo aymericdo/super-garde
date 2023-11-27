@@ -8,21 +8,46 @@
 
   export let data: PageData
 
+  let isOpen: boolean = false;
+
   // Set the current user from the data passed in from the server
   $: currentUser.set(data.user)
 </script>
 
 <div class="bg-neutral text-neutral-content">
-  <div class="max-w-xl mx-auto navbar">
+  <div class="max-w-l mx-auto navbar">
     <div class="navbar-start">
-      <a href="/" class="btn btn-ghost text-xl">PB + SK</a>
+      <a href="/" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
+
+      {#if $currentUser}
+        <div class="hidden w-full lg:flex lg:w-auto">
+          <a href="/calendar" class="btn btn-ghost text-l">Calendrier</a>
+          <a href="/students" class="btn btn-ghost text-l">Étudiants</a>
+        </div>
+      {/if}
     </div>
     <div class="navbar-end">
-      <ul class="menu menu-horizontal">
-        {#if $currentUser}
-          <li><a href="/">{$currentUser.email}</a></li>
-          <li>
+      <div class="lg:hidden relative">
+        <button on:click={() => (isOpen = !isOpen)} type="button" class="btn btn-secondary block text-gray-500 hover:text-white focus:text-white focus:outline-none">
+          <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+            {#if isOpen}
+              <path fill-rule="evenodd" d="M18.278 16.864a1 1 0 0 1-1.414 1.414l-4.829-4.828-4.828 4.828a1 1 0 0 1-1.414-1.414l4.828-4.829-4.828-4.828a1 1 0 0 1 1.414-1.414l4.829 4.828 4.828-4.828a1 1 0 1 1 1.414 1.414l-4.828 4.829 4.828 4.828z"/>
+            {:else}
+              <path fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
+            {/if}
+          </svg>
+        </button>
+
+        <button on:click={() => (isOpen = !isOpen)}
+          class:hidden={!isOpen} class="fixed z-10 w-screen h-screen bg-red top-0 left-0">
+        </button>
+
+        <div class:hidden={!isOpen} class="absolute -bottom-1 translate-y-full w-40 right-1 shadow-md sm:rounded-lg bg-slate-100 z-20">
+          {#if $currentUser}
+            <a href="/calendar" on:click={() => (isOpen = false)} class="btn btn-ghost text-l w-full text-black">Calendrier</a>
+            <a href="/students" on:click={() => (isOpen = false)} class="btn btn-ghost text-l w-full text-black">Étudiants</a>
             <form
+              class="btn btn-ghost text-l w-full text-black"
               method="POST"
               action="/logout"
               use:enhance={() => {
@@ -34,16 +59,40 @@
             >
               <button>Log out</button>
             </form>
-          </li>
-        {:else}
-          <li><a href="/login">Log in</a></li>
-          <li><a href="/register">Register</a></li>
-        {/if}
-      </ul>
+          {:else}
+            <li><a href="/login">Log in</a></li>
+            <li><a href="/register">Register</a></li>
+          {/if}
+        </div>
+      </div>
+
+      <div class="hidden w-full lg:flex lg:w-auto">
+        <div class="menu menu-horizontal">
+          {#if $currentUser}
+            <a class="btn btn-ghost text-l" href="/">{$currentUser.email}</a>
+            <form
+              class="btn btn-ghost text-l"
+              method="POST"
+              action="/logout"
+              use:enhance={() => {
+                return async ({ result }) => {
+                  pb.authStore.clear()
+                  await applyAction(result)
+                }
+              }}
+            >
+              <button>Log out</button>
+            </form>
+          {:else}
+            <li><a href="/login">Log in</a></li>
+            <li><a href="/register">Register</a></li>
+          {/if}
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="max-w-xl mx-auto py-8 px-4">
+<div class="max-w-3xl mx-auto py-8 px-4">
   <slot />
 </div>
