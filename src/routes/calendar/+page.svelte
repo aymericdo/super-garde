@@ -24,7 +24,7 @@
 
   let plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
   let options: any = {
-    view: 'timeGridWeek',
+    view: 'dayGridMonth',
     slotDuration: '00:15',
     allDaySlot: false,
     headerToolbar: {
