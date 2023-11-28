@@ -15,12 +15,11 @@ routerAdd("GET", "/api/import-students", (c) => {
   const list = studentsGoogleSheet.fetch(c, $http);
   console.log(list);
 
-  // eslint-disable-next-line
-  const dbCreate = require(`${__hooks}/db-create.js`);
-
   list.forEach((line) => {
     $app.dao().runInTransaction((txDao) => {
-      const userRecord = dbCreate.user(line, { txDao, $security });
+      // eslint-disable-next-line
+      const dbCreate = require(`${__hooks}/db-create.js`);
+      const userRecord = dbCreate.user(line, { txDao, $app, $security });
       dbCreate.student(line, userRecord, { txDao });
     });
   });

@@ -1,6 +1,6 @@
 module.exports = {
   user: (line, options) => {
-    const { txDao, $security } = options;
+    const { txDao, $app, $security } = options;
 
     try {
       const usersCollection = txDao.findCollectionByNameOrId("users");
@@ -14,14 +14,20 @@ module.exports = {
       } = utils.csvParser(line, 'student')
 
       const userRecord = new Record(usersCollection);
-      userRecord.set("name", name);
-      userRecord.set("email", email);
-      userRecord.set("username", `${username}_${$security.randomStringWithAlphabet(2, "123456789")}`);
-      userRecord.setPassword("azerty1234");
-      userRecord.set("role", "student");
-      userRecord.setEmailVisibility(true);
 
-      txDao.saveRecord(userRecord);
+      const form = new RecordUpsertForm($app, userRecord);
+
+      form.loadData({
+        "name": name,
+        "email": email,
+        "username": `${username}_${$security.randomStringWithAlphabet(2, "123456789")}`,
+        "role": 'student',
+      });
+
+      form.setPassword("azerty1234");
+      form.setEmailVisibility(true);
+
+      form.submit();
 
       return userRecord;
     } catch (error) {
@@ -29,7 +35,7 @@ module.exports = {
     }
   },
   student: (line, userRecord, options) => {
-    const { txDao } = options;
+    const { txDao, $app } = options;
 
     try {
       const studentsCollection = txDao.findCollectionByNameOrId("students");
@@ -42,14 +48,44 @@ module.exports = {
       } = utils.csvParser(line, 'student')
 
       const studentRecord = new Record(studentsCollection);
-      studentRecord.set("firstName", firstName);
-      studentRecord.set("lastName", lastName);
-      studentRecord.set("user", userRecord.id);
 
-      txDao.saveRecord(studentRecord);
+      const form = new RecordUpsertForm($app, studentRecord);
+
+      form.loadData({
+        "firstName": firstName,
+        "lastName": lastName,
+        "user": userRecord.id,
+      });
+
+      form.submit();
       return studentRecord;
     } catch (error) {
       console.log("db student creation failed", error);
+    }
+  },
+  onCallSlot: (event, student, options) => {
+    const { txDao, $app } = options;
+
+    try {
+      const onCallSlotsCollection = txDao.findCollectionByNameOrId("onCallSlots");
+
+      const onCallSlotRecord = new Record(onCallSlotsCollection);
+
+      const form = new RecordUpsertForm($app, onCallSlotRecord);
+
+      form.loadData({
+        "start": event.start,
+        "end": event.end,
+        "student": student.id,
+        "hospital": event.hospital,
+        "sector": event.sector,
+      });
+
+      form.submit();
+
+      return onCallSlotRecord;
+    } catch (error) {
+      console.log("db onCallSlot creation failed", error);
     }
   }
 };
