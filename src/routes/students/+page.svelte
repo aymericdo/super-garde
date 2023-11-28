@@ -1,6 +1,6 @@
 <script lang="ts">
   import InfiniteScroll from "svelte-infinite-scroll";
-  import type { ClientResponseError } from 'pocketbase'
+  import type { ClientResponseError, ListResult, RecordModel} from 'pocketbase'
   import { BarLoader } from 'svelte-loading-spinners';
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
@@ -10,31 +10,50 @@
   export let data: PageData
 
   let loading = false;
+  let query = '';
+  let isAllStudentsChecked: boolean = false;
+  let selectedStudents: string[] = [];
 
-  const fetchMore = async () => {
+  const fetch = async (): Promise<ListResult<RecordModel> | undefined> => {
     try {
-      const updateData = await pb.collection("students").getList(data.page, data.perPage, { expand: 'user' })
+      const options: { expand: string, filter?: string } = {
+        expand: 'user',
+      }
+      if (query.length) {
+        options.filter = `(firstName ~ "${query}") || (lastName ~ "${query}") || (user.email ~ "${query}")`;
+      }
 
-      data.studentList = {
-        ...updateData,
-        items: [
-          ...data.studentList.items,
-          ...updateData.items,
-        ],
-      };
-      loading = false;
+      return await pb.collection("students").getList(data.page, data.perPage, options)
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
     }
+  }
+
+  const appendStudents = async (newData: ListResult<RecordModel>) => {
+    data.studentList = {
+      ...newData,
+      items: [
+        ...data.studentList.items,
+        ...newData.items,
+      ],
+    };
+    loading = false;
+  };
+
+  const setStudents = async (newData: ListResult<RecordModel>) => {
+    data.studentList = {
+      ...newData,
+    };
+    loading = false;
   };
 
   const handleImport = async () => {
     try {
       const data = await pb.send("/api/import-students", {});
       console.log(data);
-    } catch(error) {
+    } catch (error) {
       console.error(error);
     }
   }
@@ -43,7 +62,33 @@
     if (data.studentList.totalPages > data.page) {
       loading = true;
       data.page += 1;
-      fetchMore();
+      const newData = await fetch();
+      if (newData) appendStudents(newData);
+    }
+  }
+
+  const handleSearch = async (inputEvent: Event) => {
+    query = (<HTMLInputElement>inputEvent.target).value || '';
+    loading = true;
+    data.page = 0;
+    const newData = await fetch();
+    if (newData) setStudents(newData);
+  }
+
+  const handleCheckAll = () => {
+    if (isAllStudentsChecked) {
+      isAllStudentsChecked = false;
+      selectedStudents = [];
+    } else {
+      isAllStudentsChecked = true;
+    }
+  }
+
+  const handleCheck = (item: RecordModel) => {
+    if (selectedStudents.includes(item.id)) {
+      selectedStudents = selectedStudents.filter(id => item.id !== id);
+    } else {
+      selectedStudents = [...selectedStudents, item.id];
     }
   }
 
@@ -88,6 +133,10 @@
   <h1 class="flex items-center">
     La liste des étudiants
   </h1>
+</div>
+<div class="flex justify-between items-center mb-1">
+  <input type="text" placeholder="Roger Federer" on:input={handleSearch}
+  class="input input-bordered input-primary input-sm max-w-xs" />
   {#if ['admin', 'god'].includes($currentUser?.role)}
     <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
   {/if}
@@ -96,6 +145,10 @@
   <table class="table-fixed w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="block text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
       <tr class="flex odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+        <th class="basis-1/12 px-6 py-3 -checkbox">
+          <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked}
+            indeterminate={!!selectedStudents.length} on:input={handleCheckAll} />
+        </th>
         <th class="basis-3/12 px-6 py-3">
           Prénom
         </th>
@@ -111,14 +164,19 @@
     <tbody class="block overflow-y-auto w-full">
       {#each data.studentList.items as item}
         <tr class="flex">
-          <td class="basis-3/12 px-6 py-4 font-medium text-gray-900">
-            {item.firstName}
+          <td class="basis-1/12 px-6 py-4 flex items-center -checkbox">
+            <input type="checkbox" checked="{isAllStudentsChecked || selectedStudents.includes(item.id)}"
+              on:input={() => handleCheck(item)}
+              class="checkbox checkbox-ghost checkbox-md" />
           </td>
-          <td class="basis-3/12 px-6 py-4 font-medium text-gray-500">
-            {item.lastName}
+          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-900">
+            <span>{item.firstName}</span>
           </td>
-          <td class="basis-6/12 px-6 py-4 font-medium text-gray-500">
-            {item.expand?.user.email}
+          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500">
+            <span>{item.lastName}</span>
+          </td>
+          <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500">
+            <span>{item.expand?.user.email}</span>
           </td>
         </tr>
       {/each}
@@ -137,8 +195,14 @@
 	  height: 640px;
   }
 
-  th, td {
+  th:not(.-checkbox),
+  td:not(.-checkbox) {
     min-width: 100px;
+  }
+
+  th.-checkbox,
+  td.-checkbox {
+    min-width: 36px;
   }
 
   @media (min-width: 576px) {
