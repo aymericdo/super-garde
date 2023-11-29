@@ -11,7 +11,7 @@
   let isOpen: boolean = false;
 
   // Set the current user from the data passed in from the server
-  $: currentUser.set(data.user)
+  $: currentUser.set(data.user);
 </script>
 
 <div class="bg-neutral text-neutral-content">
@@ -61,7 +61,7 @@
             </form>
           {:else}
             <li><a href="/login">Log in</a></li>
-            <li><a href="/register">Register</a></li>
+            <!-- <li><a href="/register">Register</a></li> -->
           {/if}
         </div>
       </div>
@@ -69,7 +69,12 @@
       <div class="hidden w-full lg:flex lg:w-auto">
         <div class="menu menu-horizontal">
           {#if $currentUser}
-            <a class="btn btn-ghost text-l" href="/">{$currentUser.email}</a>
+            <a class="btn btn-ghost text-l" href="/">
+              {$currentUser.email}
+              {#if $currentUser.isAdmin}
+                <span>(admin)</span>
+              {/if}
+            </a>
             <form
               class="btn btn-ghost text-l"
               method="POST"
@@ -85,7 +90,7 @@
             </form>
           {:else}
             <li><a href="/login">Log in</a></li>
-            <li><a href="/register">Register</a></li>
+            <!-- <li><a href="/register">Register</a></li> -->
           {/if}
         </div>
       </div>

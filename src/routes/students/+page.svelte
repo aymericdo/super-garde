@@ -123,7 +123,10 @@
 
     pb.realtime.subscribe('users', (e) => {
       if (e.record.id === $currentUser.id) {
-        currentUser.set(e.record);
+        currentUser.set({
+          ...e.record,
+          isAdmin: $currentUser?.isAdmin,
+        });
       }
     });
   });
@@ -137,7 +140,7 @@
 <div class="flex justify-between items-center mb-1">
   <input type="text" placeholder="Roger Federer" on:input={handleSearch}
   class="input input-bordered input-primary input-sm max-w-xs" />
-  {#if ['admin', 'god'].includes($currentUser?.role)}
+  {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
     <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
   {/if}
 </div>

@@ -27,6 +27,10 @@
       placeholder="Password"
       class="input input-bordered"
     />
+    <label class="label cursor-pointer">
+      <span class="label-text">Admin ?</span> 
+      <input type="checkbox" name="isAdmin" class="checkbox checkbox-accent" />
+    </label>
     <button class="btn btn-primary">Log in</button>
   </div>
 </form>

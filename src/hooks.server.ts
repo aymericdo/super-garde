@@ -9,7 +9,11 @@ export const handle: Handle = async ({ event, resolve }) => {
   try {
     // get an up-to-date auth store state by verifying and refreshing the loaded auth model (if any)
     if (pb.authStore.isValid) {
-      await pb.collection('users').authRefresh()
+      if (pb.authStore.isAdmin) {
+        await pb.admins.authRefresh()
+      } else {
+        await pb.collection('users').authRefresh()
+      }
     }
   } catch (_) {
     // clear the auth store on failed refresh
@@ -17,7 +21,11 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   event.locals.pb = pb
-  event.locals.user = pb.authStore.model
+
+  event.locals.user = pb.authStore.model ? {
+    ...pb.authStore.model,
+    isAdmin: pb.authStore.isAdmin,
+  } : null;
 
   const response = await resolve(event)
 

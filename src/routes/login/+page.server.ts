@@ -6,12 +6,19 @@ export const actions: Actions = {
     const data = Object.fromEntries(await request.formData()) as {
       email: string
       password: string
+      isAdmin: string
     }
 
     try {
-      await locals.pb
-        .collection('users')
-        .authWithPassword(data.email, data.password)
+      if (data.isAdmin === 'on') {
+        await locals.pb
+          .admins
+          .authWithPassword(data.email, data.password);
+      } else {
+        await locals.pb
+          .collection('users')
+          .authWithPassword(data.email, data.password)
+      }
     } catch (e) {
       console.error(e)
       throw e

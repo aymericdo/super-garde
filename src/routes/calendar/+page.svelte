@@ -56,7 +56,7 @@
   <h1 class="flex items-center">
     Calendrier
   </h1>
-  {#if ['admin', 'god'].includes($currentUser?.role)}
+  {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
     <button on:click={handleGenerate} class="btn btn-ghost text-m">Générer</button>
   {/if}
 </div>
