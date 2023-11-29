@@ -50,6 +50,15 @@
       console.error(error);
     }
   }
+
+  pb.realtime.subscribe('users', (e) => {
+    if (e.record.id === $currentUser.id) {
+      currentUser.set({
+        ...e.record,
+        isAdmin: $currentUser?.isAdmin,
+      });
+    }
+  });
 </script>
 
 <div class="flex justify-between mb-1">

@@ -90,6 +90,12 @@
     } else {
       selectedStudents = [...selectedStudents, item.id];
     }
+
+    if (selectedStudents.length === data.studentList.totalItems) {
+      isAllStudentsChecked = true;
+    } else {
+      isAllStudentsChecked = false;
+    }
   }
 
   onMount(async () => {
@@ -150,7 +156,7 @@
       <tr class="flex odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
         <th class="basis-1/12 px-6 py-3 -checkbox">
           <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked}
-            indeterminate={!!selectedStudents.length} on:input={handleCheckAll} />
+            indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
         </th>
         <th class="basis-3/12 px-6 py-3">
           Prénom
