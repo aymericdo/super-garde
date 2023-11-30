@@ -9,9 +9,10 @@
   import { pb } from '$lib/pocketbase';
 
   import type { PageData } from './$types'
+    import { onMount } from 'svelte'
   export let data: PageData
 
-  const events = data.onCallSlotList.map((event) => ({
+  const initEvents = data.onCallSlotList.map((event) => ({
     id: event.id,
     start: new Date(event.start),
     end: new Date(event.end),
@@ -39,25 +40,95 @@
       listDay: 'Jour',
       listWeek: 'Liste',
     },
-    events: [...events]
+    events: [...initEvents],
   };
 
   const handleGenerate = async () => {
     try {
-      const data = await pb.send("/api/generate-events", {});
+      const data = await pb.send("/api/generate-events", {
+        params: {
+          startDate: new Date('2023-12-01T00:00'),
+          endDate: new Date('2023-12-05T00:00'),
+        }
+      });
       console.log(data);
     } catch(error) {
       console.error(error);
     }
   }
 
-  pb.realtime.subscribe('users', (e) => {
-    if (e.record.id === $currentUser.id) {
-      currentUser.set({
-        ...e.record,
-        isAdmin: $currentUser?.isAdmin,
-      });
+  const handleDelete = async () => {
+    try {
+      const data = await pb.send("/api/delete-all-on-call-slots", {});
+      console.log(data);
+    } catch (error) {
+      console.error(error);
     }
+  }
+
+  onMount(async () => {
+    pb.realtime.subscribe('onCallSlots', (e) => {
+      switch (e.action) {
+        case 'update': {
+          options = {
+            ...options,
+            events: options.events.map((event: any) => {
+              if (event.id === e.record.id) {
+                return {
+                  id: e.record.id,
+                  start: new Date(e.record.start),
+                  end: new Date(e.record.end),
+                  title: `${e.record.hospital} - ${e.record.sector}`,
+                  editable: false,
+                  startEditable: false,
+                  durationEditable: false,
+                  resourceIds: [],
+                };
+              } else {
+                return event;
+              }
+            }),
+          }
+          break;
+        }
+        case 'delete': {
+          options = {
+            ...options,
+            events: options.events.filter((event: any) => {
+              if (event.id !== e.record.id) {
+                return event;
+              }
+            }),
+          }
+          break;
+        }
+        case 'create': {
+          options = {
+            ...options,
+            events: [...options.events, {
+              id: e.record.id,
+              start: new Date(e.record.start),
+              end: new Date(e.record.end),
+              title: `${e.record.hospital} - ${e.record.sector}`,
+              editable: false,
+              startEditable: false,
+              durationEditable: false,
+              resourceIds: [],
+            }],
+          };
+          break;
+        }
+      }
+    });
+
+    pb.realtime.subscribe('users', (e) => {
+      if (e.record.id === $currentUser.id) {
+        currentUser.set({
+          ...e.record,
+          isAdmin: $currentUser?.isAdmin,
+        });
+      }
+    });
   });
 </script>
 
@@ -66,7 +137,10 @@
     Calendrier
   </h1>
   {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
-    <button on:click={handleGenerate} class="btn btn-ghost text-m">Générer</button>
+    <div>
+      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
+      <button on:click={handleGenerate} class="btn btn-ghost text-m">Générer</button>
+    </div>
   {/if}
 </div>
 

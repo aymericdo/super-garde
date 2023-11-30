@@ -1,6 +1,6 @@
 module.exports = {
   students: (options) => {
-    const { txDao } = options;
+    const { $app } = options;
 
     let offset = 0;
     const perPage = 100;
@@ -10,7 +10,7 @@ module.exports = {
 
     try {
       do {
-        lastStudentsArray = txDao.findRecordsByFilter("students", "id != ''", '-created', perPage, offset);
+        lastStudentsArray = $app.dao().findRecordsByFilter("students", "id != ''", '-created', perPage, offset);
         students = students.concat(lastStudentsArray);
         offset += perPage;
       } while(lastStudentsArray.length)
@@ -18,6 +18,27 @@ module.exports = {
       return students;
     } catch (error) {
       console.log("db students reading failed", error);
+    }
+  },
+  onCallSlots: (options) => {
+    const { $app } = options;
+
+    let offset = 0;
+    const perPage = 100;
+
+    let lastOnCallSlotsArray = [];
+    let onCallSlots = [];
+
+    try {
+      do {
+        lastOnCallSlotsArray = $app.dao().findRecordsByFilter("onCallSlots", "id != ''", '-created', perPage, offset);
+        onCallSlots = onCallSlots.concat(lastOnCallSlotsArray);
+        offset += perPage;
+      } while(lastOnCallSlotsArray.length)
+
+      return onCallSlots;
+    } catch (error) {
+      console.log("db onCallSlots reading failed", error);
     }
   },
 };

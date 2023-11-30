@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types'
 
 const PER_PAGE = 25;
-const START_PAGE = 0;
+const START_PAGE = 1;
 
 export const load: LayoutServerLoad = async ({ locals }) => {
   try {

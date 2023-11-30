@@ -6,6 +6,9 @@ routerAdd("GET", "/api/generate-events", (c) => {
   const admin = info.admin;
   const record = info.authRecord;
 
+  const startDate = new Date(c.queryParam("startDate"))
+  const endDate = new Date(c.queryParam("endDate"))
+ 
   if (!admin && !['god', 'admin'].includes(record?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
@@ -19,18 +22,14 @@ routerAdd("GET", "/api/generate-events", (c) => {
     etage: [],
   }
 
-  const startDate = new Date('2023-11-28T00:00');
-  const endDate = new Date('2023-12-18T00:00');
-
-  let students;
   const studentsByDate = {};
   const eventByDate = {};
 
-  $app.dao().runInTransaction((txDao) => {
-    // eslint-disable-next-line
-    const dbRead = require(`${__hooks}/db-read.js`);
-    students = dbRead.students({ txDao });
+  // eslint-disable-next-line
+  const dbRead = require(`${__hooks}/db-read.js`);
+  const students = dbRead.students({ $app });
 
+  $app.dao().runInTransaction((txDao) => {
     let studentIndex = 0;
     const currentDate = startDate;
 
@@ -58,7 +57,7 @@ routerAdd("GET", "/api/generate-events", (c) => {
 
         // eslint-disable-next-line
         const dbCreate = require(`${__hooks}/db-create.js`);
-        // dbCreate.onCallSlot(event, currentStudent, { txDao, $app });
+        dbCreate.onCallSlot(event, currentStudent, { $app, txDao });
 
         if (Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())) {
           studentsByDate[currentDate.toISOString()].push(currentStudent.get('id'));
@@ -76,4 +75,4 @@ routerAdd("GET", "/api/generate-events", (c) => {
   });
 
   return c.json(200, { "generation-status": 'OK', students, studentsByDate, eventByDate });
-});
+}, $apis.activityLogger($app));

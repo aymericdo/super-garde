@@ -58,6 +58,24 @@
     }
   }
 
+  const handleDelete = async () => {
+    try {
+      if (isAllStudentsChecked) {
+        const data = await pb.send("/api/delete-all-students", {});
+        console.log(data);
+      } else {
+        selectedStudents.forEach(async (id) => {
+          const student = await pb.collection('students').getOne(id);
+          await pb.collection('users').delete(student.user);
+        });
+      }
+      selectedStudents = [];
+      isAllStudentsChecked = false;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const handleLoadMore = async () => {
     if (data.studentList.totalPages > data.page) {
       loading = true;
@@ -99,7 +117,7 @@
   }
 
   onMount(async () => {
-    pb.realtime.subscribe('students', (e) => {
+    pb.realtime.subscribe('students', async (e) => {
       switch (e.action) {
         case 'update': {
           data.studentList = {
@@ -120,8 +138,17 @@
         case 'delete': {
           data.studentList = {
             ...data.studentList,
+            totalItems: data.studentList.totalItems - 1,
+            totalPages: Math.floor((data.studentList.totalItems - 1) / data.studentList.perPage),
             items: data.studentList.items.filter((item) => item.id !== e.record.id),
           };
+          break;
+        }
+        case 'create': {
+          if (data.studentList.totalPages <= data.page) {
+            const newData = await fetch();
+            if (newData) setStudents(newData);
+          }
           break;
         }
       }
@@ -147,7 +174,12 @@
   <input type="text" placeholder="Roger Federer" on:input={handleSearch}
   class="input input-bordered input-primary input-sm max-w-xs" />
   {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
-    <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
+    <div>
+      {#if selectedStudents.length || isAllStudentsChecked}
+        <button on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
+      {/if}
+      <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
+    </div>
   {/if}
 </div>
 <div class="students-table relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -155,7 +187,7 @@
     <thead class="block text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
       <tr class="flex odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
         <th class="basis-1/12 px-6 py-3 -checkbox">
-          <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked}
+          <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
             indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
         </th>
         <th class="basis-3/12 px-6 py-3">

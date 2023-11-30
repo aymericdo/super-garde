@@ -72,7 +72,7 @@
             <a class="btn btn-ghost text-l" href="/">
               {$currentUser.email}
               {#if $currentUser.isAdmin}
-                <span>(admin)</span>
+                <div class="badge badge-accent">admin</div>
               {/if}
             </a>
             <form

@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("GET", "/api/import-students", (c) => {
+routerAdd("GET", "/api/delete-all-on-call-slots", (c) => {
   const info = $apis.requestInfo(c);
   const admin = info.admin;
   const record = info.authRecord;
@@ -11,18 +11,16 @@ routerAdd("GET", "/api/import-students", (c) => {
   }
 
   // eslint-disable-next-line
-  const studentsGoogleSheet = require(`${__hooks}/students-google-sheet.js`);
-  const list = studentsGoogleSheet.fetch(c, $http);
-  console.log(list);
+  const dbRead = require(`${__hooks}/db-read.js`);
+  const onCallSlots = dbRead.onCallSlots({ $app });
 
-  list.forEach((line) => {
+  onCallSlots.forEach((onCallSlot) => {
     $app.dao().runInTransaction((txDao) => {
       // eslint-disable-next-line
-      const dbCreate = require(`${__hooks}/db-create.js`);
-      const userRecord = dbCreate.user(line, { txDao, $app, $security });
-      dbCreate.student(line, userRecord, { txDao });
+      const dbDelete = require(`${__hooks}/db-delete.js`);
+      dbDelete.onCallSlot(onCallSlot, { txDao });
     });
   });
 
-  return c.json(200, { "importation-status": 'OK' });
+  return c.json(200, { "deletion-status": 'OK' });
 }, $apis.activityLogger($app));
