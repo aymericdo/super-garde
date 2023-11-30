@@ -31,6 +31,20 @@
     }
   }
 
+  const fetchOne = async (id: string): Promise<RecordModel | undefined> => {
+    try {
+      const options: { expand: string } = {
+        expand: 'user',
+      }
+
+      return await pb.collection("students").getOne(id, options)
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
   const appendStudents = async (newData: ListResult<RecordModel>) => {
     data.studentList = {
       ...newData,
@@ -39,6 +53,9 @@
         ...newData.items,
       ],
     };
+    if (isAllStudentsChecked) {
+      selectedStudents = [...selectedStudents, ...newData.items.map(item => item.id)]
+    }
     loading = false;
   };
 
@@ -46,6 +63,9 @@
     data.studentList = {
       ...newData,
     };
+    if (isAllStudentsChecked) {
+      selectedStudents = [...newData.items.map(item => item.id)]
+    }
     loading = false;
   };
 
@@ -88,7 +108,7 @@
   const handleSearch = async (inputEvent: Event) => {
     query = (<HTMLInputElement>inputEvent.target).value || '';
     loading = true;
-    data.page = 0;
+    data.page = 1;
     const newData = await fetch();
     if (newData) setStudents(newData);
   }
@@ -99,6 +119,7 @@
       selectedStudents = [];
     } else {
       isAllStudentsChecked = true;
+      selectedStudents = data.studentList.items.map(item => item.id);
     }
   }
 
@@ -139,15 +160,31 @@
           data.studentList = {
             ...data.studentList,
             totalItems: data.studentList.totalItems - 1,
-            totalPages: Math.floor((data.studentList.totalItems - 1) / data.studentList.perPage),
+            totalPages: Math.floor((data.studentList.totalItems - 1) / data.studentList.perPage) + 1,
             items: data.studentList.items.filter((item) => item.id !== e.record.id),
           };
           break;
         }
         case 'create': {
-          if (data.studentList.totalPages <= data.page) {
-            const newData = await fetch();
-            if (newData) setStudents(newData);
+          const newStudent = await fetchOne(e.record.id);
+
+          data.studentList = {
+            ...data.studentList,
+            totalItems: data.studentList.totalItems + 1,
+            totalPages: Math.floor((data.studentList.totalItems + 1) / data.studentList.perPage) + 1,
+          };
+
+          if (newStudent && data.studentList.totalPages === data.page) {
+            data.studentList = {
+              ...data.studentList,
+              items: [
+                ...data.studentList.items,
+                newStudent,
+              ],
+            };
+            if (isAllStudentsChecked) {
+              selectedStudents = [...selectedStudents, newStudent.id]
+            }
           }
           break;
         }
@@ -175,7 +212,7 @@
   class="input input-bordered input-primary input-sm max-w-xs" />
   {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
     <div>
-      {#if selectedStudents.length || isAllStudentsChecked}
+      {#if selectedStudents.length}
         <button on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
       {/if}
       <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
@@ -206,7 +243,7 @@
       {#each data.studentList.items as item}
         <tr class="flex">
           <td class="basis-1/12 px-6 py-4 flex items-center -checkbox">
-            <input type="checkbox" checked="{isAllStudentsChecked || selectedStudents.includes(item.id)}"
+            <input type="checkbox" checked="{selectedStudents.includes(item.id)}"
               on:input={() => handleCheck(item)}
               class="checkbox checkbox-ghost checkbox-md" />
           </td>
