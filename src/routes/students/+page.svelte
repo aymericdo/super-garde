@@ -4,12 +4,13 @@
   import { BarLoader } from 'svelte-loading-spinners';
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
-  import { onMount } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
 
 	import type { PageData } from './$types'
   export let data: PageData
 
   let loading = false;
+  let isNewStudentsNotVisible = false;
   let query = '';
   let isAllStudentsChecked: boolean = false;
   let selectedStudents: string[] = [];
@@ -78,6 +79,15 @@
     }
   }
 
+  const handleRefresh = async () => {
+    loading = true;
+    query = '';
+    data.page = 1;
+    isNewStudentsNotVisible = false;
+    const newData = await fetch();
+    if (newData) setStudents(newData);
+  }
+
   const handleDelete = async () => {
     try {
       if (isAllStudentsChecked) {
@@ -106,8 +116,8 @@
   }
 
   const handleSearch = async (inputEvent: Event) => {
-    query = (<HTMLInputElement>inputEvent.target).value || '';
     loading = true;
+    query = (<HTMLInputElement>inputEvent.target).value || '';
     data.page = 1;
     const newData = await fetch();
     if (newData) setStudents(newData);
@@ -185,6 +195,8 @@
             if (isAllStudentsChecked) {
               selectedStudents = [...selectedStudents, newStudent.id]
             }
+          } else {
+            isNewStudentsNotVisible = true;
           }
           break;
         }
@@ -200,17 +212,28 @@
       }
     });
   });
+
+  onDestroy(() => {
+    pb.realtime.unsubscribe('students');
+    pb.realtime.unsubscribe('users');
+  })
 </script>
 
 <div class="flex justify-between mb-1">
-  <h1 class="flex items-center">
+  <h1 class="flex items-center font-bold text-gray-900 text-lg">
     La liste des étudiants
   </h1>
 </div>
 <div class="flex justify-between items-center mb-1">
-  <input type="text" placeholder="Roger Federer" on:input={handleSearch}
-  class="input input-bordered input-primary input-sm max-w-xs" />
-  {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
+  <div>
+    <input type="text" placeholder="Roger Federer" on:input={handleSearch}
+      class="input input-bordered input-primary input-sm max-w-xs" />
+    <span class="dark:text-gray-400 mx-1">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
+    {#if isNewStudentsNotVisible}
+      <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
+    {/if}
+  </div>
+    {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
     <div>
       {#if selectedStudents.length}
         <button on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
@@ -227,13 +250,13 @@
           <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
             indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
         </th>
-        <th class="basis-3/12 px-6 py-3">
+        <th class="basis-3/12 px-6 py-3 flex items-center">
           Prénom
         </th>
-        <th class="basis-3/12 px-6 py-3">
+        <th class="basis-3/12 px-6 py-3 flex items-center">
           Nom
         </th>
-        <th class="basis-6/12 px-6 py-3">
+        <th class="basis-6/12 px-6 py-3 flex items-center">
           Email
         </th>
       </tr>

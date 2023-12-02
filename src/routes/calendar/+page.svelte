@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy, onMount } from 'svelte'
   import Calendar from '@event-calendar/core';
   import TimeGrid from '@event-calendar/time-grid';
   import DayGrid from '@event-calendar/day-grid';
@@ -7,12 +8,20 @@
   import Interaction from '@event-calendar/interaction';
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
-
+  import ClockTimeFiveOutline from 'svelte-material-icons/ClockTimeFiveOutline.svelte'
+  import MapMarker from 'svelte-material-icons/MapMarker.svelte'
+  
+  import type { CalendarEvent, CalendarOptions } from '$lib/calendar'
+  import type { RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
-    import { onMount } from 'svelte'
+  import { datesAreOnSameDay } from '$lib/utils'
   export let data: PageData
+  
+  let isModalOpen = false;
+  let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
 
-  const initEvents = data.onCallSlotList.map((event) => ({
+  const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
+  const initEvents: CalendarEvent[] = data.onCallSlotList.map((event) => ({
     id: event.id,
     start: new Date(event.start),
     end: new Date(event.end),
@@ -20,28 +29,9 @@
     editable: false,
     startEditable: false,
     durationEditable: false,
-    resourceIds: [],
+    resourceIds: [event.student],
+    hospital: event.hospital,
   }));
-
-  let plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
-  let options: any = {
-    view: 'dayGridMonth',
-    slotDuration: '00:15',
-    allDaySlot: false,
-    headerToolbar: {
-      start: 'prev,next today',
-      center: 'title',
-      end: 'dayGridMonth timeGridWeek listDay listWeek',
-    },
-    buttonText: {
-      today: "Aujourd'hui",
-      dayGridMonth: 'Mois',
-      timeGridWeek: 'Semaine',
-      listDay: 'Jour',
-      listWeek: 'Liste',
-    },
-    events: [...initEvents],
-  };
 
   const handleGenerate = async () => {
     try {
@@ -66,6 +56,68 @@
     }
   }
 
+  const handleEventClick = ({ el, event, jsEvent }: {
+    el: HTMLDivElement,
+    event: RecordModel,
+    jsEvent: PointerEvent,
+  }) => {
+    el.classList.add('-selected');
+    openedEvent = {
+      event: options.events.find((ev: CalendarEvent) => ev.id === event.id)!,
+      element: el,
+    };
+    isModalOpen = true;
+  }
+
+  const handleModalClose = () => {
+    openedEvent?.element.classList.remove('-selected');
+    openedEvent = null;
+    isModalOpen = false;
+  }
+
+  let options: CalendarOptions = {
+    view: 'dayGridMonth',
+    slotDuration: '00:15',
+    allDaySlot: false,
+    firstDay: 1,
+    selectable: false,
+    headerToolbar: {
+      start: 'prev,next today',
+      center: 'title',
+      end: 'dayGridMonth timeGridWeek listDay listWeek',
+    },
+    buttonText: {
+      today: "Aujourd'hui",
+      dayGridMonth: 'Mois',
+      timeGridWeek: 'Semaine',
+      listDay: 'Jour',
+      listWeek: 'Liste',
+    },
+    events: [...initEvents],
+    eventClick: handleEventClick,
+  };
+
+  const displayDateRange = (start: Date, end: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: "short",
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    };
+
+    if (datesAreOnSameDay(start, end)) {
+      const endDateOptions: Intl.DateTimeFormatOptions = {
+        hour: '2-digit',
+        minute: '2-digit',
+      }
+      return `${start.toLocaleTimeString("fr", options)} - ${end.toLocaleTimeString("fr", endDateOptions)}`;
+    }
+
+    return `${start.toLocaleTimeString("fr", options)} - ${end.toLocaleTimeString("fr", options)}`;
+  }
+
   onMount(async () => {
     pb.realtime.subscribe('onCallSlots', (e) => {
       switch (e.action) {
@@ -82,7 +134,8 @@
                   editable: false,
                   startEditable: false,
                   durationEditable: false,
-                  resourceIds: [],
+                  resourceIds: [e.record.student],
+                  hospital: e.record.hospital,
                 };
               } else {
                 return event;
@@ -113,7 +166,8 @@
               editable: false,
               startEditable: false,
               durationEditable: false,
-              resourceIds: [],
+              resourceIds: [e.record.student],
+              hospital: e.record.hospital,
             }],
           };
           break;
@@ -130,13 +184,18 @@
       }
     });
   });
+
+  onDestroy(() => {
+    pb.realtime.unsubscribe('onCallSlots');
+    pb.realtime.unsubscribe('users');
+  })
 </script>
 
 <div class="flex justify-between mb-1">
-  <h1 class="flex items-center">
+  <h1 class="flex items-center font-bold text-gray-900 text-lg">
     Calendrier
   </h1>
-  {#if $currentUser?.isAdmin || ['admin', 'god'].includes($currentUser?.role)}
+  {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
     <div>
       <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
       <button on:click={handleGenerate} class="btn btn-ghost text-m">Générer</button>
@@ -150,6 +209,30 @@
   </div>
 </div>
 
+<div class="modal" class:modal-open={isModalOpen}>
+  <div class="modal-box">
+    <h3 class="font-bold text-lg">{openedEvent?.event.title}</h3>
+    <div class="py-4">
+      <div class="flex items-center mb-2">
+        <ClockTimeFiveOutline class="mr-1" size={'2em'} />
+        <span class="capitalize">
+          {openedEvent && displayDateRange(openedEvent?.event.start, openedEvent?.event.end)}
+        </span>
+      </div>
+      <div class="flex items-center mb-2">
+        <MapMarker class="mr-1" size={'2em'} />
+        <span>{openedEvent?.event.hospital}</span>
+      </div>
+    </div>
+    <div class="modal-action">
+      <button class="btn" on:click={handleModalClose}>Close</button>
+    </div>
+  </div>
+  <div class="modal-backdrop">
+    <button on:click={handleModalClose}>close</button>
+  </div>
+</div>
+
 <style>
   :global(.ec) {
 	  height: 640px;
@@ -158,6 +241,13 @@
 
   :global(.ec.ec-day-grid) {
     height: 400px;
+  }
+  :global(.ec .ec-event) {
+    cursor: pointer;
+  }
+
+  :global(.ec .ec-event.-selected) {
+    border: dotted black 2px;
   }
 
   :global(.ec-icon::before, .ec-icon::after) {

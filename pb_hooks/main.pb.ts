@@ -3,6 +3,6 @@
 
 onAfterBootstrap(() => {
   // eslint-disable-next-line
-  const utils = require(`${__hooks}/utils.js`);
+  const utils = require(`${__hooks}/helpers/utils.js`);
   utils.hello("world");
 })

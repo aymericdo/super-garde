@@ -6,19 +6,19 @@ routerAdd("GET", "/api/import-students", (c) => {
   const admin = info.admin;
   const record = info.authRecord;
 
-  if (!admin && !['god', 'admin'].includes(record?.get('role'))) {
+  if (!admin && !['god', 'assistant'].includes(record?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
   // eslint-disable-next-line
-  const studentsGoogleSheet = require(`${__hooks}/students-google-sheet.js`);
+  const studentsGoogleSheet = require(`${__hooks}/helpers/students-google-sheet.js`);
   const list = studentsGoogleSheet.fetch(c, $http);
   console.log(list);
 
   list.forEach((line) => {
     $app.dao().runInTransaction((txDao) => {
       // eslint-disable-next-line
-      const dbCreate = require(`${__hooks}/db-create.js`);
+      const dbCreate = require(`${__hooks}/helpers/db-create.js`);
       const userRecord = dbCreate.user(line, { txDao, $app, $security });
       dbCreate.student(line, userRecord, { txDao });
     });

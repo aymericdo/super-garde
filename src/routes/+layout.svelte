@@ -4,6 +4,7 @@
   import { applyAction, enhance } from '$app/forms'
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
+  import { page } from '$app/stores';
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -12,6 +13,7 @@
 
   // Set the current user from the data passed in from the server
   $: currentUser.set(data.user);
+  $: currentRoute = $page.url.pathname;
 </script>
 
 <div class="bg-neutral text-neutral-content">
@@ -21,8 +23,8 @@
 
       {#if $currentUser}
         <div class="hidden w-full lg:flex lg:w-auto">
-          <a href="/calendar" class="btn btn-ghost text-l">Calendrier</a>
-          <a href="/students" class="btn btn-ghost text-l">Étudiants</a>
+          <a href="/calendar" class="btn btn-ghost text-l" class:btn-active={currentRoute === "/calendar"}>Calendrier</a>
+          <a href="/students" class="btn btn-ghost text-l" class:btn-active={currentRoute === "/students"}>Étudiants</a>
         </div>
       {/if}
     </div>
@@ -44,8 +46,12 @@
 
         <div class:hidden={!isOpen} class="absolute -bottom-1 translate-y-full w-40 right-1 shadow-md sm:rounded-lg bg-slate-100 z-20">
           {#if $currentUser}
-            <a href="/calendar" on:click={() => (isOpen = false)} class="btn btn-ghost text-l w-full text-black">Calendrier</a>
-            <a href="/students" on:click={() => (isOpen = false)} class="btn btn-ghost text-l w-full text-black">Étudiants</a>
+            <a href="/calendar" on:click={() => (isOpen = false)}
+                class:btn-active={currentRoute === "/calendar"}
+                class="btn btn-ghost text-l w-full text-black">Calendrier</a>
+            <a href="/students" on:click={() => (isOpen = false)}
+                class:btn-active={currentRoute === "/students"}
+                class="btn btn-ghost text-l w-full text-black">Étudiants</a>
             <form
               class="btn btn-ghost text-l w-full text-black"
               method="POST"
@@ -73,6 +79,8 @@
               {$currentUser.email}
               {#if $currentUser.isAdmin}
                 <div class="badge badge-accent">admin</div>
+              {:else} 
+                <div class="badge badge-secondary">{$currentUser.role}</div>
               {/if}
             </a>
             <form

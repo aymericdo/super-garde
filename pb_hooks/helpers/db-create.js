@@ -6,7 +6,7 @@ module.exports = {
       const usersCollection = txDao.findCollectionByNameOrId("users");
 
       // eslint-disable-next-line
-      const utils = require(`${__hooks}/utils.js`);
+      const utils = require(`${__hooks}/helpers/utils.js`);
       const {
         email,
         name,
@@ -37,7 +37,7 @@ module.exports = {
       const studentsCollection = txDao.findCollectionByNameOrId("students");
 
       // eslint-disable-next-line
-      const utils = require(`${__hooks}/utils.js`);
+      const utils = require(`${__hooks}/helpers/utils.js`);
       const {
         firstName,
         lastName,

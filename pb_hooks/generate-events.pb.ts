@@ -9,7 +9,7 @@ routerAdd("GET", "/api/generate-events", (c) => {
   const startDate = new Date(c.queryParam("startDate"))
   const endDate = new Date(c.queryParam("endDate"))
  
-  if (!admin && !['god', 'admin'].includes(record?.get('role'))) {
+  if (!admin && !['god', 'assistant'].includes(record?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
@@ -26,7 +26,7 @@ routerAdd("GET", "/api/generate-events", (c) => {
   const eventByDate = {};
 
   // eslint-disable-next-line
-  const dbRead = require(`${__hooks}/db-read.js`);
+  const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
 
   $app.dao().runInTransaction((txDao) => {
@@ -56,7 +56,7 @@ routerAdd("GET", "/api/generate-events", (c) => {
         }
 
         // eslint-disable-next-line
-        const dbCreate = require(`${__hooks}/db-create.js`);
+        const dbCreate = require(`${__hooks}/helpers/db-create.js`);
         dbCreate.onCallSlot(event, currentStudent, { $app, txDao });
 
         if (Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())) {
