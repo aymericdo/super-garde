@@ -18,7 +18,7 @@
       year: 'numeric',
     };
 
-    return `${start && start.toLocaleDateString("fr", options)} - ${end && end.toLocaleDateString("fr", options)}`;
+    return `${start ? start.toLocaleDateString("fr", options) : ''} - ${end ? end.toLocaleDateString("fr", options) : '...'}`;
   }
 
   const { handlePeriodPickerClose, handleSubmit } = getContext('isPeriodPickerModalOpen') as {
@@ -27,9 +27,8 @@
   };
 
   const handleDateClick = ({ date }: { date: Date }) => {
-    if (isSelectedStart) {
+    if (!start) {
       start = date;
-      isSelectedStart = false;
     } else {
       date.setMinutes(1440 - 1);
       if (start && start > date) {
@@ -38,13 +37,13 @@
       end = date;
     }
 
-    if (start && end) {
+    if (start || end) {
       options = {
         ...options,
         events: [{
           id: 'id',
-          start: start,
-          end: end,
+          start,
+          end: end || start,
           title: '',
           editable: false,
           startEditable: false,
@@ -54,8 +53,16 @@
       }
     }
   }
+  const handleReset = () => {
+    start = null;
+    end = null;
 
-  let isSelectedStart = true;
+    options = {
+      ...options,
+      events: [],
+    }
+  }
+
   let start: Date | null = null;
   let end: Date | null = null;
 
@@ -76,7 +83,7 @@
       listWeek: 'Liste',
     },
     events: [],
-    eventBackgroundColor: 'red',
+    eventBackgroundColor: '#5e63b6',
     eventContent: ' ',
     eventClassNames: 'yoyo',
     dateClick: handleDateClick,
@@ -90,9 +97,14 @@
     <h3 class="font-bold text-lg">Votre période</h3>
     <div class="py-4">
       <Calendar {plugins} {options} />
-      <div class="py-4">
+      <div class="py-4 text-center">
         {displayDateRange(start, end)}
       </div>
+      {#if start}
+      <div class="py-4 text-center">
+        <button class="btn btn-xs" on:click={handleReset}>Réinitaliser la sélection</button>
+      </div>
+      {/if}
     </div>
     <div class="modal-action">
       <button class="btn" on:click={handlePeriodPickerClose}>Close</button>
@@ -120,6 +132,9 @@
 
   :global(.modal.period-picker-calendar .ec-day-grid .ec-body .ec-event.yoyo) {
     position: absolute;
-    top: 0;
+    bottom: -10px;
+    height: 40px;
+    z-index: -1;
+    opacity: 0.5;
   }
 </style>
