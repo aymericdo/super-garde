@@ -10,6 +10,7 @@ export interface CalendarEvent {
   durationEditable: boolean;
   resourceIds: string[];
   hospital: string;
+  student: string;
 }
 
 export interface CalendarOptions {
