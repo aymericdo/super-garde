@@ -23,8 +23,8 @@
 
       {#if $currentUser}
         <div class="hidden w-full lg:flex lg:w-auto">
-          <a href="/calendar" class="btn btn-ghost text-l" class:btn-active={currentRoute === "/calendar"}>Calendrier</a>
-          <a href="/students" class="btn btn-ghost text-l" class:btn-active={currentRoute === "/students"}>Étudiants</a>
+          <a href="/calendar" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/calendar"}>Calendrier</a>
+          <a href="/students" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/students"}>Étudiants</a>
         </div>
       {/if}
     </div>
@@ -75,7 +75,7 @@
       <div class="hidden w-full lg:flex lg:w-auto">
         <div class="menu menu-horizontal">
           {#if $currentUser}
-            <a class="btn btn-ghost text-l" href="/">
+            <a class="btn btn-ghost text-l mx-1" href="/">
               {$currentUser.email}
               {#if $currentUser.isAdmin}
                 <div class="badge badge-accent">admin</div>

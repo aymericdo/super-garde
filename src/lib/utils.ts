@@ -6,7 +6,7 @@ export const datesAreOnSameDay = (first: Date, second: Date) =>
   first.getDate() === second.getDate();
 
 export const onCallSlotRecordToCalendarEvent = (onCallSlot: RecordModel) => ({
-  id: onCallSlot.id,
+  ...onCallSlot,
   start: new Date(onCallSlot.start),
   end: new Date(onCallSlot.end),
   title: `${onCallSlot.hospital} - ${onCallSlot.sector}`,
@@ -16,4 +16,5 @@ export const onCallSlotRecordToCalendarEvent = (onCallSlot: RecordModel) => ({
   resourceIds: [onCallSlot.student],
   hospital: onCallSlot.hospital,
   student: `${onCallSlot.expand?.student.firstName} ${onCallSlot.expand?.student.lastName}`,
+  backgroundColor: !onCallSlot.student ? '#BE3144' : onCallSlot.isOnMarket ? '#EE7214' : '',
 })

@@ -5,6 +5,7 @@
   import ClockTimeFiveOutline from 'svelte-material-icons/ClockTimeFiveOutline.svelte'
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
   import Doctor from 'svelte-material-icons/Doctor.svelte'
+    import type { RecordModel } from 'pocketbase'
 
   const displayDateRange = (start: Date, end: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -27,10 +28,16 @@
     return `${start.toLocaleTimeString("fr", options)} - ${end.toLocaleTimeString("fr", options)}`;
   }
 
-  const { handleEventModalClose } = getContext('isEventModalOpen') as { handleEventModalClose: () => void };
+  const { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket } =
+    getContext('isEventModalOpen') as {
+      handleEventModalClose: () => void,
+      handlePutOnMarket: () => void,
+      handleTakeFromMarket: () => void,
+    };
 
   export let isEventModalOpen: boolean = false;
   export let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
+  export let student: RecordModel = null;
 </script>
 
 <div class="modal" class:modal-open={isEventModalOpen}>
@@ -54,6 +61,11 @@
     </div>
     <div class="modal-action">
       <button class="btn" on:click={handleEventModalClose}>Close</button>
+      {#if !openedEvent?.event.isOnMarket}
+        <button class="btn btn-primary" on:click={handlePutOnMarket}>Mettre sur le marché</button>
+      {:else if !!student}
+        <button class="btn btn-primary" on:click={handleTakeFromMarket}>Prendre</button>
+      {/if}
     </div>
   </div>
   <div class="modal-backdrop">

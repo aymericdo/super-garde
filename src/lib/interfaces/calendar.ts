@@ -11,6 +11,7 @@ export interface CalendarEvent {
   resourceIds: string[];
   hospital: string;
   student: string;
+  isOnMarket: boolean;
 }
 
 export interface CalendarOptions {

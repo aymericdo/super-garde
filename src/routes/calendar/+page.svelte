@@ -10,29 +10,89 @@
   import ModalPeriodPicker from '$lib/components/ModalPeriodPicker.svelte'
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
+  import { BarLoader } from 'svelte-loading-spinners'
+  import { onCallSlotRecordToCalendarEvent } from '$lib/utils'
   
   import type { CalendarEvent } from '$lib/interfaces/calendar'
-  import type { RecordModel } from 'pocketbase'
+  import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
-  import { onCallSlotRecordToCalendarEvent } from '$lib/utils'
   export let data: PageData
   
   let isEventModalOpen = false;
   let isPeriodPickerModalOpen = false;
   let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
+  let loading = false;
+  let isOnMarketPlaceOnly = false;
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
+
+  const fetch = async (): Promise<RecordModel[] | undefined> => {
+    try {
+      const options: { expand: string, filter?: string } = {
+        expand: 'student',
+      }
+
+      if (isOnMarketPlaceOnly) {
+        options.filter = 'isOnMarket = true';
+      }
+
+      return await pb.collection("onCallSlots").getFullList(options);
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
+  const fetchOne = async (id: string): Promise<RecordModel | undefined> => {
+    try {
+      const options: { expand: string } = {
+        expand: 'student',
+      }
+
+      return await pb.collection("onCallSlots").getOne(id, options)
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
+  const putEventOnMarket = async (id: string): Promise<RecordModel | undefined> => {
+    try {
+      return await pb.collection("onCallSlots").update(id, { isOnMarket: true });
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
+  const takeEventFromMarket = async (id: string): Promise<RecordModel | undefined> => {
+    if (data.currentStudent?.id) {
+      try {
+        return await pb.collection("onCallSlots").update(id, { isOnMarket: false, student: data.currentStudent?.id });
+      } catch (error) {
+        if (!(error as ClientResponseError).isAbort) {
+          console.error(error);
+        }
+      }
+    }
+  }
 
   const handleGenerate = async () => {
     isPeriodPickerModalOpen = true;
   }
 
   const handleDelete = async () => {
+    loading = true;
     try {
       const data = await pb.send("/api/delete-all-on-call-slots", {});
       console.log(data);
     } catch (error) {
       console.error(error);
+    } finally {
+      loading = false;
     }
   }
 
@@ -49,7 +109,8 @@
     isEventModalOpen = true;
   }
 
-  const handleSubmit = async (start: Date, end: Date) => {
+  const handleGenerateSubmit = async (start: Date, end: Date) => {
+    loading = true;
     handlePeriodPickerClose();
     try {
       const data = await pb.send("/api/generate-events", {
@@ -61,6 +122,8 @@
       console.log(data);
     } catch(error) {
       console.error(error);
+    } finally {
+      loading = false;
     }
   }
 
@@ -71,6 +134,38 @@
   const handleEventModalClose = () => {
     openedEvent?.element.classList.remove('-selected');
     isEventModalOpen = false;
+  }
+
+  const handlePutOnMarket = async () => {
+    if (openedEvent) {
+      await putEventOnMarket(openedEvent.event.id);
+      handleEventModalClose();
+    } else {
+      console.error('should have an opened event here');
+    }
+  }
+
+  const handleTakeFromMarket = async () => {
+    if (openedEvent) {
+      await takeEventFromMarket(openedEvent.event.id);
+      handleEventModalClose();
+    } else {
+      console.error('should have an opened event here');
+    }
+  }
+
+  const handleIsOnMarketPlaceOnlyChanged = async () => {
+    isOnMarketPlaceOnly = !isOnMarketPlaceOnly;
+    const list = await fetch();
+
+    if (list) {
+      options = {
+        ...options,
+        events: list.map((event: RecordModel) => {
+          return onCallSlotRecordToCalendarEvent(event);
+        }),
+      }
+    }
   }
 
   let options: any = {
@@ -97,18 +192,22 @@
   };
 
   onMount(async () => {
-    pb.realtime.subscribe('onCallSlots', (e) => {
+    pb.realtime.subscribe('onCallSlots', async (e) => {
       switch (e.action) {
         case 'update': {
-          options = {
-            ...options,
-            events: options.events.map((event: CalendarEvent) => {
-              if (event.id === e.record.id) {
-                return onCallSlotRecordToCalendarEvent(e.record);
-              } else {
-                return event;
-              }
-            }),
+          const newSlot = await fetchOne(e.record.id);
+
+          if (newSlot) {
+            options = {
+              ...options,
+              events: options.events.map((event: CalendarEvent) => {
+                if (event.id === newSlot.id) {
+                  return onCallSlotRecordToCalendarEvent(newSlot);
+                } else {
+                  return event;
+                }
+              }),
+            }
           }
           break;
         }
@@ -121,13 +220,17 @@
           break;
         }
         case 'create': {
-          options = {
-            ...options,
-            events: [
-              ...options.events,
-              onCallSlotRecordToCalendarEvent(e.record),
-            ],
-          };
+          const newSlot = await fetchOne(e.record.id);
+
+          if (newSlot) {
+            options = {
+              ...options,
+              events: [
+                ...options.events,
+                onCallSlotRecordToCalendarEvent(newSlot),
+              ],
+            };
+          }
           break;
         }
       }
@@ -148,22 +251,33 @@
     pb.realtime.unsubscribe('users');
   })
 
-  setContext('isEventModalOpen', { handleEventModalClose });
-  setContext('isPeriodPickerModalOpen', { handlePeriodPickerClose, handleSubmit });
+  setContext('isEventModalOpen', { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket });
+  setContext('isPeriodPickerModalOpen', { handlePeriodPickerClose, handleGenerateSubmit });
 </script>
 
 <div class="flex justify-between mb-1">
   <h1 class="flex items-center font-bold text-gray-900 text-lg">
     Calendrier
   </h1>
-  {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-    <div>
-      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
-      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-ghost text-m">Générer</button>
+  <div class="flex items-center">
+    <label class="relative inline-flex items-center mx-4 cursor-pointer">
+      <input type="checkbox" class="sr-only peer" checked={isOnMarketPlaceOnly} on:change={handleIsOnMarketPlaceOnlyChanged}>
+      <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
+      <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-500">Afficher uniquement les gardes dispo</span>
+    </label>
+    <!-- <input type="checkbox" class="toggle toggle-lg mx-4" /> -->
+    {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
+      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m  mx-1">Supprimer</button>
+      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-ghost text-m  mx-1">Générer</button>
+      {/if}
     </div>
-  {/if}
 </div>
 
+{#if loading}
+  <div class="flex justify-center px-6 py-4">
+    <BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+  </div>
+{/if}
 <div class="shadow-md sm:rounded-lg event-calendar">
   <div class="w-full">
     <Calendar {plugins} {options} />
@@ -171,7 +285,7 @@
 </div>
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
-<ModalEvent {isEventModalOpen} {openedEvent} />
+<ModalEvent {isEventModalOpen} {openedEvent} student={data.currentStudent} />
 
 <style>
   :global(.event-calendar .ec) {

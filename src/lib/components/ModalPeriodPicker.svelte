@@ -21,9 +21,9 @@
     return `${start ? start.toLocaleDateString("fr", options) : ''} - ${end ? end.toLocaleDateString("fr", options) : '...'}`;
   }
 
-  const { handlePeriodPickerClose, handleSubmit } = getContext('isPeriodPickerModalOpen') as {
+  const { handlePeriodPickerClose, handleGenerateSubmit } = getContext('isPeriodPickerModalOpen') as {
     handlePeriodPickerClose: () => void,
-    handleSubmit: (start: Date, end: Date) => void,
+    handleGenerateSubmit: (start: Date, end: Date) => void,
   };
 
   const handleDateClick = ({ date }: { date: Date }) => {
@@ -108,7 +108,14 @@
     </div>
     <div class="modal-action">
       <button class="btn" on:click={handlePeriodPickerClose}>Close</button>
-      <button class="btn btn-primary" disabled={!start || !end} on:click={() => start && end && handleSubmit(start, end)}>Générer</button>
+      <button class="btn btn-primary" disabled={!start || !end}
+        on:click={() => {
+          if (start && end) {
+            handleGenerateSubmit(start, end);
+            handleReset();
+          }}
+        }
+      >Générer</button>
     </div>
   </div>
   <div class="modal-backdrop">
