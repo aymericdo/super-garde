@@ -5,9 +5,9 @@
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
   import { onDestroy, onMount, setContext } from 'svelte';
+  import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
 
 	import type { PageData } from './$types'
-    import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
   export let data: PageData
 
   let loading = false;
