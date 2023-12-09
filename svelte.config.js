@@ -15,6 +15,9 @@ const config = {
   ],
 
   kit: {
+    paths: {
+      base: process.env.NODE_ENV === 'production' ? '/super-garde' : '',
+    },
     adapter: adapter(),
   },
 }
