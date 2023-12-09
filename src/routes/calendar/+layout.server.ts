@@ -1,7 +1,7 @@
 import type { LayoutServerLoad } from './$types'
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-  let currentStudent = null;
+  let currentStudent;
   try {
     const onCallSlotList = await locals.pb.collection('onCallSlots').getFullList({ expand: 'student' })
 
@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
         currentStudent = await locals.pb.collection('students').getFirstListItem(`user = "${locals.user.id}"`);
       }
     } catch (_) {
-      currentStudent = null;
+      currentStudent = undefined;
     }
 
     return {

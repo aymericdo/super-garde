@@ -37,7 +37,7 @@
 
   export let isEventModalOpen: boolean = false;
   export let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
-  export let student: RecordModel = null;
+  export let student: RecordModel | undefined;
 </script>
 
 <div class="modal" class:modal-open={isEventModalOpen}>

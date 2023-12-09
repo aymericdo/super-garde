@@ -1,5 +1,7 @@
 module.exports = {
-  fetch: (c, $http) => {
+  fetch: (googleSheetUrl, options) => {
+    const { c, $http } = options;
+
     try {
       if (!config.GOOGLE_SHEET_ID) {
         throw 'no GOOGLE_SHEET_ID in the config';
@@ -8,7 +10,7 @@ module.exports = {
       // eslint-disable-next-line
       const config = require(`${__hooks}/config.json`)
       const res = $http.send({
-        url: `https://docs.google.com/spreadsheets/d/${config.GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv`,
+        url: googleSheetUrl,
         method: 'GET',
         body: '', // eg. JSON.stringify({"test": 123})
         headers: { "content-type": "application/json" },

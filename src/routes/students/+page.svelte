@@ -4,13 +4,15 @@
   import { BarLoader } from 'svelte-loading-spinners';
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, setContext } from 'svelte';
 
 	import type { PageData } from './$types'
+    import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
   export let data: PageData
 
   let loading = false;
   let isNewStudentsNotVisible = false;
+  let isStudentSourceModalOpen = false;
   let query = '';
   let isAllStudentsChecked: boolean = false;
   let selectedStudents: string[] = [];
@@ -70,9 +72,11 @@
     loading = false;
   };
 
-  const handleImport = async () => {
+  const handleImport = async (url: string) => {
     try {
-      const data = await pb.send("/api/import-students", {});
+      const data = await pb.send("/api/import-students", {
+        url
+      });
       console.log(data);
     } catch (error) {
       console.error(error);
@@ -147,6 +151,14 @@
     }
   }
 
+  const handleStudentSourceModalClose = (): void => {
+    isStudentSourceModalOpen = false;
+  }
+
+  const handleGenerateStudents = async (url: string) => {
+    await handleImport(url);
+  }
+
   onMount(async () => {
     pb.realtime.subscribe('students', async (e) => {
       switch (e.action) {
@@ -217,6 +229,8 @@
     pb.realtime.unsubscribe('students');
     pb.realtime.unsubscribe('users');
   })
+
+  setContext('isStudentSourceModalOpen', { handleStudentSourceModalClose, handleGenerateStudents });
 </script>
 
 <div class="flex justify-between mb-1">
@@ -238,7 +252,7 @@
       {#if selectedStudents.length}
         <button on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
       {/if}
-      <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
+      <button on:click={() => isStudentSourceModalOpen = true} class="btn btn-ghost text-m">Importer</button>
     </div>
   {/if}
 </div>
@@ -290,6 +304,8 @@
     </tbody>
   </table>
 </div>
+
+<ModalStudentSource {isStudentSourceModalOpen} />
 
 <style>
   table tbody {
