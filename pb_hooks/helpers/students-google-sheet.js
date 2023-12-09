@@ -3,12 +3,6 @@ module.exports = {
     const { c, $http } = options;
 
     try {
-      if (!config.GOOGLE_SHEET_ID) {
-        throw 'no GOOGLE_SHEET_ID in the config';
-      }
-
-      // eslint-disable-next-line
-      const config = require(`${__hooks}/config.json`)
       const res = $http.send({
         url: googleSheetUrl,
         method: 'GET',
