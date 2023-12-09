@@ -18,8 +18,7 @@
     "@event-calendar/list": "^2.4.1",
     "@event-calendar/resource-time-grid": "^2.4.1",
     "@event-calendar/time-grid": "^2.4.1",
-    "@sveltejs/adapter-auto": "^2.1.0",
-    "@sveltejs/kit": "^1.25.1",
+    "@sveltejs/kit": "^1.27.7",
     "@tailwindcss/forms": "^0.5.6",
     "@tailwindcss/typography": "^0.5.10",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
@@ -44,6 +43,8 @@
   },
   "type": "module",
   "dependencies": {
+    "@sveltejs/adapter-auto": "^2.1.1",
+    "@sveltejs/adapter-node": "^1.3.1",
     "pocketbase": "^0.18.0",
     "svelte-infinite-scroll": "^2.0.1",
     "svelte-material-icons": "^3.0.5"
