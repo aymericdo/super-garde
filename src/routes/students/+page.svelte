@@ -156,7 +156,8 @@
   }
 
   const handleGenerateStudents = async (url: string) => {
-    await handleImport(url);
+    handleImport(url);
+    handleStudentSourceModalClose();
   }
 
   onMount(async () => {
