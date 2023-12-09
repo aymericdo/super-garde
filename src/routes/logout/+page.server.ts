@@ -6,6 +6,8 @@ export const actions: Actions = {
   default: async ({ locals }) => {
     locals.pb.authStore.clear()
     locals.user = null
-    throw redirect(303, '/' + base)
+    console.log(base);
+    console.log('bite');
+    throw redirect(303, base)
   },
 }
