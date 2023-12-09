@@ -19,12 +19,12 @@
 <div class="bg-neutral text-neutral-content">
   <div class="max-w-l mx-auto navbar">
     <div class="navbar-start">
-      <a href="/" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
+      <a href="." class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
 
       {#if $currentUser}
         <div class="hidden w-full lg:flex lg:w-auto">
-          <a href="/calendar" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/calendar"}>Calendrier</a>
-          <a href="/students" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/students"}>Étudiants</a>
+          <a href="calendar" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/calendar"}>Calendrier</a>
+          <a href="students" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/students"}>Étudiants</a>
         </div>
       {/if}
     </div>
@@ -46,10 +46,10 @@
 
         <div class:hidden={!isOpen} class="absolute -bottom-1 translate-y-full w-40 right-1 shadow-md sm:rounded-lg bg-slate-100 z-20">
           {#if $currentUser}
-            <a href="/calendar" on:click={() => (isOpen = false)}
+            <a href="calendar" on:click={() => (isOpen = false)}
                 class:btn-active={currentRoute === "/calendar"}
                 class="btn btn-ghost text-l w-full text-black">Calendrier</a>
-            <a href="/students" on:click={() => (isOpen = false)}
+            <a href="students" on:click={() => (isOpen = false)}
                 class:btn-active={currentRoute === "/students"}
                 class="btn btn-ghost text-l w-full text-black">Étudiants</a>
             <form
@@ -68,10 +68,10 @@
           {:else}
             <a class="btn btn-ghost text-l w-full text-black"
               on:click={() => (isOpen = false)}
-              href="/login">Log in</a>
+              href="login">Log in</a>
             <!-- <a class="btn btn-ghost text-l w-full text-black"
               on:click={() => (isOpen = false)}
-              href="/register">Register</a> -->
+              href="register">Register</a> -->
           {/if}
         </div>
       </div>
@@ -79,7 +79,7 @@
       <div class="hidden w-full lg:flex lg:w-auto">
         <div class="menu menu-horizontal">
           {#if $currentUser}
-            <a class="btn btn-ghost text-l mx-1" href="/">
+            <a class="btn btn-ghost text-l mx-1" href=".">
               {$currentUser.email}
               {#if $currentUser.isAdmin}
                 <div class="badge badge-accent">admin</div>
@@ -101,8 +101,8 @@
               <button>Log out</button>
             </form>
           {:else}
-            <a class="btn btn-ghost text-l mx-1" href="/login">Login</a>
-            <!-- <a class="btn btn-ghost text-l mx-1" href="/register">Register</a> -->
+            <a class="btn btn-ghost text-l mx-1" href="login">Login</a>
+            <!-- <a class="btn btn-ghost text-l mx-1" href="register">Register</a> -->
           {/if}
         </div>
       </div>
