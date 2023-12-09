@@ -66,8 +66,12 @@
               <button>Log out</button>
             </form>
           {:else}
-            <li><a href="/login">Log in</a></li>
-            <!-- <li><a href="/register">Register</a></li> -->
+            <a class="btn btn-ghost text-l w-full text-black"
+              on:click={() => (isOpen = false)}
+              href="/login">Log in</a>
+            <!-- <a class="btn btn-ghost text-l w-full text-black"
+              on:click={() => (isOpen = false)}
+              href="/register">Register</a> -->
           {/if}
         </div>
       </div>
@@ -97,8 +101,8 @@
               <button>Log out</button>
             </form>
           {:else}
-            <li><a href="/login">Log in</a></li>
-            <!-- <li><a href="/register">Register</a></li> -->
+            <a class="btn btn-ghost text-l mx-1" href="/login">Login</a>
+            <!-- <a class="btn btn-ghost text-l mx-1" href="/register">Register</a> -->
           {/if}
         </div>
       </div>
