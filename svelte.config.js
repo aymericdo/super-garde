@@ -15,11 +15,6 @@ const config = {
   ],
 
   kit: {
-    paths: {
-      // assets: process.env.ORIGIN,
-      // base: '/super-garde',
-      // relative: false,
-    },
     adapter: adapter(),
   },
 }
