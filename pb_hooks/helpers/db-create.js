@@ -27,7 +27,7 @@ module.exports = {
 
       return userRecord;
     } catch (error) {
-      console.log("db user creation failed", error);
+      console.error("db user creation failed", error);
     }
   },
   student: (line, userRecord, options) => {
