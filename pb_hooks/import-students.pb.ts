@@ -13,7 +13,7 @@ routerAdd("GET", "/api/import-students", (c) => {
   // eslint-disable-next-line
   const studentsGoogleSheet = require(`${__hooks}/helpers/students-google-sheet.js`);
   const list = studentsGoogleSheet.fetch(c, $http);
-  console.log(list);
+  console.log(`${list.length} students in the list`);
 
   list.forEach((line) => {
     $app.dao().runInTransaction((txDao) => {
