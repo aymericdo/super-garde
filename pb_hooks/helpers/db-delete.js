@@ -7,7 +7,7 @@ module.exports = {
       txDao.deleteRecord(user)
       return true;
     } catch (error) {
-      console.log("db user deletion failed", error);
+      console.error("db user deletion failed", error);
     }
   },
   onCallSlot: (onCallSlotId, options) => {
@@ -18,7 +18,7 @@ module.exports = {
       txDao.deleteRecord(onCallSlot)
       return true;
     } catch (error) {
-      console.log("db onCallSlot deletion failed", error);
+      console.error("db onCallSlot deletion failed", error);
     }
   },
 };
