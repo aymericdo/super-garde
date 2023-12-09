@@ -291,7 +291,9 @@
             <span>{item.lastName}</span>
           </td>
           <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500">
-            <span>{item.expand?.user.email}</span>
+            {#if item.expand?.user?.email}
+              <span>{item.expand?.user?.email}</span>
+            {/if}
           </td>
         </tr>
       {/each}
