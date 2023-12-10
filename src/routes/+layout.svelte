@@ -20,7 +20,7 @@
 <div class="bg-neutral text-neutral-content">
   <div class="max-w-l mx-auto navbar">
     <div class="navbar-start">
-      <a href="{base}" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
+      <a href="{base}/" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
 
       {#if $currentUser}
         <div class="hidden w-full lg:flex lg:w-auto">
@@ -80,7 +80,7 @@
       <div class="hidden w-full lg:flex lg:w-auto">
         <div class="menu menu-horizontal">
           {#if $currentUser}
-            <a class="btn btn-ghost text-l mx-1" href="{base}">
+            <a class="btn btn-ghost text-l mx-1" href="{base}/">
               {$currentUser.email}
               {#if $currentUser.isAdmin}
                 <div class="badge badge-accent">admin</div>

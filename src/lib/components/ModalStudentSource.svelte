@@ -17,7 +17,7 @@
     <div class="py-4">
       <div class="flex items-center justify-center mb-2">
         <input type="text" placeholder="https://docs.google.com/spreadsheets/d/..." bind:value={googleSheetUrl}
-        class="input input-bordered input-primary input-sm md:min-w-full" />
+        class="input input-bordered input-primary input-sm w-full sm:w-8/12" />
       </div>
     </div>
     <div class="modal-action">

@@ -240,7 +240,7 @@
   </h1>
 </div>
 <div class="flex justify-between items-center mb-1">
-  <div>
+  <div class="flex items-center">
     <input type="text" placeholder="Roger Federer" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
     <span class="dark:text-gray-400 mx-1">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
@@ -248,12 +248,12 @@
       <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
     {/if}
   </div>
-    {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-    <div>
+  {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
+    <div class="flex flex-wrap items-center justify-end">
       {#if selectedStudents.length}
-        <button on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
+        <button on:click={handleDelete} class="btn btn-warning text-m m-1">Supprimer</button>
       {/if}
-      <button on:click={() => isStudentSourceModalOpen = true} class="btn btn-ghost text-m">Importer</button>
+      <button on:click={() => isStudentSourceModalOpen = true} class="btn btn-neutral text-m m-1">Importer</button>
     </div>
   {/if}
 </div>

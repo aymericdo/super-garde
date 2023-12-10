@@ -259,19 +259,24 @@
   <h1 class="flex items-center font-bold text-gray-900 text-lg">
     Calendrier
   </h1>
+</div>
+
+<div class="flex justify-between items-center  mb-1">
   <div class="flex items-center">
-    <label class="relative inline-flex items-center mx-4 cursor-pointer">
+    <label class="relative inline-flex cursor-pointer">
       <input type="checkbox" class="sr-only peer" checked={isOnMarketPlaceOnly} on:change={handleIsOnMarketPlaceOnlyChanged}>
       <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
       <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-500">Afficher uniquement les gardes dispo</span>
     </label>
-    <!-- <input type="checkbox" class="toggle toggle-lg mx-4" /> -->
+  </div>
+  <div class="flex flex-wrap items-center justify-end">
     {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m  mx-1">Supprimer</button>
-      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-ghost text-m  mx-1">Générer</button>
-      {/if}
-    </div>
+      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m m-1">Supprimer</button>
+      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-neutral text-m m-1">Générer</button>
+    {/if}
+  </div>
 </div>
+
 
 {#if loading}
   <div class="flex justify-center px-6 py-4">
