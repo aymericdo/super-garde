@@ -56,7 +56,7 @@
             <form
               class="btn btn-ghost text-l w-full text-black"
               method="POST"
-              action="/logout"
+              action="{base}/logout"
               use:enhance={() => {
                 return async ({ result }) => {
                   pb.authStore.clear()
@@ -91,7 +91,7 @@
             <form
               class="btn btn-ghost text-l"
               method="POST"
-              action="/logout"
+              action="{base}/logout"
               use:enhance={() => {
                 return async ({ result }) => {
                   pb.authStore.clear()
