@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit'
-import { BASE_URL } from '$env/static/private'
+import { PUBLIC_BASE_URL } from '$env/static/public';
 import type { Actions } from './$types'
 
 export const actions: Actions = {
@@ -20,6 +20,6 @@ export const actions: Actions = {
       throw e
     }
 
-    throw redirect(303, `/${BASE_URL ?? ''}`)
+    throw redirect(303, `/${PUBLIC_BASE_URL ?? ''}`)
   },
 }

@@ -1,11 +1,11 @@
 import { redirect } from '@sveltejs/kit'
-import { BASE_URL } from '$env/static/private'
+import { PUBLIC_BASE_URL } from '$env/static/public';
 import type { Actions } from './$types'
 
 export const actions: Actions = {
   default: async ({ locals }) => {
     locals.pb.authStore.clear()
     locals.user = null
-    throw redirect(303, `/${BASE_URL ?? ''}`)
+    throw redirect(303, `/${PUBLIC_BASE_URL ?? ''}`)
   },
 }
