@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit'
-import { NODE_ENV } from '$env/static/private'
+import { BASE_URL } from '$env/static/private'
 import type { Actions } from './$types'
 
 export const actions: Actions = {
@@ -20,6 +20,6 @@ export const actions: Actions = {
       throw e
     }
 
-    throw redirect(303, NODE_ENV === 'production' ? '/super-garde' : '/')
+    throw redirect(303, `/${BASE_URL ?? ''}`)
   },
 }
