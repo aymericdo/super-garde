@@ -10,6 +10,7 @@
 	import type { PageData } from './$types'
   export let data: PageData
 
+  let totalItemsAtBeginning = data.studentList.totalItems;
   let loading = false;
   let isNewStudentsNotVisible = false;
   let isStudentSourceModalOpen = false;
@@ -243,7 +244,12 @@
   <div class="flex items-center">
     <input type="text" placeholder="Roger Federer" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
-    <span class="dark:text-gray-400 mx-1">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
+    {#if query.length}
+      <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtBeginning})</span>
+    {:else}
+      <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
+    {/if}
+
     {#if isNewStudentsNotVisible}
       <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
     {/if}
