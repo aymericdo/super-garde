@@ -8,7 +8,7 @@ module.exports = {
       // eslint-disable-next-line
       const config = require(`${__hooks}/config.json`)
       const res = $http.send({
-        url: `https://docs.google.com/spreadsheets/d/${config.GOOGLE_SHEET_ID}/gviz/tq?tqx=out:csv`,
+        url: `https://docs.google.com/spreadsheets/d/${config.GOOGLE_SHEET_ID}gviz/tq?tqx=out:csv`,
         method: 'GET',
         body: '', // eg. JSON.stringify({"test": 123})
         headers: { "content-type": "application/json" },
