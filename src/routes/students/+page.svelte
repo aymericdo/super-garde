@@ -4,13 +4,16 @@
   import { BarLoader } from 'svelte-loading-spinners';
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy, onMount, setContext } from 'svelte';
+  import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
 
 	import type { PageData } from './$types'
   export let data: PageData
 
+  let totalItemsAtBeginning = data.studentList.totalItems;
   let loading = false;
   let isNewStudentsNotVisible = false;
+  let isStudentSourceModalOpen = false;
   let query = '';
   let isAllStudentsChecked: boolean = false;
   let selectedStudents: string[] = [];
@@ -70,9 +73,11 @@
     loading = false;
   };
 
-  const handleImport = async () => {
+  const handleImport = async (url: string) => {
     try {
-      const data = await pb.send("/api/import-students", {});
+      const data = await pb.send("/api/import-students", {
+        url
+      });
       console.log(data);
     } catch (error) {
       console.error(error);
@@ -147,6 +152,15 @@
     }
   }
 
+  const handleStudentSourceModalClose = (): void => {
+    isStudentSourceModalOpen = false;
+  }
+
+  const handleGenerateStudents = async (url: string) => {
+    handleImport(url);
+    handleStudentSourceModalClose();
+  }
+
   onMount(async () => {
     pb.realtime.subscribe('students', async (e) => {
       switch (e.action) {
@@ -217,6 +231,8 @@
     pb.realtime.unsubscribe('students');
     pb.realtime.unsubscribe('users');
   })
+
+  setContext('isStudentSourceModalOpen', { handleStudentSourceModalClose, handleGenerateStudents });
 </script>
 
 <div class="flex justify-between mb-1">
@@ -225,20 +241,25 @@
   </h1>
 </div>
 <div class="flex justify-between items-center mb-1">
-  <div>
+  <div class="flex items-center">
     <input type="text" placeholder="Roger Federer" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
-    <span class="dark:text-gray-400 mx-1">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
+    {#if query.length}
+      <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtBeginning})</span>
+    {:else}
+      <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
+    {/if}
+
     {#if isNewStudentsNotVisible}
       <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
     {/if}
   </div>
-    {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-    <div>
+  {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
+    <div class="flex flex-wrap items-center justify-end">
       {#if selectedStudents.length}
-        <button on:click={handleDelete} class="btn btn-warning text-m">Supprimer</button>
+        <button on:click={handleDelete} class="btn btn-warning text-m m-1">Supprimer</button>
       {/if}
-      <button on:click={handleImport} class="btn btn-ghost text-m">Importer</button>
+      <button on:click={() => isStudentSourceModalOpen = true} class="btn btn-neutral text-m m-1">Importer</button>
     </div>
   {/if}
 </div>
@@ -277,7 +298,9 @@
             <span>{item.lastName}</span>
           </td>
           <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500">
-            <span>{item.expand?.user.email}</span>
+            {#if item.expand?.user?.email}
+              <span>{item.expand?.user?.email}</span>
+            {/if}
           </td>
         </tr>
       {/each}
@@ -290,6 +313,8 @@
     </tbody>
   </table>
 </div>
+
+<ModalStudentSource {isStudentSourceModalOpen} />
 
 <style>
   table tbody {

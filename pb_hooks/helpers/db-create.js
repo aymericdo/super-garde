@@ -53,7 +53,7 @@ module.exports = {
 
       return studentRecord;
     } catch (error) {
-      console.log("db student creation failed", error);
+      console.error("db student creation failed", error);
     }
   },
   onCallSlot: (event, student, options) => {

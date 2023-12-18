@@ -6,13 +6,15 @@ routerAdd("GET", "/api/import-students", (c) => {
   const admin = info.admin;
   const record = info.authRecord;
 
+  const googleSheetUrl = c.queryParam("url");
+
   if (!admin && !['god', 'assistant'].includes(record?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
   // eslint-disable-next-line
   const studentsGoogleSheet = require(`${__hooks}/helpers/students-google-sheet.js`);
-  const list = studentsGoogleSheet.fetch(c, $http);
+  const list = studentsGoogleSheet.fetch(googleSheetUrl, { c, $http });
   console.log(`${list.length} students in the list`);
 
   list.forEach((line) => {

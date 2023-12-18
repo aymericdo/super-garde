@@ -20,12 +20,12 @@
 <div class="bg-neutral text-neutral-content">
   <div class="max-w-l mx-auto navbar">
     <div class="navbar-start">
-      <a href="{base}" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
+      <a href="{base}/" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
 
       {#if $currentUser}
         <div class="hidden w-full lg:flex lg:w-auto">
-          <a href="{base}/calendar" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/calendar"}>Calendrier</a>
-          <a href="{base}/students" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === "/students"}>Étudiants</a>
+          <a href="{base}/calendar" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === base + "/calendar"}>Calendrier</a>
+          <a href="{base}/students" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === base + "/students"}>Étudiants</a>
         </div>
       {/if}
     </div>
@@ -48,10 +48,10 @@
         <div class:hidden={!isOpen} class="absolute -bottom-1 translate-y-full w-40 right-1 shadow-md sm:rounded-lg bg-slate-100 z-20">
           {#if $currentUser}
             <a href="{base}/calendar" on:click={() => (isOpen = false)}
-                class:btn-active={currentRoute === "/calendar"}
+                class:btn-active={currentRoute === base + "/calendar"}
                 class="btn btn-ghost text-l w-full text-black">Calendrier</a>
             <a href="{base}/students" on:click={() => (isOpen = false)}
-                class:btn-active={currentRoute === "/students"}
+                class:btn-active={currentRoute === base + "/students"}
                 class="btn btn-ghost text-l w-full text-black">Étudiants</a>
             <form
               class="btn btn-ghost text-l w-full text-black"
