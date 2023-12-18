@@ -240,7 +240,7 @@
     La liste des étudiants
   </h1>
 </div>
-<div class="flex justify-between items-center mb-1">
+<div class="flex justify-between flex-wrap items-center mb-1">
   <div class="flex items-center">
     <input type="text" placeholder="Roger Federer" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
@@ -255,11 +255,11 @@
     {/if}
   </div>
   {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-    <div class="flex flex-wrap items-center justify-end">
+    <div class="flex flex-1 flex-wrap items-center justify-end">
       {#if selectedStudents.length}
-        <button on:click={handleDelete} class="btn btn-warning text-m m-1">Supprimer</button>
+        <button on:click={handleDelete} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
       {/if}
-      <button on:click={() => isStudentSourceModalOpen = true} class="btn btn-neutral text-m m-1">Importer</button>
+      <button on:click={() => isStudentSourceModalOpen = true} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Importer</button>
     </div>
   {/if}
 </div>
