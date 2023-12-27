@@ -196,14 +196,14 @@
     headerToolbar: {
       start: 'prev,next today',
       center: 'title',
-      end: 'dayGridMonth timeGridWeek listDay listWeek',
+      end: 'dayGridMonth listDay listYear',
     },
     buttonText: {
       today: "Aujourd'hui",
       dayGridMonth: 'Mois',
       timeGridWeek: 'Semaine',
       listDay: 'Jour',
-      listWeek: 'Liste',
+      listYear: 'Liste',
     },
     events: data.onCallSlotList
       .map((event) => onCallSlotRecordToCalendarEvent(event)),
@@ -280,18 +280,18 @@
   </h1>
 </div>
 
-<div class="flex justify-between items-center  mb-1">
-  <div class="flex items-center">
+<div class="flex justify-between items-center flex-wrap mb-1">
+  <div class="flex items-center my-2 justify-center w-full md:w-auto">
     <label class="relative inline-flex cursor-pointer">
       <input type="checkbox" class="sr-only peer" checked={isOnMarketPlaceOnly} on:change={handleIsOnMarketPlaceOnlyChanged}>
       <div class="w-11 h-6 bg-gray-200 rounded-full peer dark:bg-gray-700 peer-focus:ring-4 peer-focus:ring-orange-300 dark:peer-focus:ring-orange-800 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-orange-500"></div>
-      <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-500">Afficher uniquement les gardes dispo</span>
+      <span class="flex items-center ms-3 text-sm font-medium text-gray-900 dark:text-gray-500">Afficher uniquement les gardes dispo</span>
     </label>
   </div>
-  <div class="flex flex-wrap items-center justify-end">
+  <div class="flex flex-1 flex-wrap items-center justify-end">
     {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m m-1">Supprimer</button>
-      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-neutral text-m m-1">Générer</button>
+      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
+      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
     {/if}
   </div>
 </div>
@@ -303,7 +303,7 @@
   </div>
 {/if}
 <div class="shadow-md sm:rounded-lg event-calendar">
-  <div class="w-full">
+  <div class="w-full h-full">
     <Calendar {plugins} {options} />
   </div>
 </div>
@@ -312,14 +312,6 @@
 <ModalEvent {isEventModalOpen} {openedEvent} student={data.currentStudent} />
 
 <style>
-  :global(.event-calendar .ec) {
-	  height: 640px;
-    padding: 0.625rem;
-  }
-
-  :global(.event-calendar .ec.ec-day-grid) {
-    height: 400px;
-  }
   :global(.event-calendar .ec .ec-event) {
     cursor: pointer;
   }
@@ -334,31 +326,5 @@
 
   :global(.ec-icon::before, .ec-icon::after) {
     box-sizing: initial;
-  }
-
-  @media (min-width: 576px) {
-    :global(.event-calendar .ec) {
-      height: 700px;
-    }
-
-    :global(.event-calendar .ec.ec-day-grid) {
-      height: 500px;
-    }
-  }
-
-  @media (min-width: 992px) {
-    :global(.event-calendar .ec) {
-      height: 800px;
-    }
-
-    :global(.event-calendar .ec.ec-day-grid) {
-      height: 700px;
-    }
-  }
-
-  @media (min-width: 1200px) {
-    :global(.event-calendar .ec.ec-day-grid) {
-      height: 800px;
-    }
   }
 </style>

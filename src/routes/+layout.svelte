@@ -111,6 +111,6 @@
   </div>
 </div>
 
-<div class="max-w-3xl mx-auto py-8 px-4">
+<div class="flex flex-col h-[calc(100vh-64px)] max-w-3xl mx-auto py-8 px-4">
   <slot />
 </div>
