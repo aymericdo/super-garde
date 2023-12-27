@@ -234,6 +234,17 @@
                 events: [...options.events, onCallSlotRecordToCalendarEvent(newSlot)],
               }
             }
+          } else {
+            if (options.events.some((event: CalendarEvent) => event.id === e.record.id)) {
+              options = {
+                ...options,
+                events: options.events.filter((event: CalendarEvent) => {
+                  if (event.id !== e.record.id) {
+                    return event;
+                  }
+                }),
+              }
+            }
           }
           break;
         }
