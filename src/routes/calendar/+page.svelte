@@ -217,15 +217,22 @@
           const newSlot = await fetchOne(e.record.id);
 
           if (newSlot) {
-            options = {
-              ...options,
-              events: options.events.map((event: CalendarEvent) => {
-                if (event.id === newSlot.id) {
-                  return onCallSlotRecordToCalendarEvent(newSlot);
-                } else {
-                  return event;
-                }
-              }),
+            if (options.events.some((event: CalendarEvent) => event.id === newSlot.id)) {
+              options = {
+                ...options,
+                events: options.events.map((event: CalendarEvent) => {
+                  if (event.id === newSlot.id) {
+                    return onCallSlotRecordToCalendarEvent(newSlot);
+                  } else {
+                    return event;
+                  }
+                }),
+              }
+            } else {
+              options = {
+                ...options,
+                events: [...options.events, onCallSlotRecordToCalendarEvent(newSlot)],
+              }
             }
           }
           break;
