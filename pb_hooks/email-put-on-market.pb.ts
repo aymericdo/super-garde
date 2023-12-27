@@ -85,9 +85,9 @@ onModelAfterUpdate((e) => {
     }
 
     try {
-      $app.newMailClient().send(message1);
-      if (message2) $app.newMailClient().send(message2);
-      if (message3) $app.newMailClient().send(message3);
+      // $app.newMailClient().send(message1);
+      // if (message2) $app.newMailClient().send(message2);
+      // if (message3) $app.newMailClient().send(message3);
     } catch (error) {
       console.error(error);
     }
