@@ -5,7 +5,8 @@
   import ClockTimeFiveOutline from 'svelte-material-icons/ClockTimeFiveOutline.svelte'
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
   import Doctor from 'svelte-material-icons/Doctor.svelte'
-    import type { RecordModel } from 'pocketbase'
+  import { currentUser } from '$lib/stores/user'
+  import type { RecordModel } from 'pocketbase'
 
   const displayDateRange = (start: Date, end: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -28,11 +29,12 @@
     return `${start.toLocaleTimeString("fr", options)} - ${end.toLocaleTimeString("fr", options)}`;
   }
 
-  const { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket } =
+  const { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket, handlePutOutOfMarket } =
     getContext('isEventModalOpen') as {
       handleEventModalClose: () => void,
       handlePutOnMarket: () => void,
       handleTakeFromMarket: () => void,
+      handlePutOutOfMarket: () => void,
     };
 
   export let isEventModalOpen: boolean = false;
@@ -65,6 +67,10 @@
         <button class="btn btn-primary" on:click={handlePutOnMarket}>Mettre sur le marché</button>
       {:else if !!student}
         <button class="btn btn-primary" on:click={handleTakeFromMarket}>Prendre</button>
+      {/if}
+
+      {#if openedEvent?.event.isOnMarket && ($currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role))}
+        <button class="btn btn-primary" on:click={handlePutOutOfMarket}>Sortir du marché</button>
       {/if}
     </div>
   </div>

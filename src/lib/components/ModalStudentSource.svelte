@@ -9,7 +9,7 @@
     const match = googleSheetUrl.match(/^https:\/\/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)\//g)
 
     if (match) {
-      realGoogleSheetUrlCsv = `${match[0]}/gviz/tq?tqx=out:csv`;
+      realGoogleSheetUrlCsv = `${match[0]}gviz/tq?tqx=out:csv`;
       isUrlValid = true;
     } else {
       isUrlValid = false;

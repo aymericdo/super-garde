@@ -68,6 +68,16 @@
     }
   }
 
+  const putEventOutOfMarket = async (id: string): Promise<RecordModel | undefined> => {
+    try {
+      return await pb.collection("onCallSlots").update(id, { isOnMarket: false });
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
   const takeEventFromMarket = async (id: string): Promise<RecordModel | undefined> => {
     if (data.currentStudent?.id) {
       try {
@@ -139,6 +149,15 @@
   const handlePutOnMarket = async () => {
     if (openedEvent) {
       await putEventOnMarket(openedEvent.event.id);
+      handleEventModalClose();
+    } else {
+      console.error('should have an opened event here');
+    }
+  }
+
+  const handlePutOutOfMarket = async () => {
+    if (openedEvent) {
+      await putEventOutOfMarket(openedEvent.event.id);
       handleEventModalClose();
     } else {
       console.error('should have an opened event here');
@@ -251,7 +270,7 @@
     pb.realtime.unsubscribe('users');
   })
 
-  setContext('isEventModalOpen', { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket });
+  setContext('isEventModalOpen', { handleEventModalClose, handlePutOnMarket, handlePutOutOfMarket, handleTakeFromMarket });
   setContext('isPeriodPickerModalOpen', { handlePeriodPickerClose, handleGenerateSubmit });
 </script>
 
