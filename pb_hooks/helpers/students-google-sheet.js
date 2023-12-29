@@ -17,7 +17,7 @@ module.exports = {
   
       return lines;
     } catch (error) {
-      console.log("request failed", error);
+      console.error("request failed", error);
       return c.json(403, { "importation-status": 'NOP' });
     }
   },
