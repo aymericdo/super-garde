@@ -68,6 +68,16 @@
     }
   }
 
+  const putEventOutOfMarket = async (id: string): Promise<RecordModel | undefined> => {
+    try {
+      return await pb.collection("onCallSlots").update(id, { isOnMarket: false });
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
   const takeEventFromMarket = async (id: string): Promise<RecordModel | undefined> => {
     if (data.currentStudent?.id) {
       try {
@@ -145,6 +155,15 @@
     }
   }
 
+  const handlePutOutOfMarket = async () => {
+    if (openedEvent) {
+      await putEventOutOfMarket(openedEvent.event.id);
+      handleEventModalClose();
+    } else {
+      console.error('should have an opened event here');
+    }
+  }
+
   const handleTakeFromMarket = async () => {
     if (openedEvent) {
       await takeEventFromMarket(openedEvent.event.id);
@@ -198,15 +217,22 @@
           const newSlot = await fetchOne(e.record.id);
 
           if (newSlot) {
-            options = {
-              ...options,
-              events: options.events.map((event: CalendarEvent) => {
-                if (event.id === newSlot.id) {
-                  return onCallSlotRecordToCalendarEvent(newSlot);
-                } else {
-                  return event;
-                }
-              }),
+            if (options.events.some((event: CalendarEvent) => event.id === newSlot.id)) {
+              options = {
+                ...options,
+                events: options.events.map((event: CalendarEvent) => {
+                  if (event.id === newSlot.id) {
+                    return onCallSlotRecordToCalendarEvent(newSlot);
+                  } else {
+                    return event;
+                  }
+                }),
+              }
+            } else {
+              options = {
+                ...options,
+                events: [...options.events, onCallSlotRecordToCalendarEvent(newSlot)],
+              }
             }
           }
           break;
@@ -251,7 +277,7 @@
     pb.realtime.unsubscribe('users');
   })
 
-  setContext('isEventModalOpen', { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket });
+  setContext('isEventModalOpen', { handleEventModalClose, handlePutOnMarket, handlePutOutOfMarket, handleTakeFromMarket });
   setContext('isPeriodPickerModalOpen', { handlePeriodPickerClose, handleGenerateSubmit });
 </script>
 
