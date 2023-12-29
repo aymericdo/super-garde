@@ -38,7 +38,7 @@ module.exports = {
 
       return onCallSlots;
     } catch (error) {
-      console.log("db onCallSlots reading failed", error);
+      console.error("db onCallSlots reading failed", error);
     }
   },
 };
