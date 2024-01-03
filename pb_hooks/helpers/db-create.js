@@ -75,5 +75,38 @@ module.exports = {
     } catch (error) {
       console.log("db onCallSlot creation failed", error);
     }
+  },
+  onCallSlotHistorical: (onCallSlotId, changes, options) => {
+    const { txDao } = options;
+
+    try {
+      const onCallSlotsHistoricalCollection = txDao.findCollectionByNameOrId("onCallSlotsHistorical");
+
+      const onCallSlotHistoricalRecord = new Record(onCallSlotsHistoricalCollection, {
+        "onCallSlotId": onCallSlotId,
+        "changes": changes,
+      });
+
+      txDao.saveRecord(onCallSlotHistoricalRecord)
+      return onCallSlotHistoricalRecord;
+    } catch (error) {
+      console.log("db onCallSlotHistorical creation failed", error);
+    }
+  },
+  onCallSlotToHide: (onCallSlotId, options) => {
+    const { txDao } = options;
+
+    try {
+      const onCallSlotsToHideCollection = txDao.findCollectionByNameOrId("onCallSlotsToHide");
+
+      const onCallSlotsToHideRecord = new Record(onCallSlotsToHideCollection, {
+        "onCallSlotId": onCallSlotId,
+      });
+
+      txDao.saveRecord(onCallSlotsToHideRecord)
+      return onCallSlotsToHideRecord;
+    } catch (error) {
+      console.log("db onCallSlotsToHide creation failed", error);
+    }
   }
 };

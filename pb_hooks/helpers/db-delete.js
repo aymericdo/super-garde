@@ -21,4 +21,15 @@ module.exports = {
       console.error("db onCallSlot deletion failed", error);
     }
   },
+  onCallSlotToHide: (onCallSlotId, options) => {
+    const { txDao } = options;
+
+    try {
+      const onCallSlotsToHide = txDao.findRecordById("onCallSlotsToHide", onCallSlotId)
+      txDao.deleteRecord(onCallSlotsToHide)
+      return true;
+    } catch (error) {
+      console.error("db onCallSlotsToHide deletion failed", error);
+    }
+  },
 };

@@ -12,6 +12,7 @@ export interface CalendarEvent {
   hospital: string;
   student: string;
   isOnMarket: boolean;
+  backgroundColor: string;
 }
 
 export interface CalendarOptions {

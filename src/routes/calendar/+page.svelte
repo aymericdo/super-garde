@@ -53,7 +53,11 @@
       return await pb.collection("onCallSlots").getOne(id, options)
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
-        console.error(error);
+        if ((error as ClientResponseError).status === 404) {
+          throw error;
+        } else {
+          console.error(error);
+        }
       }
     }
   }
@@ -210,55 +214,82 @@
     eventClick: handleEventClick,
   };
 
+  const updateEvent = async (onCallSlotId: string) => {
+    try {
+      const newSlot = await fetchOne(onCallSlotId);
+      if (newSlot) {
+        if (options.events.some((event: CalendarEvent) => event.id === newSlot.id)) {
+          options = {
+            ...options,
+            events: options.events.map((event: CalendarEvent) => {
+              if (event.id === newSlot.id) {
+                return onCallSlotRecordToCalendarEvent(newSlot);
+              } else {
+                return event;
+              }
+            }),
+          }
+
+          if (openedEvent?.event.id === onCallSlotId) {
+            openedEvent.event = { ...onCallSlotRecordToCalendarEvent(newSlot) };
+          }
+        } else {
+          appendEvent(newSlot);
+        }
+      }
+    } catch (error) {
+      if ((error as ClientResponseError).status === 404) {
+        deleteEvent(onCallSlotId);
+      }
+    }
+  }
+
+  const deleteEvent = async (onCallSlotId: string) => {
+    options = {
+      ...options,
+      events: options.events.filter((event: CalendarEvent) => event.id !== onCallSlotId)
+    }
+
+    if (openedEvent?.event.id === onCallSlotId) {
+      handleEventModalClose();
+    }
+  }
+
+  const appendEvent = async (newSlot: RecordModel) => {
+    options = {
+      ...options,
+      events: [
+        ...options.events,
+        onCallSlotRecordToCalendarEvent(newSlot),
+      ],
+    };
+  }
+
   onMount(async () => {
     pb.realtime.subscribe('onCallSlots', async (e) => {
       switch (e.action) {
         case 'update': {
-          const newSlot = await fetchOne(e.record.id);
-
-          if (newSlot) {
-            if (options.events.some((event: CalendarEvent) => event.id === newSlot.id)) {
-              options = {
-                ...options,
-                events: options.events.map((event: CalendarEvent) => {
-                  if (event.id === newSlot.id) {
-                    return onCallSlotRecordToCalendarEvent(newSlot);
-                  } else {
-                    return event;
-                  }
-                }),
-              }
-            } else {
-              options = {
-                ...options,
-                events: [...options.events, onCallSlotRecordToCalendarEvent(newSlot)],
-              }
-            }
-          }
+          await updateEvent(e.record.id);
           break;
         }
         case 'delete': {
-          options = {
-            ...options,
-            events: options.events
-              .filter((event: CalendarEvent) => event.id !== e.record.id)
-          }
+          deleteEvent(e.record.id);
           break;
         }
         case 'create': {
           const newSlot = await fetchOne(e.record.id);
 
           if (newSlot) {
-            options = {
-              ...options,
-              events: [
-                ...options.events,
-                onCallSlotRecordToCalendarEvent(newSlot),
-              ],
-            };
+            appendEvent(newSlot);
           }
           break;
         }
+      }
+    });
+
+    pb.realtime.subscribe('onCallSlotsToHide', async (e) => {
+      if (e.action === 'create') {
+        await updateEvent(e.record.onCallSlotId);
       }
     });
 
@@ -274,6 +305,7 @@
 
   onDestroy(() => {
     pb.realtime.unsubscribe('onCallSlots');
+    pb.realtime.unsubscribe('onCallSlotsToHide');
     pb.realtime.unsubscribe('users');
   })
 
