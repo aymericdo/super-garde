@@ -1,6 +1,17 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
+onRecordBeforeUpdateRequest((e) => {
+  const info = $apis.requestInfo(e.httpContext);
+  const record = info.authRecord;
+  if (e.record && record) {
+    e.record.set(
+      'updatedBy',
+      record.id,
+    );
+  }
+}, "onCallSlots");
+
 onModelAfterUpdate((e) => {
   const oldValue = e.model.originalCopy();
   const newValue = e.model;
