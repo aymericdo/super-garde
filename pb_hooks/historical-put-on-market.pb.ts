@@ -6,8 +6,6 @@ onRecordBeforeUpdateRequest((e) => {
   const admin = info.admin;
   const record = info.authRecord;
 
-  console.log(e.record && record);
-
   if (e.record && record) {
     e.record.set(
       'updatedBy',
@@ -32,7 +30,7 @@ onModelAfterUpdate((e) => {
   });
 
   const oldIsOnMarketValue = oldValue.get("isOnMarket");
-  const newIsOnMarketValue = newValue.get('isOnMarket');
+  const newIsOnMarketValue = newValue.get("isOnMarket");
 
   if (oldIsOnMarketValue && !newIsOnMarketValue) {
     let toDelete = null;
