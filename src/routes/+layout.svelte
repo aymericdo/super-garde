@@ -34,14 +34,16 @@
 
     <div class="navbar-end">
       <div class="lg:hidden relative flex items-center w-full justify-end">
-        <a class="hidden sm:flex btn btn-ghost text-l mx-1" href="{base}/">
-          {$currentUser.email}
-          {#if $currentUser.isAdmin}
-            <div class="badge badge-accent">admin</div>
-          {:else}
-            <div class="badge badge-secondary">{$currentUser.role}</div>
-          {/if}
-        </a>
+        {#if $currentUser}
+          <a class="hidden sm:flex btn btn-ghost text-l mx-1" href="{base}/">
+            {$currentUser.email}
+            {#if $currentUser.isAdmin}
+              <div class="badge badge-accent">admin</div>
+            {:else}
+              <div class="badge badge-secondary">{$currentUser.role}</div>
+            {/if}
+          </a>
+        {/if}
 
         <button on:click={() => (isOpen = !isOpen)} type="button" class="btn btn-secondary block text-gray-500 hover:text-white focus:text-white focus:outline-none">
           <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
