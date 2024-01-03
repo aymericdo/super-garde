@@ -3,11 +3,20 @@
 
 onRecordBeforeUpdateRequest((e) => {
   const info = $apis.requestInfo(e.httpContext);
+  const admin = info.admin;
   const record = info.authRecord;
+
+  console.log(e.record && record);
+
   if (e.record && record) {
     e.record.set(
       'updatedBy',
-      record.id,
+      `${record.collection().name} ${record.id}`,
+    );
+  } else if (e.record && admin) {
+    e.record.set(
+      'updatedBy',
+      `admin ${admin.id}`,
     );
   }
 }, "onCallSlots");
