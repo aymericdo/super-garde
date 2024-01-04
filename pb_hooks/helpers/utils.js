@@ -7,6 +7,7 @@ module.exports = {
         const firstName = lineArray[0].slice(1,-1)
         const lastName = lineArray[1].slice(1,-1)
         const email = lineArray[2].slice(1,-1)
+        const year = lineArray[3].slice(1,-1)
 
         const name = `${firstName} ${lastName}`;
         const username = `${firstName[0]}${lastName}`
@@ -21,6 +22,7 @@ module.exports = {
           email,
           name,
           username,
+          year,
         }
       }
     }
@@ -42,6 +44,9 @@ module.exports = {
     }
 
     return -1
+  },
+  randomItemFromList: (list) => {
+    return list[Math.floor(Math.random() * list.length)];
   },
   hello: (name) => {
     console.log(`Hello ${name}`)

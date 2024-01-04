@@ -11,7 +11,7 @@ const config = {
   ],
   daisyui: {
     themes: [
-      "nord",
+      "garden",
     ],
   },
 }

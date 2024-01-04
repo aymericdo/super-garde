@@ -6,6 +6,8 @@
   import { currentUser } from '$lib/stores/user'
   import { onDestroy, onMount, setContext } from 'svelte';
   import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
+  import AlertError from "$lib/components/AlertError.svelte"
+  import AlertSuccess from "$lib/components/AlertSuccess.svelte"
 
 	import type { PageData } from './$types'
   export let data: PageData
@@ -18,13 +20,17 @@
   let isAllStudentsChecked: boolean = false;
   let selectedStudents: string[] = [];
 
+  let requestErrorMessage: string | null = null;
+  let isAlertSuccessVisible: boolean = false;
+
   const fetch = async (): Promise<ListResult<RecordModel> | undefined> => {
     try {
       const options: { expand: string, filter?: string } = {
         expand: 'user',
       }
+
       if (query.length) {
-        options.filter = `(firstName ~ "${query}") || (lastName ~ "${query}") || (user.email ~ "${query}")`;
+        options.filter = `(firstName ~ "${query}") || (lastName ~ "${query}") || (year ~ "${query}") || (user.email ~ "${query}")`;
       }
 
       return await pb.collection("students").getList(data.page, data.perPage, options)
@@ -79,8 +85,17 @@
         url
       });
       console.log(data);
+      requestErrorMessage = null;
+      isAlertSuccessVisible = true;
+      setTimeout(() => {
+        isAlertSuccessVisible = false;
+      }, 3*1000)
     } catch (error) {
       console.error(error);
+      if ((error as ClientResponseError).message) requestErrorMessage = (error as ClientResponseError).message;
+      setTimeout(() => {
+        requestErrorMessage = null;
+      }, 10*1000)
     }
   }
 
@@ -280,6 +295,9 @@
         <th class="basis-6/12 px-6 py-3 flex items-center">
           Email
         </th>
+        <th class="basis-3/12 px-6 py-3 flex items-center">
+          Année
+        </th>
       </tr>
     </thead>
   
@@ -302,6 +320,9 @@
               <span>{item.expand?.user?.email}</span>
             {/if}
           </td>
+          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500">
+            <span>{item.year}</span>
+          </td>
         </tr>
       {/each}
       <InfiniteScroll threshold={100} on:loadMore={handleLoadMore} />
@@ -314,6 +335,12 @@
   </table>
 </div>
 
+{#if requestErrorMessage?.length}
+  <AlertError message={requestErrorMessage} />
+{/if}
+{#if isAlertSuccessVisible}
+  <AlertSuccess message={'Les étudiants ont bien été importés 😊'} />
+{/if}
 <ModalStudentSource {isStudentSourceModalOpen} />
 
 <style>

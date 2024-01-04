@@ -1,17 +1,15 @@
 module.exports = {
-  user: (line, options) => {
+  user: (data, options) => {
     const { txDao, $security } = options;
+
+    const {
+      email,
+      name,
+      username,
+    } = data;
 
     try {
       const usersCollection = txDao.findCollectionByNameOrId("users");
-
-      // eslint-disable-next-line
-      const utils = require(`${__hooks}/helpers/utils.js`);
-      const {
-        email,
-        name,
-        username,
-      } = utils.csvParser(line, 'student')
 
       const userRecord = new Record(usersCollection, {
         "name": name,
@@ -30,23 +28,23 @@ module.exports = {
       console.error("db user creation failed", error);
     }
   },
-  student: (line, userRecord, options) => {
+  student: (data, userRecord, options) => {
     const { txDao } = options;
+
+    const {
+      firstName,
+      lastName,
+      year,
+    } = data;
 
     try {
       const studentsCollection = txDao.findCollectionByNameOrId("students");
-
-      // eslint-disable-next-line
-      const utils = require(`${__hooks}/helpers/utils.js`);
-      const {
-        firstName,
-        lastName,
-      } = utils.csvParser(line, 'student')
 
       const studentRecord = new Record(studentsCollection, {
         "firstName": firstName,
         "lastName": lastName,
         "user": userRecord.id,
+        "year": year,
       });
 
       txDao.saveRecord(studentRecord)
@@ -56,7 +54,7 @@ module.exports = {
       console.error("db student creation failed", error);
     }
   },
-  onCallSlot: (event, student, options) => {
+  onCallSlot: (event, studentId, options) => {
     const { txDao } = options;
 
     try {
@@ -65,7 +63,7 @@ module.exports = {
       const onCallSlotRecord = new Record(onCallSlotsCollection, {
         "start": event.start,
         "end": event.end,
-        "student": student.id,
+        "student": studentId,
         "hospital": event.hospital,
         "sector": event.sector,
       });

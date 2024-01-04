@@ -1,3 +1,10 @@
+const SHEET_HEADERS = [
+  "firstName",
+  "lastName",
+  "email",
+  "year",
+];
+
 module.exports = {
   fetch: (googleSheetUrl, options) => {
     const { c, $http } = options;
@@ -13,12 +20,15 @@ module.exports = {
       const raw = res.raw;
       const lines = raw.split(/(?:\r\n|\n)+/).filter((el) => el.length !== 0);
       const headers = lines.splice(0, 1)[0].split(",");
-      console.log(headers);
+
+      if (headers.some((header, index) => SHEET_HEADERS[index] !== header.slice(1,-1))) {
+        throw `Headers not matching. Should respect : ${SHEET_HEADERS.join(', ')} in this order.`;
+      }
   
       return lines;
     } catch (error) {
-      console.error("request failed", error);
-      return c.json(403, { "importation-status": 'NOP' });
+      console.error("REQUEST FAILED", error);
+      return c.json(403, { "importation-status": 'NOP', message: error });
     }
   },
 };
