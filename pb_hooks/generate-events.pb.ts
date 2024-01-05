@@ -81,7 +81,11 @@ routerAdd("GET", "/api/generate-events", (c) => {
           const startEventDate = new Date(currentDate);
           const endEventDate = new Date(currentDate);
           startEventDate.setHours(18);
+          startEventDate.setMinutes(0);
+          startEventDate.setSeconds(0);
           endEventDate.setHours(19);
+          endEventDate.setMinutes(0);
+          endEventDate.setSeconds(0);
 
           const event = {
             start: startEventDate,
