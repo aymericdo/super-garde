@@ -17,7 +17,7 @@ module.exports = {
 
       return students;
     } catch (error) {
-      console.log("db students reading failed", error);
+      console.error("db students reading failed", error);
     }
   },
   onCallSlots: (options) => {
