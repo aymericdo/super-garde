@@ -12,6 +12,7 @@
   import { pb } from '$lib/pocketbase';
   import { BarLoader } from 'svelte-loading-spinners'
   import { onCallSlotRecordToCalendarEvent } from '$lib/utils'
+  import AlertSuccess from "$lib/components/AlertSuccess.svelte"
   
   import type { CalendarEvent } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
@@ -23,6 +24,9 @@
   let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
   let loading = false;
   let isOnMarketPlaceOnly = false;
+
+  let isAlertGenerateSuccessVisible = false;
+  let isAlertDeletionSuccessVisible = false;
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
 
@@ -102,6 +106,12 @@
     loading = true;
     try {
       const data = await pb.send("/api/delete-all-on-call-slots", {});
+      isAlertGenerateSuccessVisible = false;
+      isAlertDeletionSuccessVisible = true;
+
+      setTimeout(() => {
+        isAlertDeletionSuccessVisible = false;
+      }, 3*1000)
       console.log(data);
     } catch (error) {
       console.error(error);
@@ -134,6 +144,13 @@
         }
       });
       console.log(data);
+
+      isAlertGenerateSuccessVisible = true;
+      isAlertDeletionSuccessVisible = false;
+
+      setTimeout(() => {
+        isAlertGenerateSuccessVisible = false;
+      }, 3*1000)
     } catch(error) {
       console.error(error);
     } finally {
@@ -346,6 +363,12 @@
     <Calendar {plugins} {options} />
   </div>
 </div>
+
+{#if isAlertGenerateSuccessVisible}
+  <AlertSuccess message={'Les gardes ont bien été générées 😊'} />
+  {:else if isAlertDeletionSuccessVisible}
+  <AlertSuccess message={'Les gardes ont bien été supprimées 😊'} />
+{/if}
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
 <ModalEvent {isEventModalOpen} {openedEvent} student={data.currentStudent} />

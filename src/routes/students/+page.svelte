@@ -335,11 +335,10 @@
   </table>
 </div>
 
-{#if requestErrorMessage?.length}
-  <AlertError message={requestErrorMessage} />
-{/if}
 {#if isAlertSuccessVisible}
   <AlertSuccess message={'Les étudiants ont bien été importés 😊'} />
+{:else if requestErrorMessage?.length}
+  <AlertError message={requestErrorMessage} />
 {/if}
 <ModalStudentSource {isStudentSourceModalOpen} />
 
