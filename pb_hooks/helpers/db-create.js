@@ -71,7 +71,7 @@ module.exports = {
       txDao.saveRecord(onCallSlotRecord)
       return onCallSlotRecord;
     } catch (error) {
-      console.log("db onCallSlot creation failed", error);
+      console.error("db onCallSlot creation failed", error);
     }
   },
   onCallSlotHistorical: (onCallSlotId, changes, options) => {
