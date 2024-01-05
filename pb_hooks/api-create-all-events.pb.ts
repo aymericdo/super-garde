@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("GET", "/api/generate-events", (c) => {
+routerAdd("GET", "/api/create-all-events", (c) => {
   const info = $apis.requestInfo(c);
   const admin = info.admin;
   const record = info.authRecord;

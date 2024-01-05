@@ -32,12 +32,13 @@
 
   const fetch = async (): Promise<RecordModel[] | undefined> => {
     try {
-      const options: { expand: string, filter?: string } = {
+      const options: { expand: string, filter: string } = {
         expand: 'student',
+        filter: `(start >= "${myCalendar.getView().activeStart.toISOString()}" && end < "${myCalendar.getView().activeEnd.toISOString()}")`,
       }
 
       if (isOnMarketPlaceOnly) {
-        options.filter = 'isOnMarket = true';
+        options.filter += ' && isOnMarket = true';
       }
 
       return await pb.collection("onCallSlots").getFullList(options);
@@ -111,7 +112,7 @@
 
       setTimeout(() => {
         isAlertDeletionSuccessVisible = false;
-      }, 3*1000)
+      }, 3*1000);
       console.log(data);
     } catch (error) {
       console.error(error);
@@ -137,7 +138,7 @@
     loading = true;
     handlePeriodPickerClose();
     try {
-      const data = await pb.send("/api/generate-events", {
+      const data = await pb.send("/api/create-all-events", {
         params: {
           startDate: start,
           endDate: end,
@@ -150,7 +151,7 @@
 
       setTimeout(() => {
         isAlertGenerateSuccessVisible = false;
-      }, 3*1000)
+      }, 3*1000);
     } catch(error) {
       console.error(error);
     } finally {
@@ -208,12 +209,14 @@
     }
   }
 
+  let myCalendar: any = null;
   let options: any = {
     view: 'dayGridMonth',
     slotDuration: '00:15',
     allDaySlot: false,
     firstDay: 1,
     selectable: false,
+    dayMaxEvents: true,
     headerToolbar: {
       start: 'prev,next today',
       center: 'title',
@@ -360,7 +363,7 @@
 {/if}
 <div class="shadow-md sm:rounded-lg event-calendar">
   <div class="w-full h-full">
-    <Calendar {plugins} {options} />
+    <Calendar {plugins} {options} bind:this={myCalendar} />
   </div>
 </div>
 
@@ -388,5 +391,10 @@
 
   :global(.ec-icon::before, .ec-icon::after) {
     box-sizing: initial;
+  }
+
+  :global(.ec-day-grid .ec-uniform .ec-day) {
+    min-height: 5em;
+    max-height: 8em;
   }
 </style>

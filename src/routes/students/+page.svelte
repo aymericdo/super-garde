@@ -81,7 +81,7 @@
 
   const handleImport = async (url: string) => {
     try {
-      const data = await pb.send("/api/import-students", {
+      const data = await pb.send("/api/import-all-students", {
         url
       });
       console.log(data);

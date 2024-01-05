@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("GET", "/api/import-students", (c) => {
+routerAdd("GET", "/api/import-all-students", (c) => {
   const info = $apis.requestInfo(c);
   const admin = info.admin;
   const record = info.authRecord;
