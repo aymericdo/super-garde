@@ -295,6 +295,7 @@
   const deleteEvent = async (onCallSlotId: string) => {
     options = {
       ...options,
+      // terrible perf, do not do that for batch
       events: options.events.filter((event: CalendarEvent) => event.id !== onCallSlotId)
     }
 
