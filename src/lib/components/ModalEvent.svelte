@@ -39,7 +39,7 @@
 
   export let isEventModalOpen: boolean = false;
   export let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
-  export let student: RecordModel | undefined;
+  export let isConnectedStudent: boolean;
 </script>
 
 <div class="modal" class:modal-open={isEventModalOpen}>
@@ -58,14 +58,19 @@
       </div>
       <div class="flex items-center mb-2">
         <Doctor class="mr-2" size="1.5em" />
-        <span>{openedEvent?.event.student}</span>
+        {#if !!openedEvent?.event.student}
+          <span>{openedEvent?.event.student}</span>
+        {:else}
+          <span>Pas d'étudiant·e</span>
+        {/if}
+          
       </div>
     </div>
     <div class="modal-action">
       <button class="btn" on:click={handleEventModalClose}>Close</button>
       {#if !openedEvent?.event.isOnMarket}
         <button class="btn btn-primary" on:click={handlePutOnMarket}>Mettre sur le marché</button>
-      {:else if !!student}
+      {:else if isConnectedStudent}
         <button class="btn btn-primary" on:click={handleTakeFromMarket}>Prendre</button>
       {/if}
 

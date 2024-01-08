@@ -137,7 +137,7 @@
 
   const handleSearch = async (inputEvent: Event) => {
     loading = true;
-    query = (<HTMLInputElement>inputEvent.target).value || '';
+    query = (<HTMLInputElement>inputEvent.target).value.trim() || '';
     data.page = 1;
     const newData = await fetch();
     if (newData) setStudents(newData);

@@ -14,7 +14,7 @@
   import { onCallSlotRecordToCalendarEvent } from '$lib/utils'
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
   
-  import type { CalendarEvent } from '$lib/interfaces/calendar'
+  import type { CalendarElement, CalendarEvent, CalendarOptions, ViewCalendar } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
   export let data: PageData
@@ -30,11 +30,14 @@
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
 
-  const fetch = async (): Promise<RecordModel[] | undefined> => {
+  const fetch = async (view?: ViewCalendar): Promise<RecordModel[] | undefined> => {
     try {
+      if (!(view || myCalendar)) return;
+
       const options: { expand: string, filter: string } = {
         expand: 'student',
-        filter: `(start >= "${myCalendar.getView().activeStart.toISOString()}" && end < "${myCalendar.getView().activeEnd.toISOString()}")`,
+        filter: `(start >= "${(view || myCalendar?.getView())?.activeStart.toISOString()}"` +
+          `&& end < "${(view || myCalendar?.getView())?.activeEnd.toISOString()}")`,
       }
 
       if (isOnMarketPlaceOnly) {
@@ -134,6 +137,27 @@
     isEventModalOpen = true;
   }
 
+  const handleDatesSet = async (info: {
+    start: Date,
+    end: Date,
+    startStr: string,
+    endStr: string,
+    view: ViewCalendar,
+  }) => {
+    loading = true;
+    const list = await fetch(info.view);
+
+    if (list) {
+      options = {
+        ...options,
+        events: list.map((event: RecordModel) => {
+          return onCallSlotRecordToCalendarEvent(event);
+        }),
+      }
+    }
+    loading = false;
+  }
+
   const handleGenerateSubmit = async (start: Date, end: Date) => {
     loading = true;
     handlePeriodPickerClose();
@@ -196,6 +220,7 @@
   }
 
   const handleIsOnMarketPlaceOnlyChanged = async () => {
+    loading = true;
     isOnMarketPlaceOnly = !isOnMarketPlaceOnly;
     const list = await fetch();
 
@@ -207,10 +232,13 @@
         }),
       }
     }
+
+    loading = false;
   }
 
-  let myCalendar: any = null;
-  let options: any = {
+  loading = true;
+  let myCalendar: CalendarElement | null = null;
+  let options: CalendarOptions = {
     view: 'dayGridMonth',
     slotDuration: '00:15',
     allDaySlot: false,
@@ -229,9 +257,9 @@
       listDay: 'Jour',
       listYear: 'Liste',
     },
-    events: data.onCallSlotList
-      .map((event) => onCallSlotRecordToCalendarEvent(event)),
+    events: [],
     eventClick: handleEventClick,
+    datesSet: handleDatesSet,
   };
 
   const updateEvent = async (onCallSlotId: string) => {
@@ -287,6 +315,11 @@
 
   onMount(async () => {
     pb.realtime.subscribe('onCallSlots', async (e) => {
+      if (!myCalendar ||
+        !(myCalendar.getView().activeStart <= new Date(e.record.start) && myCalendar.getView().activeEnd > new Date(e.record.end))) {
+        return;
+      }
+
       switch (e.action) {
         case 'update': {
           await updateEvent(e.record.id);
@@ -374,7 +407,7 @@
 {/if}
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
-<ModalEvent {isEventModalOpen} {openedEvent} student={data.currentStudent} />
+<ModalEvent {isEventModalOpen} {openedEvent} isConnectedStudent={!!data.currentStudent} />
 
 <style>
   :global(.event-calendar .ec .ec-event) {
@@ -393,8 +426,12 @@
     box-sizing: initial;
   }
 
+  :global(.ec-day-grid .ec-uniform .ec-content) {
+    min-height: 25rem;
+  }
+
   :global(.ec-day-grid .ec-uniform .ec-day) {
-    min-height: 5em;
-    max-height: 8em;
+    min-height: 5rem;
+    max-height: 8rem;
   }
 </style>

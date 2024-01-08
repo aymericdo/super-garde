@@ -19,6 +19,7 @@ export interface CalendarOptions {
   view: 'dayGridMonth' | 'timeGridWeek' | 'listDay' | 'listWeek';
   slotDuration: string;
   selectable: boolean;
+  dayMaxEvents: boolean;
   allDaySlot: boolean;
   firstDay: number;
   headerToolbar: {
@@ -31,7 +32,7 @@ export interface CalendarOptions {
     dayGridMonth: string;
     timeGridWeek: string;
     listDay: string;
-    listWeek: string;
+    listYear: string;
   },
   events: CalendarEvent[];
   eventClick: (data: {
@@ -39,4 +40,24 @@ export interface CalendarOptions {
     event: RecordModel,
     jsEvent: PointerEvent,
   }) => void;
+  datesSet: (info: {
+    start: Date,
+    end: Date,
+    startStr: string,
+    endStr: string,
+    view: ViewCalendar,
+  }) => void;
+}
+
+export interface CalendarElement {
+  getView: () => ViewCalendar;
+}
+
+export interface ViewCalendar {
+  type: string;
+  title: string;
+  currentStart: Date;
+  currentEnd: Date;
+  activeStart: Date;
+  activeEnd: Date;
 }
