@@ -74,9 +74,14 @@ routerAdd("GET", "/api/create-all-events", (c) => {
             return eventCountByStudent[a] - eventCountByStudent[b];
           });
 
-          if (!validStudentIds.length) return;
+          const relevantIds = validStudentIds.filter(id =>
+            eventCountByStudent[validStudentIds[0]] === eventCountByStudent[id]);
 
-          const currentStudentId = validStudentIds[0];
+          if (!relevantIds.length) return;
+
+          // eslint-disable-next-line
+          const utils = require(`${__hooks}/helpers/utils.js`);
+          const currentStudentId = utils.randomItemFromList(relevantIds);
 
           const startEventDate = new Date(currentDate);
           const endEventDate = new Date(currentDate);
