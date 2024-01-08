@@ -160,7 +160,7 @@
       selectedStudents = [...selectedStudents, item.id];
     }
 
-    if (selectedStudents.length === data.studentList.totalItems) {
+    if (selectedStudents.length === totalItemsAtBeginning) {
       isAllStudentsChecked = true;
     } else {
       isAllStudentsChecked = false;
@@ -248,6 +248,8 @@
   })
 
   setContext('isStudentSourceModalOpen', { handleStudentSourceModalClose, handleGenerateStudents });
+
+  $: selectedStudentsTotalCount = isAllStudentsChecked ? totalItemsAtBeginning : selectedStudents.length;
 </script>
 
 <div class="flex justify-between mb-1">
@@ -259,7 +261,9 @@
   <div class="flex items-center">
     <input type="text" placeholder="Roger Federer" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
-    {#if query.length}
+    {#if selectedStudentsTotalCount}
+      <span class="dark:text-gray-400 mx-2">({selectedStudentsTotalCount} {selectedStudentsTotalCount > 1 ? 'étudiants sélectionnés' : 'étudiant sélectionné'} sur {totalItemsAtBeginning})</span>
+    {:else if query.length}
       <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtBeginning})</span>
     {:else}
       <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
