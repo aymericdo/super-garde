@@ -11,7 +11,7 @@
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
   import { BarLoader } from 'svelte-loading-spinners'
-  import { onCallSlotRecordToCalendarEvent } from '$lib/utils'
+  import { debounce, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
   
   import type { CalendarElement, CalendarEvent, CalendarOptions, ViewCalendar } from '$lib/interfaces/calendar'
@@ -27,6 +27,8 @@
 
   let isAlertGenerateSuccessVisible = false;
   let isAlertDeletionSuccessVisible = false;
+
+  let tempOptionsEvents: CalendarEvent[] = [];
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
 
@@ -148,12 +150,11 @@
     const list = await fetch(info.view);
 
     if (list) {
-      options = {
-        ...options,
-        events: list.map((event: RecordModel) => {
-          return onCallSlotRecordToCalendarEvent(event);
-        }),
-      }
+      tempOptionsEvents = list.map((event: RecordModel) => {
+        return onCallSlotRecordToCalendarEvent(event);
+      });
+
+      setOptionsEvents();
     }
     loading = false;
   }
@@ -225,12 +226,11 @@
     const list = await fetch();
 
     if (list) {
-      options = {
-        ...options,
-        events: list.map((event: RecordModel) => {
-          return onCallSlotRecordToCalendarEvent(event);
-        }),
-      }
+      tempOptionsEvents = list.map((event: RecordModel) => {
+        return onCallSlotRecordToCalendarEvent(event);
+      });
+
+      setOptionsEvents();
     }
 
     loading = false;
@@ -266,17 +266,16 @@
     try {
       const newSlot = await fetchOne(onCallSlotId);
       if (newSlot) {
-        if (options.events.some((event: CalendarEvent) => event.id === newSlot.id)) {
-          options = {
-            ...options,
-            events: options.events.map((event: CalendarEvent) => {
-              if (event.id === newSlot.id) {
-                return onCallSlotRecordToCalendarEvent(newSlot);
-              } else {
-                return event;
-              }
-            }),
-          }
+        if (tempOptionsEvents.some((event: CalendarEvent) => event.id === newSlot.id)) {
+          tempOptionsEvents = tempOptionsEvents.map((event: CalendarEvent) => {
+            if (event.id === newSlot.id) {
+              return onCallSlotRecordToCalendarEvent(newSlot);
+            } else {
+              return event;
+            }
+          });
+
+          setOptionsEventsWithDebounce();
 
           if (openedEvent?.event.id === onCallSlotId) {
             openedEvent.event = { ...onCallSlotRecordToCalendarEvent(newSlot) };
@@ -293,11 +292,9 @@
   }
 
   const deleteEvent = async (onCallSlotId: string) => {
-    options = {
-      ...options,
-      // terrible perf, do not do that for batch
-      events: options.events.filter((event: CalendarEvent) => event.id !== onCallSlotId)
-    }
+    tempOptionsEvents = tempOptionsEvents.filter((event: CalendarEvent) => event.id !== onCallSlotId);
+
+    setOptionsEventsWithDebounce();
 
     if (openedEvent?.event.id === onCallSlotId) {
       handleEventModalClose();
@@ -305,14 +302,22 @@
   }
 
   const appendEvent = async (newSlot: RecordModel) => {
+    tempOptionsEvents = [
+      ...tempOptionsEvents,
+      onCallSlotRecordToCalendarEvent(newSlot),
+    ];
+
+    setOptionsEventsWithDebounce();
+  }
+
+  const setOptionsEvents = (): void => {
     options = {
       ...options,
-      events: [
-        ...options.events,
-        onCallSlotRecordToCalendarEvent(newSlot),
-      ],
+      events: [...tempOptionsEvents],
     };
   }
+
+  const setOptionsEventsWithDebounce = debounce(setOptionsEvents, 200);
 
   onMount(async () => {
     pb.realtime.subscribe('onCallSlots', async (e) => {
