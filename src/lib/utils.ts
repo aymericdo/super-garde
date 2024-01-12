@@ -21,7 +21,6 @@ export const onCallSlotRecordToCalendarEvent = (onCallSlot: RecordModel): Calend
 } as unknown as CalendarEvent)
 
 // https://gist.github.com/ca0v/73a31f57b397606c9813472f7493a940?permalink_comment_id=4276799#gistcomment-4276799
-
 export const debounce = <F extends (...args: Parameters<F>) => ReturnType<F>>(
   func: F,
   waitFor: number,
