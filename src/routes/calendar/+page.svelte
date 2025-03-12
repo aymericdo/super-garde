@@ -341,6 +341,7 @@
           if (newSlot) {
             appendEvent(newSlot);
           }
+
           break;
         }
       }
