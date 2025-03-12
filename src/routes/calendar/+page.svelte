@@ -337,7 +337,6 @@
         }
         case 'create': {
           const newSlot = await fetchOne(e.record.id);
-
           if (newSlot) {
             appendEvent(newSlot);
           }
