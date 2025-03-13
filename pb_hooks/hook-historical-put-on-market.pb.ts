@@ -1,25 +1,26 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-onRecordBeforeUpdateRequest((e) => {
-  const info = $apis.requestInfo(e.httpContext);
-  const admin = info.admin;
-  const record = info.authRecord;
+onRecordUpdateRequest((e) => {
+  const authRecord = e.auth
+  const isSuperuser = e.hasSuperuserAuth()
 
-  if (e.record && record) {
+  if (e.record && authRecord && isSuperuser) {
     e.record.set(
       'updatedBy',
-      `${record.collection().name} ${record.id}`,
+      `admin ${authRecord.id}`,
     );
-  } else if (e.record && admin) {
+  } else if (e.record && authRecord) {
     e.record.set(
       'updatedBy',
-      `admin ${admin.id}`,
+      `${authRecord.collection().name} ${authRecord.id}`,
     );
   }
+
+  e.next()
 }, "onCallSlots");
 
-onModelAfterUpdate((e) => {
+onModelAfterUpdateSuccess((e) => {
   const oldValue = e.model.originalCopy();
   const newValue = e.model;
 
@@ -48,4 +49,6 @@ onModelAfterUpdate((e) => {
       });
     }
   }
+
+  e.next()
 }, "onCallSlots");

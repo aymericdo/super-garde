@@ -7,7 +7,7 @@ const SHEET_HEADERS = [
 
 module.exports = {
   fetch: (googleSheetUrl, options) => {
-    const { c, $http } = options;
+    const { e, $http } = options;
 
     try {
       const res = $http.send({
@@ -28,7 +28,7 @@ module.exports = {
       return lines;
     } catch (error) {
       console.error("REQUEST FAILED", error);
-      return c.json(403, { "importation-status": 'NOP', message: error });
+      return e.json(403, { "importation-status": 'NOP', message: error });
     }
   },
 };

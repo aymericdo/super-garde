@@ -1,12 +1,11 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("GET", "/api/delete-all-students", (c) => {
-  const info = $apis.requestInfo(c);
-  const admin = info.admin;
-  const record = info.authRecord;
+routerAdd("GET", "/api/delete-all-students", (e) => {
+  const authRecord = e.auth
+  const isSuperuser = e.hasSuperuserAuth()
 
-  if (!admin && !['god', 'assistant'].includes(record?.get('role'))) {
+  if (!isSuperuser && !['god', 'assistant'].includes(authRecord?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
@@ -22,5 +21,5 @@ routerAdd("GET", "/api/delete-all-students", (c) => {
     });
   });
 
-  return c.json(200, { "deletion-status": 'OK' });
-}, $apis.activityLogger($app));
+  return e.json(200, { "deletion-status": 'OK' });
+});

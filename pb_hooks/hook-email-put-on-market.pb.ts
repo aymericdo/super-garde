@@ -1,7 +1,7 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-onModelAfterUpdate((e) => {
+onModelAfterUpdateSuccess((e) => {
   const oldStudentId = e.model.originalCopy().get("student");
   const oldValue = e.model.originalCopy()
   const newValue = e.model;
@@ -18,4 +18,6 @@ onModelAfterUpdate((e) => {
       console.error(err);
     }
   }
+
+  e.next()
 }, "onCallSlots");

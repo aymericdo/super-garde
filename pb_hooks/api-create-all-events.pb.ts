@@ -1,15 +1,19 @@
 // eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
-routerAdd("GET", "/api/create-all-events", (c) => {
-  const info = $apis.requestInfo(c);
-  const admin = info.admin;
-  const record = info.authRecord;
+routerAdd("GET", "/api/create-all-events", (e) => {
+  const authRecord = e.auth
+  const isSuperuser = e.hasSuperuserAuth()
 
-  const startDate = new Date(c.queryParam("startDate"))
-  const endDate = new Date(c.queryParam("endDate"))
+  let startDate = new Date()
+  let endDate = new Date()
+
+  if (e.request?.url) {
+    startDate = new Date(e.request.url.query().get("startDate"))
+    endDate = new Date(e.request.url.query().get("endDate"))
+  }
  
-  if (!admin && !['god', 'assistant'].includes(record?.get('role'))) {
+  if (!isSuperuser && !['god', 'assistant'].includes(authRecord?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
@@ -123,5 +127,5 @@ routerAdd("GET", "/api/create-all-events", (c) => {
     }
   });
 
-  return c.json(200, { "generation-status": 'OK', students, studentsByDate, eventByDate, eventCountByStudent });
-}, $apis.activityLogger($app));
+  return e.json(200, { "generation-status": 'OK', students, studentsByDate, eventByDate, eventCountByStudent });
+});
