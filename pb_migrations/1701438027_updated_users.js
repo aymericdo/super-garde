@@ -1,16 +1,16 @@
 /// <reference path="../pb_data/types.d.ts" />
-migrate((db) => {
-  const dao = new Dao(db)
-  const collection = dao.findCollectionByNameOrId("_pb_users_auth_")
+migrate((app) => {
+  const dao = new Dao(app)
+  const collection = app.findCollectionByNameOrId("_pb_users_auth_")
 
   collection.deleteRule = "@request.auth.id != \"\""
 
-  return dao.saveCollection(collection)
-}, (db) => {
-  const dao = new Dao(db)
-  const collection = dao.findCollectionByNameOrId("_pb_users_auth_")
+  return app.saveCollection(collection)
+}, (app) => {
+  const dao = new Dao(app)
+  const collection = app.findCollectionByNameOrId("_pb_users_auth_")
 
   collection.deleteRule = "@request.auth.id != \"\" && (@request.auth.role = 'admin' || @request.auth.role = 'god')"
 
-  return dao.saveCollection(collection)
+  return app.saveCollection(collection)
 })

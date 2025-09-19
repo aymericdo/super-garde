@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-migrate((db) => {
+migrate((app) => {
   const collection = new Collection({
     "id": "amds7pecgcmyimm",
     "created": "2023-11-20 20:42:04.908Z",
@@ -88,10 +88,9 @@ migrate((db) => {
     "options": {}
   });
 
-  return Dao(db).saveCollection(collection);
-}, (db) => {
-  const dao = new Dao(db);
-  const collection = dao.findCollectionByNameOrId("amds7pecgcmyimm");
+  return app.saveCollection(collection);
+}, (app) => {
+  const collection = app.findCollectionByNameOrId("amds7pecgcmyimm");
 
-  return dao.deleteCollection(collection);
+  return app.deleteCollection(collection);
 })

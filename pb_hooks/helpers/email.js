@@ -56,7 +56,7 @@ module.exports = {
 
     let message3;
     if (model.get('isOnMarket')) {
-      // eslint-disable-next-line
+      
       const dbRead = require(`${__hooks}/helpers/db-read.js`);
       const students = dbRead.students({ $app });
       const studentEmails = students.reduce((prev, stud) => {
@@ -80,7 +80,7 @@ module.exports = {
     }
 
     try {
-      // eslint-disable-next-line
+      
       const utils = require(`${__hooks}/helpers/utils.js`);
       const NODE_ENV = utils.getEnvFromEnvFile('NODE_ENV', { $os, __hooks });
       const DEV_SEND_EMAIL = utils.getEnvFromEnvFile('DEV_SEND_EMAIL', { $os, __hooks });

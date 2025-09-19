@@ -1,4 +1,3 @@
-// eslint-disable-next-line
 /// <reference path="../pb_data/types.d.ts" />
 
 onRecordUpdateRequest((e) => {
@@ -25,7 +24,6 @@ onModelAfterUpdateSuccess((e) => {
   const newValue = e.model;
 
   $app.dao().runInTransaction((txDao) => {
-    // eslint-disable-next-line
     const dbCreate = require(`${__hooks}/helpers/db-create.js`);
     dbCreate.onCallSlotHistorical(e.model.id, { old: oldValue, new: newValue }, { txDao });
   });
@@ -36,14 +34,12 @@ onModelAfterUpdateSuccess((e) => {
   if (oldIsOnMarketValue && !newIsOnMarketValue) {
     let toDelete = null;
     $app.dao().runInTransaction((txDao) => {
-      // eslint-disable-next-line
       const dbCreate = require(`${__hooks}/helpers/db-create.js`);
       toDelete = dbCreate.onCallSlotToHide(e.model.id, { txDao });
     });
 
     if (toDelete?.id) {
       $app.dao().runInTransaction((txDao) => {
-        // eslint-disable-next-line
         const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
         dbDelete.onCallSlotToHide(toDelete?.id, { txDao });
       });

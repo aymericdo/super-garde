@@ -1,10 +1,9 @@
 /// <reference path="../pb_data/types.d.ts" />
-migrate((db) => {
-  const dao = new Dao(db);
-  const collection = dao.findCollectionByNameOrId("wncbk6rmhyq5uyx");
+migrate((app) => {
+  const collection = app.findCollectionByNameOrId("wncbk6rmhyq5uyx");
 
-  return dao.deleteCollection(collection);
-}, (db) => {
+  return app.deleteCollection(collection);
+}, (app) => {
   const collection = new Collection({
     "id": "wncbk6rmhyq5uyx",
     "created": "2024-01-03 13:16:58.822Z",
@@ -35,5 +34,5 @@ migrate((db) => {
     }
   });
 
-  return Dao(db).saveCollection(collection);
+  return app.saveCollection(collection);
 })

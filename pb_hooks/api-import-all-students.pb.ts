@@ -1,4 +1,4 @@
-// eslint-disable-next-line
+
 /// <reference path="../pb_data/types.d.ts" />
 
 routerAdd("GET", "/api/import-all-students", (e) => {
@@ -11,13 +11,13 @@ routerAdd("GET", "/api/import-all-students", (e) => {
 
   const googleSheetUrl = e.request?.url?.query().get("url")
 
-  // eslint-disable-next-line
+  
   const studentsGoogleSheet = require(`${__hooks}/helpers/students-google-sheet.js`);
   const list = studentsGoogleSheet.fetch(googleSheetUrl, { e, $http });
   console.log(`${list.length} students in the list`);
 
   list.forEach((line) => {
-    // eslint-disable-next-line
+    
     const utils = require(`${__hooks}/helpers/utils.js`);
     const {
       firstName,
@@ -37,11 +37,11 @@ routerAdd("GET", "/api/import-all-students", (e) => {
 
     $app.dao().runInTransaction((txDao) => {
       if (userSameEmail) {
-        // eslint-disable-next-line
+        
         const dbUpdate = require(`${__hooks}/helpers/db-update.js`);
         dbUpdate.student({ year }, userSameEmail, { txDao });
       } else {
-        // eslint-disable-next-line
+        
         const dbCreate = require(`${__hooks}/helpers/db-create.js`);
         const userRecord = dbCreate.user({ email, name, username }, { txDao, $app, $security });
         dbCreate.student({ firstName, lastName, year }, userRecord, { txDao });

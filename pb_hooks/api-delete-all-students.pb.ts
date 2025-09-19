@@ -1,4 +1,4 @@
-// eslint-disable-next-line
+
 /// <reference path="../pb_data/types.d.ts" />
 
 routerAdd("GET", "/api/delete-all-students", (e) => {
@@ -9,13 +9,13 @@ routerAdd("GET", "/api/delete-all-students", (e) => {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
-  // eslint-disable-next-line
+  
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
 
   students.forEach((student) => {
     $app.dao().runInTransaction((txDao) => {
-      // eslint-disable-next-line
+      
       const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
       dbDelete.user(student.get('user'), { txDao });
     });

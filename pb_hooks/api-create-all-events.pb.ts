@@ -1,4 +1,4 @@
-// eslint-disable-next-line
+
 /// <reference path="../pb_data/types.d.ts" />
 
 routerAdd("GET", "/api/create-all-events", (e) => {
@@ -45,7 +45,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
   const eventByDate = {};
   const eventCountByStudent = {};
 
-  // eslint-disable-next-line
+  
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
 
@@ -83,7 +83,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
           if (!relevantIds.length) return;
 
-          // eslint-disable-next-line
+          
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);
 
@@ -103,7 +103,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
             sector,
           }
 
-          // eslint-disable-next-line
+          
           const dbCreate = require(`${__hooks}/helpers/db-create.js`);
           dbCreate.onCallSlot(event, currentStudentId, { $app, txDao });
 

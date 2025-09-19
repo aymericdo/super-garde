@@ -1,5 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
-migrate((db) => {
+migrate((app) => {
   const collection = new Collection({
     "id": "nizuxmlvx1vnfz4",
     "created": "2024-01-03 13:39:06.858Z",
@@ -42,10 +42,9 @@ migrate((db) => {
     "options": {}
   });
 
-  return Dao(db).saveCollection(collection);
-}, (db) => {
-  const dao = new Dao(db);
-  const collection = dao.findCollectionByNameOrId("nizuxmlvx1vnfz4");
+  return app.saveCollection(collection);
+}, (app) => {
+  const collection = app.findCollectionByNameOrId("nizuxmlvx1vnfz4");
 
-  return dao.deleteCollection(collection);
+  return app.deleteCollection(collection);
 })
