@@ -5,12 +5,12 @@ migrate((app) => {
 
   collection.name = "slots"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("amds7pecgcmyimm")
 
   collection.name = "onCallSlots"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

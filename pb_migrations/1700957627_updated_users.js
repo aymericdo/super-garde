@@ -22,7 +22,7 @@ migrate((app) => {
     }
   }))
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("_pb_users_auth_")
@@ -46,5 +46,5 @@ migrate((app) => {
     }
   }))
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

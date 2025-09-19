@@ -5,12 +5,12 @@ migrate((app) => {
 
   collection.viewRule = "@request.auth.id != \"\""
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("_pb_users_auth_")
 
   collection.viewRule = "id = @request.auth.id"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

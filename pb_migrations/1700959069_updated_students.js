@@ -7,12 +7,12 @@ migrate((app) => {
     "CREATE UNIQUE INDEX `idx_xfXFzGw` ON `students` (`email`)"
   ]
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("9hv7ybjp8kp7lvv")
 
   collection.indexes = []
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

@@ -42,9 +42,9 @@ migrate((app) => {
     "options": {}
   });
 
-  return app.saveCollection(collection);
+  return app.save(collection);
 }, (app) => {
   const collection = app.findCollectionByNameOrId("nizuxmlvx1vnfz4");
 
-  return app.deleteCollection(collection);
+  return app.delete(collection);
 })

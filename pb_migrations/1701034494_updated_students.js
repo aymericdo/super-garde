@@ -10,7 +10,7 @@ migrate((app) => {
   // remove
   collection.schema.removeField("krntgrpw")
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("9hv7ybjp8kp7lvv")
@@ -35,5 +35,5 @@ migrate((app) => {
     }
   }))
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

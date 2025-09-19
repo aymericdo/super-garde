@@ -7,7 +7,7 @@ migrate((app) => {
   collection.createRule = "@request.auth.id != \"\" && (@request.auth.role = 'assistant' || @request.auth.role = 'god')"
   collection.deleteRule = "@request.auth.id != \"\" && (@request.auth.role = 'assistant' || @request.auth.role = 'god')"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("9hv7ybjp8kp7lvv")
@@ -16,5 +16,5 @@ migrate((app) => {
   collection.createRule = "@request.auth.id != \"\""
   collection.deleteRule = "@request.auth.id != \"\""
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

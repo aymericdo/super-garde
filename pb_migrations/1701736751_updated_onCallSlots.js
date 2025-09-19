@@ -6,7 +6,7 @@ migrate((app) => {
   collection.listRule = "@request.auth.id != \"\" &&\n((@request.auth.role = \"god\" || @request.auth.role = \"assistant\") || (student = '' || isOnMarket = true || student.user = @request.auth.id))"
   collection.updateRule = "@request.auth.id != \"\" && @request.data.start = start && @request.data.end = end && (@request.auth.role = \"god\" || @request.auth.role = \"assistant\") || (student = '' || isOnMarket = true || student.user = @request.auth.id)"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("amds7pecgcmyimm")
@@ -14,5 +14,5 @@ migrate((app) => {
   collection.listRule = "@request.auth.id != \"\" &&\n((@request.auth.role = \"god\" || @request.auth.role = \"assistant\")\n || (student = '' || student.user = @request.auth.id || isOnMarket = true))"
   collection.updateRule = "@request.auth.id != \"\" && @request.data.start = start && @request.data.end = end && ((@request.auth.role = \"god\" || @request.auth.role = \"assistant\") || (student = null || isOnMarket = true) || student.user = @request.auth.id)"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

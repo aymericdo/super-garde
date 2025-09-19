@@ -5,12 +5,12 @@ migrate((app) => {
 
   collection.viewRule = null
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("nizuxmlvx1vnfz4")
 
   collection.viewRule = "@request.auth.id != \"\""
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

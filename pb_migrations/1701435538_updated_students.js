@@ -19,7 +19,7 @@ migrate((app) => {
     }
   }))
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("9hv7ybjp8kp7lvv")
@@ -27,5 +27,5 @@ migrate((app) => {
   // remove
   collection.schema.removeField("ruq516hl")
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

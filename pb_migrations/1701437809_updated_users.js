@@ -7,7 +7,7 @@ migrate((app) => {
   collection.updateRule = null
   collection.deleteRule = null
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("_pb_users_auth_")
@@ -16,5 +16,5 @@ migrate((app) => {
   collection.updateRule = "id = @request.auth.id"
   collection.deleteRule = "id = @request.auth.id"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

@@ -19,9 +19,9 @@ migrate((app) => {
     }
   });
 
-  return app.saveCollection(collection);
+  return app.save(collection);
 }, (app) => {
   const collection = app.findCollectionByNameOrId("wncbk6rmhyq5uyx");
 
-  return app.deleteCollection(collection);
+  return app.delete(collection);
 })

@@ -6,7 +6,7 @@ migrate((app) => {
   collection.listRule = "@request.auth.id != \"\""
   collection.viewRule = "@request.auth.id != \"\""
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("wncbk6rmhyq5uyx")
@@ -14,5 +14,5 @@ migrate((app) => {
   collection.listRule = ""
   collection.viewRule = null
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

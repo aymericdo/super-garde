@@ -5,12 +5,12 @@ migrate((app) => {
 
   collection.createRule = ""
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("_pb_users_auth_")
 
   collection.createRule = "@request.auth.id != \"\" && (@request.auth.role = 'admin' || @request.auth.role = 'god')"
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })

@@ -7,12 +7,12 @@ migrate((app) => {
     "CREATE UNIQUE INDEX `idx_WJ2pJeX` ON `onCallSlots` (\n  `start`,\n  `end`,\n  `hospital`,\n  `sector`\n)"
   ]
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 }, (app) => {
   const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("amds7pecgcmyimm")
 
   collection.indexes = []
 
-  return app.saveCollection(collection)
+  return app.save(collection)
 })
