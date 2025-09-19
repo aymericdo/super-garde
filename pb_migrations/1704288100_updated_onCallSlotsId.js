@@ -1,6 +1,5 @@
 /// <reference path="../pb_data/types.d.ts" />
 migrate((app) => {
-  const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("wncbk6rmhyq5uyx")
 
   collection.name = "onCallSlotsIds"
@@ -22,7 +21,6 @@ migrate((app) => {
 
   return app.save(collection)
 }, (app) => {
-  const dao = new Dao(app)
   const collection = app.findCollectionByNameOrId("wncbk6rmhyq5uyx")
 
   collection.name = "onCallSlotsId"
