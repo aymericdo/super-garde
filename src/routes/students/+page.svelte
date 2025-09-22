@@ -12,13 +12,14 @@
 	import type { PageData } from './$types'
   export let data: PageData
 
-  let totalItemsAtBeginning = data.studentList.totalItems;
-  let loading = false;
+  const totalItemsAtBeginning = data.studentList.totalItems;
   let isNewStudentsNotVisible = false;
   let isStudentSourceModalOpen = false;
   let query = '';
   let isAllStudentsChecked: boolean = false;
   let selectedStudents: string[] = [];
+  let loading = false;
+  const error = data.error;
 
   let requestErrorMessage: string | null = null;
   let isAlertSuccessVisible: boolean = false;
@@ -236,7 +237,6 @@
       if (e.record.id === $currentUser.id) {
         currentUser.set({
           ...e.record,
-          isAdmin: $currentUser?.isAdmin,
         });
       }
     });
@@ -273,7 +273,7 @@
       <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
     {/if}
   </div>
-  {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
+  {#if ['assistant', 'god'].includes($currentUser?.role)}
     <div class="flex flex-1 flex-wrap items-center justify-end">
       {#if selectedStudents.length}
         <button on:click={handleDelete} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
@@ -282,49 +282,38 @@
     </div>
   {/if}
 </div>
-<div class="students-table relative overflow-x-auto shadow-md sm:rounded-lg">
+<div class="students-table relative overflow-y-hidden overflow-x-auto shadow-md sm:rounded-lg">
   <table class="table-fixed w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="block text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
       <tr class="flex odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
-        <th class="basis-1/12 px-6 py-3 -checkbox">
+        <th class="basis-1/12 px-6 py-3 min-w-[36px] -checkbox">
           <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
             indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
         </th>
-        <th class="basis-3/12 px-6 py-3 flex items-center">
-          Prénom
-        </th>
-        <th class="basis-3/12 px-6 py-3 flex items-center">
-          Nom
-        </th>
-        <th class="basis-6/12 px-6 py-3 flex items-center">
-          Email
-        </th>
-        <th class="basis-3/12 px-6 py-3 flex items-center">
-          Année
-        </th>
+        <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Prénom</th>
+        <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Nom</th>
+        <th class="basis-6/12 px-6 py-3 flex items-center min-w-[100px]">Email</th>
+        <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Année</th>
       </tr>
     </thead>
-  
-    <tbody class="block overflow-y-auto w-full">
+    <tbody class="block overflow-y-auto w-full pb-8 h-[640px] sm:h-[700px] lg:h-[700px]">
       {#each data.studentList.items as item}
         <tr class="flex">
-          <td class="basis-1/12 px-6 py-4 flex items-center -checkbox">
+          <td class="basis-1/12 px-6 py-4 flex items-center min-w-[36px] -checkbox">
             <input type="checkbox" checked="{selectedStudents.includes(item.id)}"
               on:input={() => handleCheck(item)}
               class="checkbox checkbox-ghost checkbox-md" />
           </td>
-          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-900">
+          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-900 min-w-[100px]">
             <span>{item.firstName}</span>
           </td>
-          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500">
+          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
             <span>{item.lastName}</span>
           </td>
-          <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500">
-            {#if item.expand?.user?.email}
-              <span>{item.expand?.user?.email}</span>
-            {/if}
+          <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
+            {#if item.expand?.user?.email}<span>{item.expand?.user?.email}</span>{/if}
           </td>
-          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500">
+          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
             <span>{item.year}</span>
           </td>
         </tr>
@@ -338,6 +327,10 @@
     </tbody>
   </table>
 </div>
+
+{#if error}
+  <AlertError message={error} />
+{/if}
 
 {#if isAlertSuccessVisible}
   <AlertSuccess message={'Les étudiants ont bien été importés 😊'} />

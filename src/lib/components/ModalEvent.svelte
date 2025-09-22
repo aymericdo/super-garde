@@ -67,14 +67,14 @@
       </div>
     </div>
     <div class="modal-action">
-      <button class="btn" on:click={handleEventModalClose}>Close</button>
+      <button class="btn" on:click={handleEventModalClose}>Fermer</button>
       {#if !openedEvent?.event.isOnMarket}
         <button class="btn btn-primary" on:click={handlePutOnMarket}>Mettre sur le marché</button>
       {:else if isConnectedStudent}
         <button class="btn btn-primary" on:click={handleTakeFromMarket}>Prendre</button>
       {/if}
 
-      {#if openedEvent?.event.isOnMarket && ($currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role))}
+      {#if openedEvent?.event.isOnMarket && (['assistant', 'god'].includes($currentUser?.role))}
         <button class="btn btn-primary" on:click={handlePutOutOfMarket}>Sortir du marché</button>
       {/if}
     </div>

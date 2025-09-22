@@ -1,6 +1,6 @@
 module.exports = {
   user: (data, options) => {
-    const { txDao, $security } = options;
+    const { txApp, $security } = options;
 
     const {
       email,
@@ -9,7 +9,7 @@ module.exports = {
     } = data;
 
     try {
-      const usersCollection = txDao.findCollectionByNameOrId("users");
+      const usersCollection = txApp.findCollectionByNameOrId("users");
 
       const userRecord = new Record(usersCollection, {
         "name": name,
@@ -21,7 +21,7 @@ module.exports = {
       userRecord.setPassword("azerty1234");
       userRecord.setEmailVisibility(true);
 
-      txDao.saveRecord(userRecord)
+      txApp.save(userRecord)
 
       return userRecord;
     } catch (error) {
@@ -29,7 +29,7 @@ module.exports = {
     }
   },
   student: (data, userRecord, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     const {
       firstName,
@@ -38,7 +38,7 @@ module.exports = {
     } = data;
 
     try {
-      const studentsCollection = txDao.findCollectionByNameOrId("students");
+      const studentsCollection = txApp.findCollectionByNameOrId("students");
 
       const studentRecord = new Record(studentsCollection, {
         "firstName": firstName,
@@ -47,7 +47,7 @@ module.exports = {
         "year": year,
       });
 
-      txDao.saveRecord(studentRecord)
+      txApp.save(studentRecord)
 
       return studentRecord;
     } catch (error) {
@@ -55,10 +55,10 @@ module.exports = {
     }
   },
   onCallSlot: (event, studentId, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     try {
-      const onCallSlotsCollection = txDao.findCollectionByNameOrId("onCallSlots");
+      const onCallSlotsCollection = txApp.findCollectionByNameOrId("onCallSlots");
 
       const onCallSlotRecord = new Record(onCallSlotsCollection, {
         "start": event.start,
@@ -68,40 +68,40 @@ module.exports = {
         "sector": event.sector,
       });
 
-      txDao.saveRecord(onCallSlotRecord)
+      txApp.save(onCallSlotRecord)
       return onCallSlotRecord;
     } catch (error) {
       console.error("db onCallSlot creation failed", error);
     }
   },
   onCallSlotHistorical: (onCallSlotId, changes, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     try {
-      const onCallSlotsHistoricalCollection = txDao.findCollectionByNameOrId("onCallSlotsHistorical");
+      const onCallSlotsHistoricalCollection = txApp.findCollectionByNameOrId("onCallSlotsHistorical");
 
       const onCallSlotHistoricalRecord = new Record(onCallSlotsHistoricalCollection, {
         "onCallSlotId": onCallSlotId,
         "changes": changes,
       });
 
-      txDao.saveRecord(onCallSlotHistoricalRecord)
+      txApp.save(onCallSlotHistoricalRecord)
       return onCallSlotHistoricalRecord;
     } catch (error) {
       console.log("db onCallSlotHistorical creation failed", error);
     }
   },
   onCallSlotToHide: (onCallSlotId, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     try {
-      const onCallSlotsToHideCollection = txDao.findCollectionByNameOrId("onCallSlotsToHide");
+      const onCallSlotsToHideCollection = txApp.findCollectionByNameOrId("onCallSlotsToHide");
 
       const onCallSlotsToHideRecord = new Record(onCallSlotsToHideCollection, {
         "onCallSlotId": onCallSlotId,
       });
 
-      txDao.saveRecord(onCallSlotsToHideRecord)
+      txApp.save(onCallSlotsToHideRecord)
       return onCallSlotsToHideRecord;
     } catch (error) {
       console.log("db onCallSlotsToHide creation failed", error);

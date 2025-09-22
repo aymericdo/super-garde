@@ -3,7 +3,6 @@
 
 routerAdd("GET", "/api/create-all-events", (e) => {
   const authRecord = e.auth
-  const isSuperuser = e.hasSuperuserAuth()
 
   let startDate = new Date()
   let endDate = new Date()
@@ -13,7 +12,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
     endDate = new Date(e.request.url.query().get("endDate"))
   }
  
-  if (!isSuperuser && !['god', 'assistant'].includes(authRecord?.get('role'))) {
+  if (!['god', 'assistant'].includes(authRecord?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
@@ -49,7 +48,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
 
-  $app.dao().runInTransaction((txDao) => {
+  $app.runInTransaction((txApp) => {
     const currentDate = startDate;
 
     while (currentDate < endDate) {
@@ -105,7 +104,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
           
           const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-          dbCreate.onCallSlot(event, currentStudentId, { $app, txDao });
+          dbCreate.onCallSlot(event, currentStudentId, { $app, txApp });
 
           if (Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())) {
             studentsByDate[currentDate.toISOString()].push(currentStudentId);

@@ -107,7 +107,7 @@
       {/if}
     </div>
     <div class="modal-action">
-      <button class="btn" on:click={handlePeriodPickerClose}>Close</button>
+      <button class="btn" on:click={handlePeriodPickerClose}>Fermer</button>
       <button class="btn btn-primary" disabled={!start || !end}
         on:click={() => {
           if (start && end) {

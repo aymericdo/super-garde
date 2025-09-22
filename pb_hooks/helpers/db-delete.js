@@ -1,32 +1,32 @@
 module.exports = {
   user: (userId, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     try {
-      const user = txDao.findRecordById("users", userId)
-      txDao.deleteRecord(user)
+      const user = txApp.findRecordById("users", userId)
+      txApp.delete(user)
       return true;
     } catch (error) {
       console.error("db user deletion failed", error);
     }
   },
   onCallSlot: (onCallSlotId, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     try {
-      const onCallSlot = txDao.findRecordById("onCallSlots", onCallSlotId)
-      txDao.deleteRecord(onCallSlot)
+      const onCallSlot = txApp.findRecordById("onCallSlots", onCallSlotId)
+      txApp.delete(onCallSlot)
       return true;
     } catch (error) {
       console.error("db onCallSlot deletion failed", error);
     }
   },
   onCallSlotToHide: (onCallSlotId, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     try {
-      const onCallSlotsToHide = txDao.findRecordById("onCallSlotsToHide", onCallSlotId)
-      txDao.deleteRecord(onCallSlotsToHide)
+      const onCallSlotsToHide = txApp.findRecordById("onCallSlotsToHide", onCallSlotId)
+      txApp.delete(onCallSlotsToHide)
       return true;
     } catch (error) {
       console.error("db onCallSlotsToHide deletion failed", error);

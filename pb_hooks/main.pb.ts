@@ -1,7 +1,7 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+// Read the .env file and set the environment variables.
 onBootstrap((e) => {
   e.next()
-  const utils = require(`${__hooks}/helpers/utils.js`);
-  utils.hello("world");
+  require(`${__hooks}/lib/env.js`);
 })

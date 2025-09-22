@@ -3,21 +3,19 @@
 
 routerAdd("GET", "/api/delete-all-on-call-slots", (e) => {
   const authRecord = e.auth
-  const isSuperuser = e.hasSuperuserAuth()
 
-  if (!isSuperuser && !['god', 'assistant'].includes(authRecord?.get('role'))) {
+  if (!['god', 'assistant'].includes(authRecord?.get('role'))) {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
-  
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const onCallSlots = dbRead.onCallSlots({ $app });
 
   onCallSlots.forEach((onCallSlot) => {
-    $app.dao().runInTransaction((txDao) => {
+    $app.runInTransaction((txApp) => {
       
       const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
-      dbDelete.onCallSlot(onCallSlot.get('id'), { txDao });
+      dbDelete.onCallSlot(onCallSlot.get('id'), { txApp });
     });
   });
 

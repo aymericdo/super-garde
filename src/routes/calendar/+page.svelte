@@ -356,7 +356,6 @@
       if (e.record.id === $currentUser.id) {
         currentUser.set({
           ...e.record,
-          isAdmin: $currentUser?.isAdmin,
         });
       }
     });
@@ -387,7 +386,7 @@
     </label>
   </div>
   <div class="flex flex-1 flex-wrap items-center justify-end">
-    {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
+    {#if ['assistant', 'god'].includes($currentUser?.role)}
       <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
       <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
     {/if}
@@ -400,7 +399,8 @@
     <BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
   </div>
 {/if}
-<div class="shadow-md sm:rounded-lg event-calendar">
+
+<div class="sm:rounded-lg event-calendar">
   <div class="w-full h-full">
     <Calendar {plugins} {options} bind:this={myCalendar} />
   </div>

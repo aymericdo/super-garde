@@ -2,7 +2,7 @@
   import { getContext, onMount } from 'svelte'
 
   let isUrlValid = false;
-  let googleSheetUrl: string = 'https://docs.google.com/spreadsheets/d/1tIB3eytaiWk3fI1o0jNUGhJ413hqrCplBXwcldI7_hU/edit#gid=0';
+  let googleSheetUrl: string = 'https://docs.google.com/spreadsheets/d/1ZHPJ0M83Cpa-qQS1YmAz_5eQWFLV96ZJd1Pwa_XIyMA/edit?usp=sharing';
   let realGoogleSheetUrlCsv = ''; 
 
   const checkUrl = (): void => {
@@ -39,7 +39,7 @@
       </div>
     </div>
     <div class="modal-action">
-      <button class="btn" on:click={handleStudentSourceModalClose}>Close</button>
+      <button class="btn" on:click={handleStudentSourceModalClose}>Fermer</button>
       <button disabled={!isUrlValid} class="btn btn-primary" on:click={() => handleGenerateStudents(realGoogleSheetUrlCsv)}>Générer la liste</button>
     </div>
   </div>

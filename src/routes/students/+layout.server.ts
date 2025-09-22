@@ -11,9 +11,20 @@ export const load: LayoutServerLoad = async ({ locals }) => {
       studentList,
       page: START_PAGE,
       perPage: PER_PAGE,
+      error: null,
     }
   } catch (e) {
-    console.error(e)
-    throw e
+    return {
+      studentList: {
+        items: [],
+        totalItems: 0,
+        page: 1,
+        totalPages: 0,
+        perPage: PER_PAGE,
+      },
+      page: START_PAGE,
+      perPage: PER_PAGE,
+      error: 'Impossible de charger les étudiants',
+    };
   }
 }

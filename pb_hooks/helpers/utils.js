@@ -27,28 +27,7 @@ module.exports = {
       }
     }
   },
-  getEnvFromEnvFile: (key, options) => {
-    const { $os, __hooks } = options;
-
-    const envFile = $os.readFile(`${__hooks}/../.env`);
-    const rightLine = String.fromCharCode(...envFile.toString().split(','))
-      .split('\n')
-      .find((line) => {
-        const splittedLine = line.split('=');
-        return line[0] !== '#' && splittedLine[0] === key;
-      });
-
-    if (rightLine) {
-      const splittedLine = rightLine.split('=');
-      return splittedLine[1]
-    }
-
-    return -1
-  },
   randomItemFromList: (list) => {
     return list[Math.floor(Math.random() * list.length)];
-  },
-  hello: (name) => {
-    console.log(`Hello ${name}`)
   },
 };

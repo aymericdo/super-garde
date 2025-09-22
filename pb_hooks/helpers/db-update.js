@@ -1,17 +1,17 @@
 module.exports = {
   student: (data, userRecord, options) => {
-    const { txDao } = options;
+    const { txApp } = options;
 
     const {
       year,
     } = data;
 
     try {
-      const studentRecord = txDao.findFirstRecordByFilter('students', "user = {:user}", { user: userRecord.id });
+      const studentRecord = txApp.findFirstRecordByFilter('students', "user = {:user}", { user: userRecord.id });
 
       studentRecord.set("year", year);
 
-      txDao.saveRecord(studentRecord);
+      txApp.save(studentRecord);
 
       return studentRecord;
     } catch (error) {

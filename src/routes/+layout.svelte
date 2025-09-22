@@ -17,123 +17,120 @@
   $: currentRoute = $page.url.pathname;
 </script>
 
-<div class="bg-neutral text-neutral-content">
-  <div class="max-w-l mx-auto navbar">
-    <div class="navbar-start">
-      <a href="{base}/" class="btn btn-ghost text-xl">(Super) logiciel de garde</a>
+<style>
+  /* Accentuation du bouton actif */
+  .btn-active {
+    background-color: theme('colors.secondary');
+    color: white !important;
+    font-weight: 600;
+    border-radius: 0.5rem;
+  }
 
+  /* Animation menu mobile */
+  .mobile-menu {
+    transition: transform 0.25s ease-in-out, opacity 0.25s ease-in-out;
+  }
+  .mobile-menu.closed {
+    transform: translateY(-10px);
+    opacity: 0;
+    pointer-events: none;
+  }
+</style>
+
+<div class="bg-neutral text-neutral-content">
+  <div class="max-w-6xl mx-auto navbar px-4">
+    <!-- Logo / Accueil -->
+    <div class="navbar-start">
+      <a href="{base}/" class="btn btn-ghost text-xl font-bold">(Super) logiciel de garde</a>
+    </div>
+
+    <!-- Desktop menu -->
+    <div class="navbar-center hidden lg:flex space-x-2">
       {#if $currentUser}
-        <div class="hidden w-full lg:flex lg:w-auto">
-          <a href="{base}/calendar" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === base + "/calendar"}>Calendrier</a>
-          {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-            <a href="{base}/students" class="btn btn-ghost text-l mx-1" class:btn-active={currentRoute === base + "/students"}>Étudiants</a>
-          {/if}
-        </div>
+        <a href="{base}/calendar"
+          class="btn btn-ghost text-l mx-1"
+          class:btn-active={currentRoute === base + "/calendar"}>Calendrier</a>
+
+        {#if ['assistant', 'god'].includes($currentUser?.role)}
+          <a href="{base}/students"
+            class="btn btn-ghost text-l mx-1"
+            class:btn-active={currentRoute === base + "/students"}>Étudiants</a>
+        {/if}
       {/if}
     </div>
 
+    <!-- Navbar end -->
     <div class="navbar-end">
-      <div class="lg:hidden relative flex items-center w-full justify-end">
+      <!-- Desktop user -->
+      <div class="hidden lg:flex items-center space-x-2">
         {#if $currentUser}
-          <a class="hidden sm:flex btn btn-ghost text-l mx-1" href="{base}/">
-            {$currentUser.email}
-            {#if $currentUser.isAdmin}
-              <div class="badge badge-accent">admin</div>
-            {:else}
-              <div class="badge badge-secondary">{$currentUser.role}</div>
-            {/if}
+          <a class="btn btn-ghost text-l flex items-center" href="{base}/">
+            <span>{$currentUser.email}</span>
+            <div class="badge badge-secondary">{$currentUser.role}</div>
           </a>
+          <form method="POST" action="{base}/logout" use:enhance={() => {
+            return async ({ result }) => {
+              pb.authStore.clear()
+              await applyAction(result)
+            }
+          }}>
+            <button type="submit" class="btn btn-ghost text-l">Déconnexion</button>
+          </form>
+        {:else}
+          <a class="btn btn-ghost text-l mx-1" href="{base}/login">Login</a>
         {/if}
+      </div>
 
-        <button on:click={() => (isOpen = !isOpen)} type="button" class="btn btn-secondary block text-gray-500 hover:text-white focus:text-white focus:outline-none">
-          <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+      <!-- Mobile burger -->
+      <div class="lg:hidden flex items-center">
+        <button on:click={() => (isOpen = !isOpen)}
+          aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          class="btn">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor">
             {#if isOpen}
-              <path fill-rule="evenodd" d="M18.278 16.864a1 1 0 0 1-1.414 1.414l-4.829-4.828-4.828 4.828a1 1 0 0 1-1.414-1.414l4.828-4.829-4.828-4.828a1 1 0 0 1 1.414-1.414l4.829 4.828 4.828-4.828a1 1 0 1 1 1.414 1.414l-4.828 4.829 4.828 4.828z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12" />
             {:else}
-              <path fill-rule="evenodd" d="M4 5h16a1 1 0 0 1 0 2H4a1 1 0 1 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2zm0 6h16a1 1 0 0 1 0 2H4a1 1 0 0 1 0-2z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 6h16M4 12h16M4 18h16" />
             {/if}
           </svg>
+          <span class="sr-only">{isOpen ? "Fermer le menu" : "Ouvrir le menu"}</span>
         </button>
-
-        <button on:click={() => (isOpen = !isOpen)}
-          class:hidden={!isOpen} class="fixed z-10 w-screen h-screen bg-red top-0 left-0">
-        </button>
-
-        <div class:hidden={!isOpen} class="absolute -bottom-1 translate-y-full w-40 right-1 shadow-md rounded bg-slate-100 z-20">
-          {#if $currentUser}
-            <a href="{base}/" on:click={() => (isOpen = false)}
-              class="sm:hidden btn btn-ghost relative text-l w-full bg-black text-white flex p-1">
-              <p class="truncate">{$currentUser.email}</p>
-              {#if $currentUser.isAdmin}
-                <div class="badge badge-accent absolute bottom-0 right-0 translate-y-1/2">admin</div>
-              {:else}
-                <div class="badge badge-secondary absolute bottom-0 right-0 translate-y-1/2">{$currentUser.role}</div>
-              {/if}
-            </a>
-
-            <a href="{base}/calendar" on:click={() => (isOpen = false)}
-                class:btn-active={currentRoute === base + "/calendar"}
-                class="btn btn-ghost text-l w-full text-black">Calendrier</a>
-            {#if $currentUser?.isAdmin || ['assistant', 'god'].includes($currentUser?.role)}
-              <a href="{base}/students" on:click={() => (isOpen = false)}
-                  class:btn-active={currentRoute === base + "/students"}
-                  class="btn btn-ghost text-l w-full text-black">Étudiants</a>
-            {/if}
-            <form
-              class="btn btn-ghost text-l w-full text-black"
-              method="POST"
-              action="{base}/logout"
-              use:enhance={() => {
-                return async ({ result }) => {
-                  pb.authStore.clear()
-                  await applyAction(result)
-                }
-              }}
-            >
-              <button>Log out</button>
-            </form>
-          {:else}
-            <a class="btn btn-ghost text-l w-full text-black"
-              on:click={() => (isOpen = false)}
-              href="{base}/login">Log in</a>
-            <!-- <a class="btn btn-ghost text-l w-full text-black"
-              on:click={() => (isOpen = false)}
-              href="{base}/register">Register</a> -->
-          {/if}
-        </div>
-      </div>
-
-      <div class="hidden w-full lg:flex lg:w-auto">
-        <div class="menu menu-horizontal">
-          {#if $currentUser}
-            <a class="btn btn-ghost text-l mx-1" href="{base}/">
-              {$currentUser.email}
-              {#if $currentUser.isAdmin}
-                <div class="badge badge-accent">admin</div>
-              {:else}
-                <div class="badge badge-secondary">{$currentUser.role}</div>
-              {/if}
-            </a>
-            <form
-              class="btn btn-ghost text-l"
-              method="POST"
-              action="{base}/logout"
-              use:enhance={() => {
-                return async ({ result }) => {
-                  pb.authStore.clear()
-                  await applyAction(result)
-                }
-              }}
-            >
-              <button>Log out</button>
-            </form>
-          {:else}
-            <a class="btn btn-ghost text-l mx-1" href="{base}/login">Login</a>
-            <!-- <a class="btn btn-ghost text-l mx-1" href="{base}/register">Register</a> -->
-          {/if}
-        </div>
       </div>
     </div>
+  </div>
+
+  <!-- Overlay + Mobile menu -->
+  <button class:hidden={!isOpen} class="fixed inset-0 bg-black bg-opacity-40 z-20" on:click={() => (isOpen = false)}></button>
+
+  <div class="lg:hidden fixed top-16 right-2 w-48 bg-white rounded shadow-lg z-30 p-2 mobile-menu {isOpen ? '' : 'closed'}">
+    {#if $currentUser}
+      <a href="{base}/calendar"
+        on:click={() => (isOpen = false)}
+        class="btn btn-ghost w-full text-black"
+        class:btn-active={currentRoute === base + "/calendar"}>Calendrier</a>
+
+      {#if ['assistant', 'god'].includes($currentUser?.role)}
+        <a href="{base}/students"
+          on:click={() => (isOpen = false)}
+          class="btn btn-ghost w-full text-black"
+          class:btn-active={currentRoute === base + "/students"}>Étudiants</a>
+      {/if}
+
+      <form method="POST" action="{base}/logout"
+        class="btn btn-ghost w-full text-black"
+        use:enhance={() => {
+          return async ({ result }) => {
+            pb.authStore.clear()
+            await applyAction(result)
+          }
+        }}>
+        <button type="submit" class="btn btn-ghost">Déconnexion</button>
+      </form>
+    {:else}
+      <a class="btn btn-ghost w-full text-black" href="{base}/login" on:click={() => (isOpen = false)}>Log in</a>
+    {/if}
   </div>
 </div>
 

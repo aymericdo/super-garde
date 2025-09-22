@@ -10,7 +10,7 @@ module.exports = {
 
     try {
       do {
-        lastStudentsArray = $app.dao().findRecordsByFilter("students", "id != ''", '-created', perPage, offset);
+        lastStudentsArray = $app.findRecordsByFilter("students", "id != ''", '-created', perPage, offset);
         students = students.concat(lastStudentsArray);
         offset += perPage;
       } while(lastStudentsArray.length)
@@ -31,7 +31,7 @@ module.exports = {
 
     try {
       do {
-        lastOnCallSlotsArray = $app.dao().findRecordsByFilter("onCallSlots", "id != ''", '-created', perPage, offset);
+        lastOnCallSlotsArray = $app.findRecordsByFilter("onCallSlots", "id != ''", '-created', perPage, offset);
         onCallSlots = onCallSlots.concat(lastOnCallSlotsArray);
         offset += perPage;
       } while(lastOnCallSlotsArray.length)

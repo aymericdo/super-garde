@@ -2,17 +2,11 @@
 
 onRecordUpdateRequest((e) => {
   const authRecord = e.auth
-  const isSuperuser = e.hasSuperuserAuth()
 
-  if (e.record && authRecord && isSuperuser) {
+  if (e.record && authRecord) {
     e.record.set(
       'updatedBy',
-      `admin ${authRecord.id}`,
-    );
-  } else if (e.record && authRecord) {
-    e.record.set(
-      'updatedBy',
-      `${authRecord.collection().name} ${authRecord.id}`,
+      authRecord.id,
     );
   }
 
@@ -23,9 +17,9 @@ onModelAfterUpdateSuccess((e) => {
   const oldValue = e.model.originalCopy();
   const newValue = e.model;
 
-  $app.dao().runInTransaction((txDao) => {
+  $app.runInTransaction((txApp) => {
     const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-    dbCreate.onCallSlotHistorical(e.model.id, { old: oldValue, new: newValue }, { txDao });
+    dbCreate.onCallSlotHistorical(e.model.id, { old: oldValue, new: newValue }, { txApp });
   });
 
   const oldIsOnMarketValue = oldValue.get("isOnMarket");
@@ -33,15 +27,15 @@ onModelAfterUpdateSuccess((e) => {
 
   if (oldIsOnMarketValue && !newIsOnMarketValue) {
     let toDelete = null;
-    $app.dao().runInTransaction((txDao) => {
+    $app.runInTransaction((txApp) => {
       const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-      toDelete = dbCreate.onCallSlotToHide(e.model.id, { txDao });
+      toDelete = dbCreate.onCallSlotToHide(e.model.id, { txApp });
     });
 
     if (toDelete?.id) {
-      $app.dao().runInTransaction((txDao) => {
+      $app.runInTransaction((txApp) => {
         const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
-        dbDelete.onCallSlotToHide(toDelete?.id, { txDao });
+        dbDelete.onCallSlotToHide(toDelete?.id, { txApp });
       });
     }
   }

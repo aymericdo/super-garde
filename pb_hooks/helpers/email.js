@@ -2,11 +2,11 @@ module.exports = {
   putOnMarket: (model, oldStudentId, options) => {
     const { $app, MailerMessage, $os, __hooks } = options;
 
-    const slot = $app.dao().findRecordById('onCallSlots', model.id);
-    $app.dao().expandRecord(slot, ['student'], null);
+    const slot = $app.findRecordById('onCallSlots', model.id);
+    $app.expandRecord(slot, ['student'], null);
     
     const student = slot.expandedOne('student');
-    $app.dao().expandRecord(student, ['user'], null);
+    $app.expandRecord(student, ['user'], null);
 
     const user = student.expandedOne('user');
     const email = user.get('email');
@@ -17,8 +17,8 @@ module.exports = {
       subject = "Votre garde est maintenant disponible";
       html = `<div>La garde du ${slot.get('start')}/${slot.get('end')} est dispo pour tout le monde 😊</div>`;
     } else {
-      subject = "Vous avez une nouvelle garde !";
-      html = `<div>La garde du ${slot.get('start')}/${slot.get('end')} est à vous 😊</div>`;
+      subject = "Tu as une nouvelle garde !";
+      html = `<div>La garde du ${slot.get('start')}/${slot.get('end')} est à toi 😊</div>`;
     }
 
     const message1 = new MailerMessage({
@@ -36,8 +36,8 @@ module.exports = {
     let oldStudentEmail = null;
     let message2;
     if (oldStudentId !== student.id && !model.get('isOnMarket')) {
-      const oldStudent = $app.dao().findRecordById('students', oldStudentId);
-      $app.dao().expandRecord(oldStudent, ['user'], null);
+      const oldStudent = $app.findRecordById('students', oldStudentId);
+      $app.expandRecord(oldStudent, ['user'], null);
       const oldUser = oldStudent.expandedOne('user');
       oldStudentEmail = oldUser.get('email');
 
@@ -50,18 +50,17 @@ module.exports = {
           address: oldStudentEmail,
         }],
         subject: "Votre garde a bien été récupérée !",
-        html: `<div>La garde du ${slot.get('start')}/${slot.get('end')} n'est plus pour vous 😊</div>`,
+        html: `<div>La garde du ${slot.get('start')}/${slot.get('end')} n'est plus pour toi 😊</div>`,
       });
     }
 
     let message3;
     if (model.get('isOnMarket')) {
-      
       const dbRead = require(`${__hooks}/helpers/db-read.js`);
       const students = dbRead.students({ $app });
       const studentEmails = students.reduce((prev, stud) => {
         if (student.id !== stud.id) {
-          $app.dao().expandRecord(stud, ['user'], null);
+          $app.expandRecord(stud, ['user'], null);
           const oldUser = stud.expandedOne('user');
           prev.push({ address: oldUser.get('email') });
         }
@@ -80,10 +79,8 @@ module.exports = {
     }
 
     try {
-      
-      const utils = require(`${__hooks}/helpers/utils.js`);
-      const NODE_ENV = utils.getEnvFromEnvFile('NODE_ENV', { $os, __hooks });
-      const DEV_SEND_EMAIL = utils.getEnvFromEnvFile('DEV_SEND_EMAIL', { $os, __hooks });
+      const NODE_ENV = process.env['NODE_ENV']
+      const DEV_SEND_EMAIL = process.env['DEV_SEND_EMAIL']
 
       if (NODE_ENV === 'production' || DEV_SEND_EMAIL === 'true') {
         $app.newMailClient().send(message1);
