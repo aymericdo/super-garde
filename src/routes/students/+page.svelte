@@ -85,7 +85,6 @@
       const data = await pb.send("/api/import-all-students", {
         url
       });
-      console.log(data);
       requestErrorMessage = null;
       isAlertSuccessVisible = true;
       setTimeout(() => {

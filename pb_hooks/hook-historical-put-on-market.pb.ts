@@ -2,8 +2,9 @@
 
 onRecordUpdateRequest((e) => {
   const authRecord = e.auth
+  const isSuperuser = e.hasSuperuserAuth()
 
-  if (e.record && authRecord) {
+  if (e.record && authRecord && !isSuperuser) {
     e.record.set(
       'updatedBy',
       authRecord.id,

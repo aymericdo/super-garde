@@ -44,6 +44,6 @@
     </div>
   </div>
   <div class="modal-backdrop">
-    <button on:click={handleStudentSourceModalClose}>close</button>
+    <button on:click={handleStudentSourceModalClose}>Fermer</button>
   </div>
 </div>

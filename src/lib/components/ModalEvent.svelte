@@ -80,6 +80,6 @@
     </div>
   </div>
   <div class="modal-backdrop">
-    <button on:click={handleEventModalClose}>close</button>
+    <button on:click={handleEventModalClose}>Fermer</button>
   </div>
 </div>
