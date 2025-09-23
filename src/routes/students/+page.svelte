@@ -338,31 +338,3 @@
   <AlertError message={requestErrorMessage} />
 {/if}
 <ModalStudentSource {isStudentSourceModalOpen} />
-
-<style>
-  table tbody {
-	  height: 640px;
-  }
-
-  th:not(.-checkbox),
-  td:not(.-checkbox) {
-    min-width: 100px;
-  }
-
-  th.-checkbox,
-  td.-checkbox {
-    min-width: 36px;
-  }
-
-  @media (min-width: 576px) {
-    table tbody {
-      height: 700px;
-    }
-  }
-
-  @media (min-width: 992px) {
-    table tbody {
-      height: 700px;
-    }
-  }
-</style>

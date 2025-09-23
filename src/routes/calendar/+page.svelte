@@ -419,6 +419,20 @@
   :global(.event-calendar .ec .ec-event) {
     cursor: pointer;
   }
+  
+  :global(.event-calendar .ec .ec-toolbar) {
+    flex-wrap: wrap;
+
+    &> * {
+      margin-bottom: 0.5em;
+    }
+  }
+
+  @media (max-width: 992px) {
+    :global(.event-calendar .ec .ec-toolbar) {
+      flex-direction: column;
+    }
+  }
 
   :global(.event-calendar .ec .ec-event) {
     border: dotted transparent 2px;
