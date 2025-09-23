@@ -51,6 +51,10 @@
           class="btn btn-ghost text-l mx-1"
           class:btn-active={currentRoute === base + "/calendar"}>Calendrier</a>
 
+        <a href="{base}/on-calls"
+          class="btn btn-ghost text-l mx-1"
+          class:btn-active={currentRoute === base + "/on-calls"}>Vos gardes</a>
+
         {#if ['assistant', 'god'].includes($currentUser?.role)}
           <a href="{base}/students"
             class="btn btn-ghost text-l mx-1"
@@ -110,6 +114,11 @@
         on:click={() => (isOpen = false)}
         class="btn btn-ghost w-full text-black"
         class:btn-active={currentRoute === base + "/calendar"}>Calendrier</a>
+        
+      <a href="{base}/on-calls"
+        on:click={() => (isOpen = false)}
+        class="btn btn-ghost w-full text-black"
+        class:btn-active={currentRoute === base + "/on-calls"}>Vos gardes</a>
 
       {#if ['assistant', 'god'].includes($currentUser?.role)}
         <a href="{base}/students"

@@ -32,7 +32,7 @@
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
 
-  const fetch = async (view?: ViewCalendar): Promise<RecordModel[] | undefined> => {
+  const fetchAll = async (view?: ViewCalendar): Promise<RecordModel[] | undefined> => {
     try {
       if (!(view || myCalendar)) return;
 
@@ -147,7 +147,7 @@
     view: ViewCalendar,
   }) => {
     loading = true;
-    const list = await fetch(info.view);
+    const list = await fetchAll(info.view);
 
     if (list) {
       tempOptionsEvents = list.map((event: RecordModel) => {
@@ -223,7 +223,7 @@
   const handleIsOnMarketPlaceOnlyChanged = async () => {
     loading = true;
     isOnMarketPlaceOnly = !isOnMarketPlaceOnly;
-    const list = await fetch();
+    const list = await fetchAll();
 
     if (list) {
       tempOptionsEvents = list.map((event: RecordModel) => {
