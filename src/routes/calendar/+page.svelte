@@ -422,10 +422,10 @@
   
   :global(.event-calendar .ec .ec-toolbar) {
     flex-wrap: wrap;
+  }
 
-    &> * {
-      margin-bottom: 0.5em;
-    }
+  :global(.event-calendar .ec .ec-toolbar div) {
+    margin-bottom: 0.5em;
   }
 
   @media (max-width: 992px) {

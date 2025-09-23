@@ -14,7 +14,7 @@ onRecordUpdateRequest((e) => {
 }, "onCallSlots");
 
 onModelAfterUpdateSuccess((e) => {
-  const oldValue = e.model.originalCopy();
+  const oldValue = e.model.original();
   const newValue = e.model;
 
   $app.runInTransaction((txApp) => {
