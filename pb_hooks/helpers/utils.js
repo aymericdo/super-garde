@@ -8,6 +8,7 @@ module.exports = {
         const lastName = lineArray[1].slice(1,-1)
         const email = lineArray[2].slice(1,-1)
         const year = lineArray[3].slice(1,-1)
+        const UHCD = lineArray[4].slice(1,-1)
 
         const name = `${firstName} ${lastName}`;
         const username = `${firstName[0]}${lastName}`
@@ -23,6 +24,7 @@ module.exports = {
           name,
           username,
           year,
+          UHCD: UHCD === 'TRUE',
         }
       }
     }

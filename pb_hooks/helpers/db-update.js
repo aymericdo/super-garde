@@ -4,12 +4,14 @@ module.exports = {
 
     const {
       year,
+      UHCD,
     } = data;
 
     try {
       const studentRecord = txApp.findFirstRecordByFilter('students', "user = {:user}", { user: userRecord.id });
 
       studentRecord.set("year", year);
+      studentRecord.set("UHCD", UHCD);
 
       txApp.save(studentRecord);
 

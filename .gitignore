@@ -12,3 +12,5 @@ vite.config.ts.timestamp-*
 /pb_data
 
 docker-compose.yml
+
+/data/**

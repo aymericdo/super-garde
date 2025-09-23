@@ -18,25 +18,27 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
   const SECTORS_BY_HOSPITAL = {
     'Trousseau': [
-      ['Chirurgie', 'MM1'],
-      ['Psychiatrie', 'MM2'],
-      ['Urgence secteur 1 - 2', 'MM2'],
-      ['Urgence secteur 1 - 2', 'MM3'],
-      ['Urgence secteur 3', 'MM1'],
-      ['Urgence secteur 3', 'MM1'],
-      ['Urgence secteur 3', 'MM3'],
-      ['USCI Cardiologie', 'MM1'],
+      ['Chirurgie', '*'],
+      ['Psychiatrie', '*'],
+      ['Urgence secteur 1 - 2', '*'],
+      ['Urgence secteur 1 - 2', '*'],
+      ['Urgence secteur 3', '*'],
+      ['Urgence secteur 3', '*'],
+      ['Urgence secteur 3', '*'],
+      ['USCI Cardiologie', '*'],
+      ['URTC', 'MM1;MM2'],
+      ['UHCD', '*'],
     ],
     'Bretonneau': [
-      ['Étage', 'MM1'],
-      ['Gynécologie', 'MM2'],
-      ['Obstétrique', 'MM2'],
-      ['Réanimation 1 - 2', 'MM2'],
-      ['Réanimation 3 - 4', 'MM3'],
+      ['Étage', '*'],
+      ['Gynécologie', '*'],
+      ['Obstétrique', '*'],
+      ['Réanimation 1 - 2', '*'],
+      ['Réanimation 3 - 4', '*'],
     ],
     'Clocheville': [
-      ['Pédiatrie', 'MM2'],
-      ['Pédiatrie', 'MM3'],
+      ['Pédiatrie', '*'],
+      ['Pédiatrie', '*'],
     ],
   };
 
@@ -60,7 +62,11 @@ routerAdd("GET", "/api/create-all-events", (e) => {
             : [];
 
           const validStudentIds = students.reduce((prev, student) => {
-            if (student.get('year') === year && !alreadyBookedStudentIds.includes(student.get('id'))) {
+            const yearValid = year === '*' || year.split(';').some((y) => y === student.get('year'));
+
+            const uhcdValid = sector !== 'UHCD' || student.get('uhcd')
+
+            if (yearValid && uhcdValid && !alreadyBookedStudentIds.includes(student.get('id'))) {
               prev.push(student.get('id'));
             }
 

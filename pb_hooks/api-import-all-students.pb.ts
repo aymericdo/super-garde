@@ -24,6 +24,7 @@ routerAdd("GET", "/api/import-all-students", (e) => {
       name,
       username,
       year,
+      UHCD,
     } = utils.csvParser(line, 'student')
 
     let userSameEmail = null;
@@ -36,12 +37,12 @@ routerAdd("GET", "/api/import-all-students", (e) => {
     $app.runInTransaction((txApp) => {
       if (userSameEmail) {
         const dbUpdate = require(`${__hooks}/helpers/db-update.js`);
-        dbUpdate.student({ year }, userSameEmail, { txApp });
+        dbUpdate.student({ year, UHCD }, userSameEmail, { txApp });
       } else {
         
         const dbCreate = require(`${__hooks}/helpers/db-create.js`);
         const userRecord = dbCreate.user({ email, name, username }, { txApp, $app, $security });
-        dbCreate.student({ firstName, lastName, year }, userRecord, { txApp });
+        dbCreate.student({ firstName, lastName, year, UHCD }, userRecord, { txApp });
       }
     });
   });

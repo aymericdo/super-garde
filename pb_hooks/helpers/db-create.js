@@ -35,6 +35,7 @@ module.exports = {
       firstName,
       lastName,
       year,
+      UHCD,
     } = data;
 
     try {
@@ -45,6 +46,7 @@ module.exports = {
         "lastName": lastName,
         "user": userRecord.id,
         "year": year,
+        "UHCD": UHCD,
       });
 
       txApp.save(studentRecord)

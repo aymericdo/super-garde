@@ -3,6 +3,7 @@ const SHEET_HEADERS = [
   "lastName",
   "email",
   "year",
+  "UHCD",
 ];
 
 module.exports = {
