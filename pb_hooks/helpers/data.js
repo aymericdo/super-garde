@@ -69,4 +69,29 @@ module.exports = {
       [new Date("2026-03-16"), new Date("2026-03-18")],
     ],
   }),
+  sectorsByHospital: () => ({
+    'Trousseau': [
+      ['Chirurgie', '*'],
+      ['Psychiatrie', '*'],
+      ['Urgence secteur 1 - 2', '*'],
+      ['Urgence secteur 1 - 2', '*'],
+      ['Urgence secteur 3', '*'],
+      ['Urgence secteur 3', '*'],
+      ['Urgence secteur 3', '*'],
+      ['USCI Cardiologie', '*'],
+      ['URTC', 'MM1;MM2'],
+      ['UHCD', '*'],
+    ],
+    'Bretonneau': [
+      ['Étage', '*'],
+      ['Gynécologie', '*'],
+      ['Obstétrique', '*'],
+      ['Réanimation 1 - 2', '*'],
+      ['Réanimation 3 - 4', '*'],
+    ],
+    'Clocheville': [
+      ['Pédiatrie', '*'],
+      ['Pédiatrie', '*'],
+    ],
+  }),
 };

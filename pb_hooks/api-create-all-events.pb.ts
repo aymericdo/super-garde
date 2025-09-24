@@ -7,6 +7,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
   const data = require(`${__hooks}/helpers/data.js`);
   const holidays = data.holidays();
   const blockedPeriods = data.blockedPeriods();
+  const sectorsByHospital = data.sectorsByHospital();
 
   let startDate = new Date()
   let endDate = new Date()
@@ -20,32 +21,6 @@ routerAdd("GET", "/api/create-all-events", (e) => {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
-  const SECTORS_BY_HOSPITAL = {
-    'Trousseau': [
-      ['Chirurgie', '*'],
-      ['Psychiatrie', '*'],
-      ['Urgence secteur 1 - 2', '*'],
-      ['Urgence secteur 1 - 2', '*'],
-      ['Urgence secteur 3', '*'],
-      ['Urgence secteur 3', '*'],
-      ['Urgence secteur 3', '*'],
-      ['USCI Cardiologie', '*'],
-      ['URTC', 'MM1;MM2'],
-      ['UHCD', '*'],
-    ],
-    'Bretonneau': [
-      ['Étage', '*'],
-      ['Gynécologie', '*'],
-      ['Obstétrique', '*'],
-      ['Réanimation 1 - 2', '*'],
-      ['Réanimation 3 - 4', '*'],
-    ],
-    'Clocheville': [
-      ['Pédiatrie', '*'],
-      ['Pédiatrie', '*'],
-    ],
-  };
-
   const studentsByDate = {};
   const eventByDate = {};
   const eventCountByStudent = {};
@@ -58,8 +33,8 @@ routerAdd("GET", "/api/create-all-events", (e) => {
     const currentDate = startDate;
 
     while (currentDate < endDate) {
-      Object.keys(SECTORS_BY_HOSPITAL).forEach((hospital) => {
-        SECTORS_BY_HOSPITAL[hospital].forEach(([sector, year]) => {
+      Object.keys(sectorsByHospital).forEach((hospital) => {
+        sectorsByHospital[hospital].forEach(([sector, year]) => {
           // defensive safeguard to avoid double booking
           const alreadyBookedStudentIds = Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())
             ? studentsByDate[currentDate.toISOString()]
