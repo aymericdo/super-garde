@@ -4,6 +4,10 @@
 routerAdd("GET", "/api/create-all-events", (e) => {
   const authRecord = e.auth
 
+  const data = require(`${__hooks}/helpers/data.js`);
+  const holidays = data.holidays();
+  const blockedPeriods = data.blockedPeriods();
+
   let startDate = new Date()
   let endDate = new Date()
 
@@ -45,7 +49,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
   const studentsByDate = {};
   const eventByDate = {};
   const eventCountByStudent = {};
-
+  const lastEventDateByStudent = {};
   
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
@@ -60,35 +64,50 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const alreadyBookedStudentIds = Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())
             ? studentsByDate[currentDate.toISOString()]
             : [];
+          
+          let minCount = null;
+          const relevantIds = [];
 
-          const validStudentIds = students.reduce((prev, student) => {
-            const yearValid = year === '*' || year.split(';').some((y) => y === student.get('year'));
+          function isInBlockedPeriod(year, date) {
+            const periods = blockedPeriods[year] ?? [];
+            return periods.some(([start, end]) => date >= start && date <= end);
+          }
 
-            const uhcdValid = sector !== 'UHCD' || student.get('uhcd')
+          function daysBetween(d1, d2) {
+            return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
+          }
 
-            if (yearValid && uhcdValid && !alreadyBookedStudentIds.includes(student.get('id'))) {
-              prev.push(student.get('id'));
+          for (const student of students) {
+            const studentYear = student.get('year');
+            const yearValid = year === '*' || year.split(';').includes(studentYear);
+            const uhcdValid = sector !== 'UHCD' || student.get('UHCD');
+            const id = student.get('id');
+
+            if (yearValid && uhcdValid && !alreadyBookedStudentIds.includes(id) && !isInBlockedPeriod(studentYear, currentDate)) {
+              const count = eventCountByStudent[id] ?? 0;
+
+              // Vérifier l'intervalle entre les gardes
+              const lastDate = lastEventDateByStudent[id];
+              const tooClose = lastDate && Math.abs(daysBetween(currentDate, lastDate)) < 2;
+
+              if (tooClose) {
+                continue; // on skip cet étudiant
+              }
+
+              if (minCount === null || count < minCount) {
+                // nouveau minimum trouvé → on reset la liste
+                minCount = count;
+                relevantIds.length = 0;
+                relevantIds.push(id);
+              } else if (count === minCount) {
+                // égal au minimum actuel → on l’ajoute aussi
+                relevantIds.push(id);
+              }
             }
-
-            return prev;
-          }, []).sort((a, b) => {
-            if (!Object.prototype.hasOwnProperty.call(eventCountByStudent, a)) {
-              return -1;
-            }
-
-            if (!Object.prototype.hasOwnProperty.call(eventCountByStudent, b)) {
-              return 1;
-            }
-
-            return eventCountByStudent[a] - eventCountByStudent[b];
-          });
-
-          const relevantIds = validStudentIds.filter(id =>
-            eventCountByStudent[validStudentIds[0]] === eventCountByStudent[id]);
+          }
 
           if (!relevantIds.length) return;
 
-          
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);
 
@@ -108,23 +127,29 @@ routerAdd("GET", "/api/create-all-events", (e) => {
             sector,
           }
 
-          
           const dbCreate = require(`${__hooks}/helpers/db-create.js`);
           dbCreate.onCallSlot(event, currentStudentId, { $app, txApp });
 
-          if (Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())) {
-            studentsByDate[currentDate.toISOString()].push(currentStudentId);
-            eventByDate[currentDate.toISOString()].push(event);
-          } else {
-            studentsByDate[currentDate.toISOString()] = [currentStudentId];
-            eventByDate[currentDate.toISOString()] = [event];
+          const dateKey = currentDate.toISOString();
+
+          // init arrays si pas encore
+          if (!studentsByDate[dateKey]) {
+            studentsByDate[dateKey] = [];
+            eventByDate[dateKey] = [];
           }
 
-          if (Object.prototype.hasOwnProperty.call(eventCountByStudent, currentStudentId)) {
-            eventCountByStudent[currentStudentId] += 1;
-          } else {
-            eventCountByStudent[currentStudentId] = 1;
-          }
+          studentsByDate[dateKey].push(currentStudentId);
+          eventByDate[dateKey].push(event);
+          lastEventDateByStudent[currentStudentId] = currentDate;
+
+          // calcul du poids de la journée
+          const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6; // dimanche=0, samedi=6
+          const isHoliday = holidays.some((h) => h.toDateString() === currentDate.toDateString()); 
+
+          const weight = (isWeekend || isHoliday) ? 2 : 1;
+
+          // incrément pondéré
+          eventCountByStudent[currentStudentId] = (eventCountByStudent[currentStudentId] ?? 0) + weight;
         });
       });
 
