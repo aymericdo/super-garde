@@ -39,7 +39,8 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const alreadyBookedStudentIds = Object.prototype.hasOwnProperty.call(studentsByDate, currentDate.toISOString())
             ? studentsByDate[currentDate.toISOString()]
             : [];
-          
+
+          const isUHCD = sector === 'UHCD'
           let minCount = null;
           const relevantIds = [];
 
@@ -55,7 +56,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           for (const student of students) {
             const studentYear = student.get('year');
             const yearValid = year === '*' || year.split(';').includes(studentYear);
-            const uhcdValid = sector !== 'UHCD' || student.get('UHCD');
+            const uhcdValid = !isUHCD || student.get('UHCD');
             const id = student.get('id');
 
             if (yearValid && uhcdValid && !alreadyBookedStudentIds.includes(id) && !isInBlockedPeriod(studentYear, currentDate)) {
@@ -121,7 +122,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6; // dimanche=0, samedi=6
           const isHoliday = holidays.some((h) => h.toDateString() === currentDate.toDateString()); 
 
-          const weight = (isWeekend || isHoliday) ? 2 : 1;
+          const weight = isUHCD ? 0 : (isWeekend || isHoliday) ? 2 : 1;
 
           // incrément pondéré
           eventCountByStudent[currentStudentId] = (eventCountByStudent[currentStudentId] ?? 0) + weight;

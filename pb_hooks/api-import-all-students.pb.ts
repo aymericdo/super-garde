@@ -9,7 +9,6 @@ routerAdd("GET", "/api/import-all-students", (e) => {
   }
 
   const googleSheetUrl = e.request?.url?.query().get("url")
-
   
   const studentsGoogleSheet = require(`${__hooks}/helpers/students-google-sheet.js`);
   const list = studentsGoogleSheet.fetch(googleSheetUrl, { e, $http });
