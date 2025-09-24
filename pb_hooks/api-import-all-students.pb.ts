@@ -21,7 +21,6 @@ routerAdd("GET", "/api/import-all-students", (e) => {
       lastName,
       email,
       name,
-      username,
       year,
       UHCD,
     } = utils.csvParser(line, 'student')
@@ -40,7 +39,7 @@ routerAdd("GET", "/api/import-all-students", (e) => {
       } else {
         
         const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-        const userRecord = dbCreate.user({ email, name, username }, { txApp, $app, $security });
+        const userRecord = dbCreate.user({ email, name }, { txApp });
         dbCreate.student({ firstName, lastName, year, UHCD }, userRecord, { txApp });
       }
     });

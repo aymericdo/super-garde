@@ -1,11 +1,10 @@
 module.exports = {
   user: (data, options) => {
-    const { txApp, $security } = options;
+    const { txApp } = options;
 
     const {
       email,
       name,
-      username,
     } = data;
 
     try {
@@ -14,7 +13,6 @@ module.exports = {
       const userRecord = new Record(usersCollection, {
         "name": name,
         "email": email,
-        "username": `${username}_${$security.randomStringWithAlphabet(2, "123456789")}`,
         "role": 'student',
       });
 

@@ -82,7 +82,9 @@ routerAdd("GET", "/api/create-all-events", (e) => {
             }
           }
 
-          if (!relevantIds.length) return;
+          if (!relevantIds.length) {
+            return;
+          }
 
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);

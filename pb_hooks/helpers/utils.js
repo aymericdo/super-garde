@@ -11,18 +11,12 @@ module.exports = {
         const UHCD = lineArray[4].slice(1,-1)
 
         const name = `${firstName} ${lastName}`;
-        const username = `${firstName[0]}${lastName}`
-          .toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(' ', '');
 
         return {
           firstName,
           lastName,
           email,
           name,
-          username,
           year,
           UHCD: UHCD === 'TRUE',
         }

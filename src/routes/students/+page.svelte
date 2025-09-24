@@ -295,7 +295,7 @@
         <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Année</th>
       </tr>
     </thead>
-    <tbody class="block overflow-y-auto w-full pb-8 h-[640px] sm:h-[700px] lg:h-[700px]">
+    <tbody class="block overflow-y-auto w-full bg-white pb-8 h-[640px] sm:h-[700px] lg:h-[700px]">
       {#each data.studentList.items as item}
         <tr class="flex">
           <td class="basis-1/12 px-6 py-4 flex items-center min-w-[36px] -checkbox">
