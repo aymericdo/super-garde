@@ -7,6 +7,7 @@
   import ResourceTimeGrid from '@event-calendar/resource-time-grid';
   import Interaction from '@event-calendar/interaction';
   import ModalEvent from '$lib/components/ModalEvent.svelte'
+  import ModalConfirmation from '$lib/components/ModalConfirmation.svelte'
   import ModalPeriodPicker from '$lib/components/ModalPeriodPicker.svelte'
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
@@ -21,6 +22,7 @@
   
   let isEventModalOpen = false;
   let isPeriodPickerModalOpen = false;
+  let isConfirmationModalOpen = false;
   let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
   let loading = false;
   let isOnMarketPlaceOnly = false;
@@ -104,10 +106,6 @@
     }
   }
 
-  const handleGenerate = async () => {
-    isPeriodPickerModalOpen = true;
-  }
-
   const handleDelete = async () => {
     loading = true;
     try {
@@ -118,7 +116,6 @@
       setTimeout(() => {
         isAlertDeletionSuccessVisible = false;
       }, 3*1000);
-      console.log(data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -169,7 +166,6 @@
           endDate: end,
         }
       });
-      console.log(data);
 
       isAlertGenerateSuccessVisible = true;
       isAlertDeletionSuccessVisible = false;
@@ -196,16 +192,22 @@
   const handlePutOnMarket = async () => {
     if (openedEvent) {
       await putEventOnMarket(openedEvent.event.id);
-      handleEventModalClose();
     } else {
       console.error('should have an opened event here');
     }
   }
 
+  const handlePutOnTransfer = async () => {
+    console.log('OnTransfer', openedEvent)
+  }
+
+  const handlePutOnExchange = async () => {
+    console.log('OnExchange', openedEvent)
+  }
+
   const handlePutOutOfMarket = async () => {
     if (openedEvent) {
       await putEventOutOfMarket(openedEvent.event.id);
-      handleEventModalClose();
     } else {
       console.error('should have an opened event here');
     }
@@ -367,8 +369,23 @@
     pb.realtime.unsubscribe('users');
   })
 
-  setContext('isEventModalOpen', { handleEventModalClose, handlePutOnMarket, handlePutOutOfMarket, handleTakeFromMarket });
-  setContext('isPeriodPickerModalOpen', { handlePeriodPickerClose, handleGenerateSubmit });
+  setContext('isEventModalOpen', {
+    handleEventModalClose,
+    handlePutOnMarket,
+    handlePutOnTransfer,
+    handlePutOnExchange,
+    handlePutOutOfMarket,
+    handleTakeFromMarket,
+  });
+  setContext('isPeriodPickerModalOpen', {
+    handlePeriodPickerClose,
+    handleGenerateSubmit,
+  });
+
+  setContext('isConfirmationModalOpen', {
+    handleModalClose: () => isConfirmationModalOpen = false,
+    handleConfirm: () => handleDelete(),
+  });
 </script>
 
 <div class="flex justify-between mb-1">
@@ -387,8 +404,8 @@
   </div>
   <div class="flex flex-1 flex-wrap items-center justify-end">
     {#if ['assistant', 'god'].includes($currentUser?.role)}
-      <button disabled={!options.events.length} on:click={handleDelete} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
-      <button disabled={!!options.events.length} on:click={handleGenerate} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
+      <button disabled={!options.events.length} on:click={() => isConfirmationModalOpen = true} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
+      <button disabled={!!options.events.length} on:click={() => isPeriodPickerModalOpen = true} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
     {/if}
   </div>
 </div>
@@ -400,7 +417,7 @@
   </div>
 {/if}
 
-<div class="sm:rounded-lg event-calendar">
+<div class="sm:rounded-lg event-calendar bg-white p-4">
   <div class="w-full h-full">
     <Calendar {plugins} {options} bind:this={myCalendar} />
   </div>
@@ -414,6 +431,11 @@
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
 <ModalEvent {isEventModalOpen} {openedEvent} isConnectedStudent={!!data.currentStudent} />
+<ModalConfirmation
+  {isConfirmationModalOpen}
+  title={'Confirmer la suppression'}
+  description={'Voulez-vous vraiment supprimer ces événements ?'}
+/>
 
 <style>
   :global(.event-calendar .ec .ec-event) {

@@ -3,6 +3,7 @@
   import Calendar from '@event-calendar/core';
   import DayGrid from '@event-calendar/day-grid';
   import Interaction from '@event-calendar/interaction';
+  import type { CalendarEvent, CalendarOptions } from '$lib/interfaces/calendar'
 
   const plugins = [DayGrid, Interaction];
 
@@ -49,7 +50,7 @@
           startEditable: false,
           durationEditable: false,
           resourceIds: [],
-        }],
+        } as CalendarEvent],
       }
     }
   }
@@ -66,7 +67,7 @@
   let start: Date | null = null;
   let end: Date | null = null;
 
-  let options: any = {
+  let options: CalendarOptions = {
     view: 'dayGridMonth',
     allDaySlot: true,
     firstDay: 1,
@@ -83,10 +84,13 @@
       listWeek: 'Liste',
     },
     events: [],
-    eventBackgroundColor: '#5e63b6',
+    eventBackgroundColor: 'green',
     eventContent: ' ',
     eventClassNames: 'yoyo',
     dateClick: handleDateClick,
+    slotDuration: '',
+    selectable: false,
+    dayMaxEvents: false,
   };
 
   export let isPeriodPickerModalOpen: boolean = false;
@@ -94,14 +98,14 @@
 
 <div class="modal period-picker-calendar" class:modal-open={isPeriodPickerModalOpen}>
   <div class="modal-box">
-    <h3 class="font-bold text-lg">Votre période</h3>
-    <div class="py-4">
+    <h3 class="font-bold text-lg mb-2">Votre période</h3>
+    <div class="sm:rounded-lg p-4">
       <Calendar {plugins} {options} />
-      <div class="py-4 text-center">
+      <div class="my-4 text-center">
         {displayDateRange(start, end)}
       </div>
       {#if start}
-      <div class="py-4 text-center">
+      <div class="my-4 text-center">
         <button class="btn btn-xs" on:click={handleReset}>Réinitaliser la sélection</button>
       </div>
       {/if}

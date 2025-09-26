@@ -112,7 +112,6 @@
     try {
       if (isAllStudentsChecked) {
         const data = await pb.send("/api/delete-all-students", {});
-        console.log(data);
       } else {
         selectedStudents.forEach(async (id) => {
           const student = await pb.collection('students').getOne(id);

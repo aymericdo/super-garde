@@ -6,7 +6,6 @@
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
   import Doctor from 'svelte-material-icons/Doctor.svelte'
   import { currentUser } from '$lib/stores/user'
-  import type { RecordModel } from 'pocketbase'
 
   const displayDateRange = (start: Date, end: Date) => {
     const options: Intl.DateTimeFormatOptions = {
@@ -29,13 +28,21 @@
     return `${start.toLocaleTimeString("fr", options)} - ${end.toLocaleTimeString("fr", options)}`;
   }
 
-  const { handleEventModalClose, handlePutOnMarket, handleTakeFromMarket, handlePutOutOfMarket } =
-    getContext('isEventModalOpen') as {
-      handleEventModalClose: () => void,
-      handlePutOnMarket: () => void,
-      handleTakeFromMarket: () => void,
-      handlePutOutOfMarket: () => void,
-    };
+  const {
+    handleEventModalClose,
+    handlePutOnMarket,
+    handlePutOnTransfer,
+    handlePutOnExchange,
+    handleTakeFromMarket,
+    handlePutOutOfMarket,
+  } = getContext('isEventModalOpen') as {
+    handleEventModalClose: () => void,
+    handlePutOnMarket: () => void,
+    handlePutOnTransfer: () => void,
+    handlePutOnExchange: () => void,
+    handleTakeFromMarket: () => void,
+    handlePutOutOfMarket: () => void,
+  };
 
   export let isEventModalOpen: boolean = false;
   export let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
@@ -63,20 +70,55 @@
         {:else}
           <span>Pas d'étudiant·e</span>
         {/if}
-          
+      </div>
+
+      <div class="flex flex-col ">
+        {#if !openedEvent?.event.isOnMarket}
+          <button class="btn btn-secondary btn-outline btn-sm m-1"
+            on:click={() => {
+              handlePutOnTransfer();
+              handleEventModalClose();
+            }}
+          >
+            Transférer
+          </button>
+          <button class="btn btn-secondary btn-outline btn-sm m-1"
+            on:click={() => {
+              handlePutOnExchange();
+              handleEventModalClose();
+            }}
+          >
+            Échanger
+          </button>
+          <button class="btn btn-secondary btn-outline btn-sm m-1"
+            on:click={() => {
+              handlePutOnMarket();
+              handleEventModalClose();
+            }}
+          >Mettre sur le marché</button>
+        {:else if isConnectedStudent}
+          <button class="btn btn-primary btn-sm m-1"
+            on:click={() => {
+              handleTakeFromMarket();
+              handleEventModalClose();
+            }}
+          >
+            Prendre
+          </button>
+        {:else if openedEvent?.event.isOnMarket && (['assistant', 'god'].includes($currentUser?.role))}
+          <button class="btn btn-primary btn-sm m-1"
+            on:click={() => {
+              handlePutOutOfMarket();
+              handleEventModalClose();
+            }}
+          >
+            Sortir du marché
+          </button>
+        {/if}
       </div>
     </div>
     <div class="modal-action">
       <button class="btn" on:click={handleEventModalClose}>Fermer</button>
-      {#if !openedEvent?.event.isOnMarket}
-        <button class="btn btn-primary" on:click={handlePutOnMarket}>Mettre sur le marché</button>
-      {:else if isConnectedStudent}
-        <button class="btn btn-primary" on:click={handleTakeFromMarket}>Prendre</button>
-      {/if}
-
-      {#if openedEvent?.event.isOnMarket && (['assistant', 'god'].includes($currentUser?.role))}
-        <button class="btn btn-primary" on:click={handlePutOutOfMarket}>Sortir du marché</button>
-      {/if}
     </div>
   </div>
   <div class="modal-backdrop">

@@ -9,10 +9,10 @@ export interface CalendarEvent {
   startEditable: boolean;
   durationEditable: boolean;
   resourceIds: string[];
-  hospital: string;
-  student: string;
-  isOnMarket: boolean;
-  backgroundColor: string;
+  hospital?: string;
+  student?: string;
+  isOnMarket?: boolean;
+  backgroundColor?: string;
 }
 
 export interface CalendarOptions {
@@ -32,15 +32,22 @@ export interface CalendarOptions {
     dayGridMonth: string;
     timeGridWeek: string;
     listDay: string;
-    listYear: string;
+    listWeek?: string;
+    listYear?: string;
   },
+  eventBackgroundColor?: string;
+  eventContent?: string;
+  eventClassNames?: string;
   events: CalendarEvent[];
-  eventClick: (data: {
+  dateClick?: (data: {
+    date: Date,
+  }) => void;
+  eventClick?: (data: {
     el: HTMLDivElement,
     event: RecordModel,
     jsEvent: PointerEvent,
   }) => void;
-  datesSet: (info: {
+  datesSet?: (info: {
     start: Date,
     end: Date,
     startStr: string,
