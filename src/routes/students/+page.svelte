@@ -85,7 +85,7 @@
   const handleImport = async (url: string) => {
     try {
       await pb.send("/api/import-all-students", {
-        url
+        url,
       });
       requestErrorMessage = null;
       isAlertSuccessVisible = true;

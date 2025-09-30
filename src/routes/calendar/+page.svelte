@@ -130,6 +130,11 @@
     loading = true;
     handlePeriodPickerClose();
     try {
+      start.setDate(start.getDate() + 1)
+      start.setUTCHours(0)
+      start.setUTCMinutes(0)
+      end.setUTCHours(0)
+      end.setUTCMinutes(0)
       await pb.send("/api/create-all-events", {
         params: {
           startDate: start,
