@@ -106,7 +106,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           }
 
           const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-          dbCreate.onCallSlot(event, currentStudentId, { $app, txApp });
+          dbCreate.onCallSlot(event, currentStudentId, { $app: txApp });
 
           const dateKey = currentDate.toISOString();
 

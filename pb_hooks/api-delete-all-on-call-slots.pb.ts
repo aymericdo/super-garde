@@ -12,11 +12,8 @@ routerAdd("GET", "/api/delete-all-on-call-slots", (e) => {
   const onCallSlots = dbRead.onCallSlots({ $app });
 
   onCallSlots.forEach((onCallSlot) => {
-    $app.runInTransaction((txApp) => {
-      
-      const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
-      dbDelete.onCallSlot(onCallSlot.get('id'), { txApp });
-    });
+    const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
+    dbDelete.onCallSlot(onCallSlot.get('id'), { $app });
   });
 
   return e.json(200, { "deletion-status": 'OK' });

@@ -10,8 +10,12 @@ export interface CalendarEvent {
   durationEditable: boolean;
   resourceIds: string[];
   hospital?: string;
+  sector?: string;
   student?: string;
+  studentId?: string;
   isOnMarket?: boolean;
+  isOnTransfer?: boolean;
+  isOnExchange?: boolean;
   backgroundColor?: string;
 }
 

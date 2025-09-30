@@ -54,9 +54,11 @@
       type="email"
       name="email"
       placeholder="Email"
-      class="input input-bordered"
+      class="input input-bordered w-full"
     />
+  </div>
 
+  <div class="form-control gap-2 mb-4">
     <div class="relative">
       <input
         type={showPassword ? 'text' : 'password'}
@@ -64,6 +66,7 @@
         placeholder="Password"
         class="input input-bordered w-full pr-10"
       />
+
       <button
         type="button"
         class="absolute inset-y-0 right-0 px-3 flex items-center text-sm"

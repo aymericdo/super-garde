@@ -73,38 +73,6 @@
     }
   }
 
-  const putEventOnMarket = async (id: string): Promise<RecordModel | undefined> => {
-    try {
-      return await pb.collection("onCallSlots").update(id, { isOnMarket: true });
-    } catch (error) {
-      if (!(error as ClientResponseError).isAbort) {
-        console.error(error);
-      }
-    }
-  }
-
-  const putEventOutOfMarket = async (id: string): Promise<RecordModel | undefined> => {
-    try {
-      return await pb.collection("onCallSlots").update(id, { isOnMarket: false });
-    } catch (error) {
-      if (!(error as ClientResponseError).isAbort) {
-        console.error(error);
-      }
-    }
-  }
-
-  const takeEventFromMarket = async (id: string): Promise<RecordModel | undefined> => {
-    if (data.currentStudent?.id) {
-      try {
-        return await pb.collection("onCallSlots").update(id, { isOnMarket: false, student: data.currentStudent?.id });
-      } catch (error) {
-        if (!(error as ClientResponseError).isAbort) {
-          console.error(error);
-        }
-      }
-    }
-  }
-
   const handleDelete = async () => {
     loading = true;
     try {
@@ -127,6 +95,9 @@
     event: RecordModel,
     jsEvent: PointerEvent,
   }) => {
+    if (el.parentElement?.parentElement?.className === 'ec-popup') {
+      el.parentElement.parentElement.style.display = 'none';
+    }
     el.classList.add('-selected');
     openedEvent = {
       event: options.events.find((ev: CalendarEvent) => ev.id === event.id)!,
@@ -186,39 +157,6 @@
   const handleEventModalClose = () => {
     openedEvent?.element.classList.remove('-selected');
     isEventModalOpen = false;
-  }
-
-  const handlePutOnMarket = async () => {
-    if (openedEvent) {
-      await putEventOnMarket(openedEvent.event.id);
-    } else {
-      console.error('should have an opened event here');
-    }
-  }
-
-  const handlePutOnTransfer = async () => {
-    console.log('OnTransfer', openedEvent)
-  }
-
-  const handlePutOnExchange = async () => {
-    console.log('OnExchange', openedEvent)
-  }
-
-  const handlePutOutOfMarket = async () => {
-    if (openedEvent) {
-      await putEventOutOfMarket(openedEvent.event.id);
-    } else {
-      console.error('should have an opened event here');
-    }
-  }
-
-  const handleTakeFromMarket = async () => {
-    if (openedEvent) {
-      await takeEventFromMarket(openedEvent.event.id);
-      handleEventModalClose();
-    } else {
-      console.error('should have an opened event here');
-    }
   }
 
   const handleIsOnMarketPlaceOnlyChanged = async () => {
@@ -347,7 +285,7 @@
       }
     });
 
-    pb.realtime.subscribe('onCallSlotsToHide', async (e) => {
+    pb.realtime.subscribe('xxxonCallSlotsToHide', async (e) => {
       if (e.action === 'create') {
         await updateEvent(e.record.onCallSlotId);
       }
@@ -364,17 +302,12 @@
 
   onDestroy(() => {
     pb.realtime.unsubscribe('onCallSlots');
-    pb.realtime.unsubscribe('onCallSlotsToHide');
+    pb.realtime.unsubscribe('xxxonCallSlotsToHide');
     pb.realtime.unsubscribe('users');
   })
 
   setContext('isEventModalOpen', {
     handleEventModalClose,
-    handlePutOnMarket,
-    handlePutOnTransfer,
-    handlePutOnExchange,
-    handlePutOutOfMarket,
-    handleTakeFromMarket,
   });
   setContext('isPeriodPickerModalOpen', {
     handlePeriodPickerClose,
@@ -429,11 +362,15 @@
 {/if}
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
-<ModalEvent {isEventModalOpen} {openedEvent} isConnectedStudent={!!data.currentStudent} />
+{#if isEventModalOpen && openedEvent}
+  <ModalEvent {isEventModalOpen} openedEvent={openedEvent.event} connectedStudent={data.currentStudent} />
+{/if}
+
 <ModalConfirmation
   {isConfirmationModalOpen}
   title={'Confirmer la suppression'}
   description={'Voulez-vous vraiment supprimer ces événements ?'}
+  action={'Supprimer'}
 />
 
 <style>

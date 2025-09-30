@@ -35,12 +35,11 @@ routerAdd("GET", "/api/import-all-students", (e) => {
     $app.runInTransaction((txApp) => {
       if (userSameEmail) {
         const dbUpdate = require(`${__hooks}/helpers/db-update.js`);
-        dbUpdate.student({ year, UHCD }, userSameEmail, { txApp });
+        dbUpdate.student({ year, UHCD }, userSameEmail, { $app: txApp });
       } else {
-        
         const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-        const userRecord = dbCreate.user({ email, name }, { txApp });
-        dbCreate.student({ firstName, lastName, year, UHCD }, userRecord, { txApp });
+        const userRecord = dbCreate.user({ email, name }, { $app: txApp });
+        dbCreate.student({ firstName, lastName, year, UHCD }, userRecord, { $app: txApp });
       }
     });
   });

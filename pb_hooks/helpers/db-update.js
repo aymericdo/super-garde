@@ -1,6 +1,6 @@
 module.exports = {
   student: (data, userRecord, options) => {
-    const { txApp } = options;
+    const { $app } = options;
 
     const {
       year,
@@ -8,12 +8,12 @@ module.exports = {
     } = data;
 
     try {
-      const studentRecord = txApp.findFirstRecordByFilter('students', "user = {:user}", { user: userRecord.id });
+      const studentRecord = $app.findFirstRecordByFilter('students', "user = {:user}", { user: userRecord.id });
 
       studentRecord.set("year", year);
       studentRecord.set("UHCD", UHCD);
 
-      txApp.save(studentRecord);
+      $app.save(studentRecord);
 
       return studentRecord;
     } catch (error) {

@@ -30,7 +30,10 @@
       }
 
       if (query.length) {
-        options.filter = `(firstName ~ "${query}") || (lastName ~ "${query}") || (year ~ "${query}") || (user.email ~ "${query}")`;
+        const terms = query.trim().split(/\s+/)
+        options.filter = terms
+          .map(term => `(firstName ?~ "${term}" || lastName ?~ "${term}") || (year ?~ "${query}") || (user.email ?~ "${query}")`)
+          .join(" && ")
       }
 
       return await pb.collection("students").getList(data.page, data.perPage, options)

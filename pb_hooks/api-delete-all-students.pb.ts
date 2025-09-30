@@ -12,11 +12,8 @@ routerAdd("GET", "/api/delete-all-students", (e) => {
   const students = dbRead.students({ $app });
 
   students.forEach((student) => {
-    $app.runInTransaction((txApp) => {
-      
-      const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
-      dbDelete.user(student.get('user'), { txApp });
-    });
+    const dbDelete = require(`${__hooks}/helpers/db-delete.js`);
+    dbDelete.user(student.get('user'), { $app });
   });
 
   return e.json(200, { "deletion-status": 'OK' });

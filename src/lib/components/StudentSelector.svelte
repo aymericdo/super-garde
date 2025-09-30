@@ -2,23 +2,27 @@
   import { pb } from "$lib/pocketbase"
   import { ClientResponseError } from "pocketbase"
   import { getContext, onMount } from "svelte"
+  import { debounce } from "$lib/utils"
   import type { RecordModel } from 'pocketbase'
 
   let students: RecordModel[] = [];
   let query = "";
   let selected: RecordModel | null = null
+  let isOpen = false
 
-  const fetch = async (): Promise<RecordModel[] | undefined> => {
+  const fetch = async (): Promise<void> => {
     try {
-      const options: { expand: string, filter?: string } = {
-        expand: 'user',
-      }
+      const options: { filter?: string } = {}
 
       if (query.length) {
-        options.filter = `(firstName ~ "${query}") || (lastName ~ "${query}")`;
+        const terms = query.trim().split(/\s+/)
+        options.filter = terms
+          .map(term => `(firstName ?~ "${term}" || lastName ?~ "${term}")`)
+          .join(" && ")
       }
 
-      return await pb.collection("students").getFullList(options)
+      const data = await pb.collection("students").getFullList(options)
+      setStudents(data);
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
@@ -30,66 +34,79 @@
     students = [...newData];
     selected = null;
   };
+
+  const fetchWithDebounce = debounce(fetch, 250);
   
   const handleSearch = async (inputEvent: Event) => {
-    query = (<HTMLInputElement>inputEvent.target).value.trim() || '';
-    const newData = await fetch();
-    if (newData) setStudents(newData);
+    isOpen = true;
+    query = (<HTMLInputElement>inputEvent.target).value || '';
+    fetchWithDebounce();
   }
   
-  onMount(async () => {
-    const data = await fetch();
-    console.log(data)
-    if (data) setStudents(data);
-  })
+  onMount(fetch)
 
   const {
     handleSelectStudent,
   } = getContext('studentSelector') as {
-    handleSelectStudent: () => void
+    handleSelectStudent: (student: RecordModel) => void
   }
+
+  export let selectedStudentError: string | null = null;
 </script>
 
-<div class="w-full bg-base-100 rounded-box p-4 shadow">
+<div class="w-full p-4">
   <!-- Champ de recherche -->
   <input
     type="text"
     placeholder="Filtrer..."
-    class="input input-bordered input-sm mb-2 w-full"
+    class="input input-bordered mb-2 w-full"
+    value={query}
     on:input={handleSearch}
   />
 
-  <select class="select">
-    <option disabled selected>Choisis un étudiant</option>
-    {#each students as student}
-      <option>{student.lastName}</option>
-    {/each}
-  </select>
+  {#if isOpen && query.length}
+    <ul class="list bg-base-100 rounded-box max-h-80 overflow-y-auto">
+      <li class="p-4 pb-2 text-xs opacity-60 tracking-wide">
+        Choisis un étudiant
+      </li>
+      {#each students as student}
+        <li class="list-row w-full flex">
+          <button
+            class="flex-1 text-left cursor-pointer"
+            class:selected={selected?.id === student.id}
+            disabled={selected?.id === student.id}
+            on:click={() => {
+              selected = student
+              query = `${student.firstName} ${student.lastName}`;
+              isOpen = false
+              handleSelectStudent(student)
+            }}
+          >
+            {student.firstName} {student.lastName} ({student.year})
+          </button>
+        </li>
+      {/each}
+    </ul>
+  {/if}
 
-  <input
-    type="checkbox"
-    checked="{true}"
-    class="checkbox border-indigo-600 bg-indigo-500 checked:border-orange-500 checked:bg-orange-400 checked:text-orange-800"
-  />
-
-  <!-- Liste -->
-  <!-- <ul class="menu w-full max-h-60 overflow-y-auto" role="listbox">
-    {#each students as student}
-      <button
-        role="option"
-        aria-selected={selected?.id === student.id}
-        class="cursor-pointer"
-        on:click={() => (selected = student)}
-      >
-        <span class={selected?.id === student.id ? 'active' : ''}>
-          {student.lastName}
-        </span>
-      </button>
-    {/each}
-  </ul> -->
-
-  <!-- Résultat -->
-  {#if selected}
-    <p class="mt-2 text-sm text-gray-500">Sélectionné : {selected}</p>
+  {#if selectedStudentError}
+  <div role="alert" class="alert alert-error">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>{selectedStudentError}</span>
+  </div>
   {/if}
 </div>
+
+<style>
+button {
+  transition: 0.3s;
+}
+
+button.selected,
+button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+</style>

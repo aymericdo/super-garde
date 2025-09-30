@@ -16,6 +16,12 @@ const config = {
     ],
     logs: false,
   },
+  safelist: [
+    'bg-[#be3144]',
+    'bg-[#ee7214]',
+    'bg-[#ff00bf]',
+    'bg-[#62ff00]',
+  ],
 }
 
 export default config

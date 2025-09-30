@@ -1,0 +1,20 @@
+/// <reference path="../pb_data/types.d.ts" />
+migrate((app) => {
+  const collection = app.findCollectionByNameOrId("amds7pecgcmyimm")
+
+  // update collection data
+  unmarshal({
+    "viewRule": "@request.auth.id != \"\" && ((@request.auth.role = \"god\" || @request.auth.role = \"assistant\") || (student = '' || isOnMarket = true || student.user = @request.auth.id) || ((onExchangeSlots_via_slot.to.user = @request.auth.id && onExchangeSlots_via_slot.state = \"progress\") || (onExchangeSlots_via_toSlot.from.user = @request.auth.id && onExchangeSlots_via_toSlot.state = \"progress\")))"
+  }, collection)
+
+  return app.save(collection)
+}, (app) => {
+  const collection = app.findCollectionByNameOrId("amds7pecgcmyimm")
+
+  // update collection data
+  unmarshal({
+    "viewRule": ""
+  }, collection)
+
+  return app.save(collection)
+})

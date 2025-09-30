@@ -12,6 +12,7 @@
   export let isConfirmationModalOpen: boolean = false;
   export let title: string;
   export let description: string;
+  export let action: string;
 </script>
 
 <div class="modal" class:modal-open={isConfirmationModalOpen}>
@@ -30,13 +31,13 @@
         Annuler
       </button>
       <button 
-        class="btn btn-error"
+        class="btn btn-primary"
         on:click={() => {
           handleConfirm();
           handleModalClose();
         }}
       >
-        Supprimer
+        { action ?? 'Confirmer' }
       </button>
     </div>
   </div>

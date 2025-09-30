@@ -1,6 +1,6 @@
 module.exports = {
   user: (data, options) => {
-    const { txApp } = options;
+    const { $app } = options;
 
     const {
       email,
@@ -8,7 +8,7 @@ module.exports = {
     } = data;
 
     try {
-      const usersCollection = txApp.findCollectionByNameOrId("users");
+      const usersCollection = $app.findCollectionByNameOrId("users");
 
       const userRecord = new Record(usersCollection, {
         "name": name,
@@ -19,7 +19,7 @@ module.exports = {
       userRecord.setPassword("azerty1234");
       userRecord.setEmailVisibility(true);
 
-      txApp.save(userRecord)
+      $app.save(userRecord)
 
       return userRecord;
     } catch (error) {
@@ -27,7 +27,7 @@ module.exports = {
     }
   },
   student: (data, userRecord, options) => {
-    const { txApp } = options;
+    const { $app } = options;
 
     const {
       firstName,
@@ -37,7 +37,7 @@ module.exports = {
     } = data;
 
     try {
-      const studentsCollection = txApp.findCollectionByNameOrId("students");
+      const studentsCollection = $app.findCollectionByNameOrId("students");
 
       const studentRecord = new Record(studentsCollection, {
         "firstName": firstName,
@@ -47,7 +47,7 @@ module.exports = {
         "UHCD": UHCD,
       });
 
-      txApp.save(studentRecord)
+      $app.save(studentRecord)
 
       return studentRecord;
     } catch (error) {
@@ -55,10 +55,10 @@ module.exports = {
     }
   },
   onCallSlot: (event, studentId, options) => {
-    const { txApp } = options;
+    const { $app } = options;
 
     try {
-      const onCallSlotsCollection = txApp.findCollectionByNameOrId("onCallSlots");
+      const onCallSlotsCollection = $app.findCollectionByNameOrId("onCallSlots");
 
       const onCallSlotRecord = new Record(onCallSlotsCollection, {
         "start": event.start,
@@ -68,40 +68,40 @@ module.exports = {
         "sector": event.sector,
       });
 
-      txApp.save(onCallSlotRecord)
+      $app.save(onCallSlotRecord)
       return onCallSlotRecord;
     } catch (error) {
       console.error("db onCallSlot creation failed", error);
     }
   },
   onCallSlotHistorical: (onCallSlotId, changes, options) => {
-    const { txApp } = options;
+    const { $app } = options;
 
     try {
-      const onCallSlotsHistoricalCollection = txApp.findCollectionByNameOrId("onCallSlotsHistorical");
+      const onCallSlotsHistoricalCollection = $app.findCollectionByNameOrId("onCallSlotsHistorical");
 
       const onCallSlotHistoricalRecord = new Record(onCallSlotsHistoricalCollection, {
         "onCallSlotId": onCallSlotId,
         "changes": changes,
       });
 
-      txApp.save(onCallSlotHistoricalRecord)
+      $app.save(onCallSlotHistoricalRecord)
       return onCallSlotHistoricalRecord;
     } catch (error) {
       console.log("db onCallSlotHistorical creation failed", error);
     }
   },
   onCallSlotToHide: (onCallSlotId, options) => {
-    const { txApp } = options;
+    const { $app } = options;
 
     try {
-      const onCallSlotsToHideCollection = txApp.findCollectionByNameOrId("onCallSlotsToHide");
+      const onCallSlotsToHideCollection = $app.findCollectionByNameOrId("xxxonCallSlotsToHide");
 
       const onCallSlotsToHideRecord = new Record(onCallSlotsToHideCollection, {
         "onCallSlotId": onCallSlotId,
       });
 
-      txApp.save(onCallSlotsToHideRecord)
+      $app.save(onCallSlotsToHideRecord)
       return onCallSlotsToHideRecord;
     } catch (error) {
       console.log("db onCallSlotsToHide creation failed", error);
