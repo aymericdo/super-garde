@@ -133,8 +133,6 @@ module.exports = {
       fromHtml = `<div>Votre garde du ${slot.get('start')} au ${slot.get('end')} a été transférée à un collègue.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     }
 
-    console.log('coucou')
-
     const messageToFromStudent = new MailerMessage({
       from: {
         address: $app.settings().meta.senderAddress,
@@ -146,8 +144,6 @@ module.exports = {
       subject: fromSubject,
       html: fromHtml,
     });
-
-    console.log('coucou')
 
     const messageToToStudent = new MailerMessage({
       from: {
@@ -161,11 +157,8 @@ module.exports = {
       html: toHtml,
     });
 
-    console.log('coucou')
-
     try {
       const DEV_SEND_EMAIL = process.env['DEV_SEND_EMAIL']
-      console.log(DEV_SEND_EMAIL)
 
       if (DEV_SEND_EMAIL === 'true') {
         $app.newMailClient().send(messageToFromStudent);
