@@ -79,7 +79,7 @@ module.exports = {
       ['Urgence secteur 3', '*'],
       ['Urgence secteur 3', '*'],
       ['USCI Cardiologie', '*'],
-      ['URTC', 'MM1;MM2'],
+      ['URTC', 'MM2;MM3'],
       ['UHCD', '*'],
     ],
     'Bretonneau': [
