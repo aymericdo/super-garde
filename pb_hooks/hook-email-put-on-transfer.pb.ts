@@ -9,10 +9,10 @@ onRecordAfterUpdateSuccess((e) => {
 
   const oldIsOnTransferValue = oldValue?.get("isOnTransfer");
   const newIsOnTransferValue = newValue?.get("isOnTransfer");
-  
+
   if (oldIsOnTransferValue !== newIsOnTransferValue) {
-    const email = require(`${__hooks}/helpers/email.js`);
     try {
+      const email = require(`${__hooks}/helpers/email.js`);
       email.putOnTransfer(e.record, { $app, MailerMessage, __hooks });
     } catch (err) {
       console.error(err);

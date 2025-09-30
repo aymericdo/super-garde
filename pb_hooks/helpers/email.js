@@ -96,6 +96,8 @@ module.exports = {
     const slot = $app.findRecordById('onCallSlots', model.id);
 
     const onTransferSlots = $app.findFirstRecordByFilter('onTransferSlots', "slot = {:slot}", { slot: slot.id });
+    $app.expandRecord(onTransferSlots, ['from', 'to'], null);
+
     const fromStudent = onTransferSlots.expandedOne('from');
     const toStudent = onTransferSlots.expandedOne('to');
 
@@ -131,6 +133,8 @@ module.exports = {
       fromHtml = `<div>Votre garde du ${slot.get('start')} au ${slot.get('end')} a été transférée à un collègue.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     }
 
+    console.log('coucou')
+
     const messageToFromStudent = new MailerMessage({
       from: {
         address: $app.settings().meta.senderAddress,
@@ -142,6 +146,8 @@ module.exports = {
       subject: fromSubject,
       html: fromHtml,
     });
+
+    console.log('coucou')
 
     const messageToToStudent = new MailerMessage({
       from: {
@@ -155,8 +161,11 @@ module.exports = {
       html: toHtml,
     });
 
+    console.log('coucou')
+
     try {
       const DEV_SEND_EMAIL = process.env['DEV_SEND_EMAIL']
+      console.log(DEV_SEND_EMAIL)
 
       if (DEV_SEND_EMAIL === 'true') {
         $app.newMailClient().send(messageToFromStudent);
@@ -172,6 +181,8 @@ module.exports = {
     const slot = $app.findRecordById('onCallSlots', model.id);
 
     const onExchangeSlots = $app.findFirstRecordByFilter('onExchangeSlots', "slot = {:slot}", { slot: slot.id });
+    $app.expandRecord(onExchangeSlots, ['from', 'to', 'toSlot'], null);
+
     const fromStudent = onExchangeSlots.expandedOne('from');
     const toStudent = onExchangeSlots.expandedOne('to');
     const toSlot = onExchangeSlots.expandedOne('toSlot');
