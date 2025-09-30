@@ -7,13 +7,13 @@ onRecordAfterUpdateSuccess((e) => {
   const oldValue = e.record.original()
   const newValue = e.record;
 
-  const oldIsOnMarketValue = oldValue?.get("isOnMarket");
-  const newIsOnMarketValue = newValue?.get("isOnMarket");
+  const oldIsOnTransferValue = oldValue?.get("isOnTransfer");
+  const newIsOnTransferValue = newValue?.get("isOnTransfer");
   
-  if (oldIsOnMarketValue !== newIsOnMarketValue) {
+  if (oldIsOnTransferValue !== newIsOnTransferValue) {
     const email = require(`${__hooks}/helpers/email.js`);
     try {
-      email.putOnMarket(e.record, { $app, MailerMessage, __hooks });
+      email.putOnTransfer(e.record, { $app, MailerMessage, __hooks });
     } catch (err) {
       console.error(err);
     }

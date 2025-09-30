@@ -11,7 +11,7 @@
   import Autorenew from 'svelte-material-icons/Autorenew.svelte'
   import { currentUser } from '$lib/stores/user'
   import StudentSelector from './StudentSelector.svelte'
-  import GardeSelector from './GardeSelector.svelte'
+  import OnCallSelector from './OnCallSelector.svelte'
   import { pb } from '$lib/pocketbase'
   import type { CalendarEvent } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
@@ -179,16 +179,22 @@
   })
 
   onMount(async () => {
-    if (openedEvent.isOnTransfer) {
-      let filter = `state="progress"&&slot="${openedEvent.id}"`
-      onTransferSlot = await pb.collection("onTransferSlots").getFirstListItem(filter, {
-        expand: 'from,to',
-      })
-    } else if (openedEvent.isOnExchange) {
-      let filter = `state="progress"&&slot="${openedEvent.id}"`
-      onExchangeSlot = await pb.collection("onExchangeSlots").getFirstListItem(filter, {
-        expand: 'from,to,toSlot',
-      })
+    try {
+      if (openedEvent.isOnTransfer) {
+        let filter = `state="progress"&&slot="${openedEvent.id}"`
+        onTransferSlot = await pb.collection("onTransferSlots").getFirstListItem(filter, {
+          expand: 'from,to',
+        })
+      } else if (openedEvent.isOnExchange) {
+        let filter = `state="progress"&&(slot="${openedEvent.id}"||toSlot="${openedEvent.id}")`
+        onExchangeSlot = await pb.collection("onExchangeSlots").getFirstListItem(filter, {
+          expand: 'from,to,slot,toSlot',
+        })
+      }
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
     }
   })
 
@@ -272,24 +278,45 @@
                 {/if}
                 <span>
                   Cette garde est actuellement en échange avec
-                  <span class="font-bold">
-                    {connectedStudent?.id === onExchangeSlot?.expand.to.id ? 'vous' : `${onExchangeSlot?.expand.to.firstName} ${onExchangeSlot?.expand.to.lastName}`}.
-                  </span>
-
-                  <span>Voici la garde en retour :</span>
-                  <div class="mt-4">
-                    <span class="capitalize">
-                      {onExchangeSlot?.expand.toSlot &&
-                        displayDateRange(
-                          new Date(onExchangeSlot?.expand.toSlot.start),
-                          new Date(onExchangeSlot?.expand.toSlot.end),
-                      )}
+                  {#if openedEvent.id === onExchangeSlot?.expand.slot.id}
+                    <span class="font-bold">
+                      {connectedStudent?.id === onExchangeSlot?.expand.to.id ? 'vous' : `${onExchangeSlot?.expand.to.firstName} ${onExchangeSlot?.expand.to.lastName}`}.
                     </span>
-                    <div class="flex items-center mb-2">
-                      <MapMarker class="mr-2" size="1.5em" />
-                      <span>{onExchangeSlot?.expand.toSlot.hospital}</span>-<span>{onExchangeSlot?.expand.toSlot.sector}</span>
+
+                    <span>Voici la garde en retour :</span>
+                    <div class="mt-4">
+                      <span class="capitalize">
+                        {onExchangeSlot?.expand.toSlot &&
+                          displayDateRange(
+                            new Date(onExchangeSlot?.expand.toSlot.start),
+                            new Date(onExchangeSlot?.expand.toSlot.end),
+                        )}
+                      </span>
+                      <div class="flex items-center mb-2">
+                        <MapMarker class="mr-2" size="1.5em" />
+                        <span>{onExchangeSlot?.expand.toSlot.hospital}</span>-<span>{onExchangeSlot?.expand.toSlot.sector}</span>
+                      </div>
                     </div>
-                  </div>
+                  {:else if openedEvent.id === onExchangeSlot?.expand.toSlot.id}
+                    <span class="font-bold">
+                      {connectedStudent?.id === onExchangeSlot?.expand.from.id ? 'vous' : `${onExchangeSlot?.expand.from.firstName} ${onExchangeSlot?.expand.from.lastName}`}.
+                    </span>
+
+                    <span>Voici la garde en retour :</span>
+                    <div class="mt-4">
+                      <span class="capitalize">
+                        {onExchangeSlot?.expand.slot &&
+                          displayDateRange(
+                            new Date(onExchangeSlot?.expand.slot.start),
+                            new Date(onExchangeSlot?.expand.slot.end),
+                        )}
+                      </span>
+                      <div class="flex items-center mb-2">
+                        <MapMarker class="mr-2" size="1.5em" />
+                        <span>{onExchangeSlot?.expand.slot.hospital}</span>-<span>{onExchangeSlot?.expand.slot.sector}</span>
+                      </div>
+                    </div>
+                  {/if}
                 </span>
               </div>
             {/if}
@@ -394,7 +421,7 @@
           <StudentSelector {selectedStudentError} />
 
           {#if selectedStudent}
-            <GardeSelector {selectedStudent} />
+            <OnCallSelector {selectedStudent} />
           {/if}
         </div>
       </div>

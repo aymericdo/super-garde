@@ -4,7 +4,10 @@
   import { applyAction, enhance } from '$app/forms'
   import { pb } from '$lib/pocketbase'
   import { goto } from '$app/navigation'
+  import { resolve } from '$app/paths'
 
+  let email = ''
+  let password = ''
   let showPassword = false
   let serverError: string | null = null
 
@@ -55,21 +58,33 @@
       name="email"
       placeholder="Email"
       class="input input-bordered w-full"
+      bind:value={email}
     />
   </div>
 
   <div class="form-control gap-2 mb-4">
     <div class="relative">
-      <input
-        type={showPassword ? 'text' : 'password'}
-        name="password"
-        placeholder="Password"
-        class="input input-bordered w-full pr-10"
-      />
+      {#if showPassword}
+        <input
+          type="text"
+          name="password"
+          placeholder="Password"
+          class="input input-bordered w-full pr-10"
+          bind:value={password}
+        />
+      {:else}
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          class="input input-bordered w-full pr-10"
+          bind:value={password}
+        />
+      {/if}
 
       <button
         type="button"
-        class="absolute inset-y-0 right-0 px-3 flex items-center text-sm"
+        class="absolute z-1 inset-y-0 right-0 px-3 flex items-center text-sm"
         on:click={() => (showPassword = !showPassword)}
       >
         {#if showPassword}
@@ -79,7 +94,18 @@
         {/if}
       </button>
     </div>
+  </div>
 
-    <button class="btn btn-primary mt-4">Connexion</button>
+  <div class="flex justify-end mt-4">
+    <a href="{resolve('/forgotten-password')}"
+      class="btn btn-link text-l mx-4">
+      Mot de passe oublié
+    </a>
+
+    <button
+      class="btn btn-primary"
+      type="submit"
+      disabled={!email || !password}
+    >Connexion</button>
   </div>
 </form>
