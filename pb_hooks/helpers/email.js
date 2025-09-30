@@ -174,6 +174,7 @@ module.exports = {
     const onExchangeSlots = $app.findFirstRecordByFilter('onExchangeSlots', "slot = {:slot}", { slot: slot.id });
     const fromStudent = onExchangeSlots.expandedOne('from');
     const toStudent = onExchangeSlots.expandedOne('to');
+    const toSlot = onExchangeSlots.expandedOne('toSlot');
 
     $app.expandRecord(fromStudent, ['user'], null);
     $app.expandRecord(toStudent, ['user'], null);
