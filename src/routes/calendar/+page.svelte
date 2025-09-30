@@ -11,7 +11,6 @@
   import ModalPeriodPicker from '$lib/components/ModalPeriodPicker.svelte'
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
-  import { BarLoader } from 'svelte-loading-spinners'
   import { debounce, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
   
@@ -160,7 +159,7 @@
     loading = true;
     handlePeriodPickerClose();
     try {
-      const data = await pb.send("/api/create-all-events", {
+      await pb.send("/api/create-all-events", {
         params: {
           startDate: start,
           endDate: end,
@@ -413,7 +412,7 @@
 
 {#if loading}
   <div class="flex justify-center px-6 py-4">
-    <BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+    <span class="loading loading-ball loading-lg text-accent"></span>
   </div>
 {/if}
 

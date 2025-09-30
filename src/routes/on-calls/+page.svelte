@@ -2,7 +2,6 @@
   import { onDestroy, onMount } from 'svelte'
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
-  import { BarLoader } from 'svelte-loading-spinners'
   
   import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
@@ -77,7 +76,7 @@
 {#if data.currentStudent}
   {#if loading}
     <div class="flex justify-center px-6 py-4">
-      <BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+      <span class="loading loading-ball loading-lg text-accent"></span>
     </div>
   {:else if slots.length === 0}
     <p class="text-gray-500 text-center italic">Aucune garde prévue.</p>

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import '../app.postcss'
+  import '../app.css'
 
   import { base } from '$app/paths';
   import { applyAction, enhance } from '$app/forms'
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import type { PageData } from './$types'
 
   export let data: PageData
@@ -14,13 +14,13 @@
 
   // Set the current user from the data passed in from the server
   $: currentUser.set(data.user);
-  $: currentRoute = $page.url.pathname;
+  $: currentRoute = page.url.pathname;
 </script>
 
 <style>
   /* Accentuation du bouton actif */
   .btn-active {
-    background-color: theme('colors.secondary');
+    /* background-color: secondary; */
     color: white !important;
     font-weight: 600;
     border-radius: 0.5rem;

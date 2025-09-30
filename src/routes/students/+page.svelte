@@ -1,13 +1,12 @@
 <script lang="ts">
   import InfiniteScroll from "svelte-infinite-scroll";
-  import type { ClientResponseError, ListResult, RecordModel} from 'pocketbase'
-  import { BarLoader } from 'svelte-loading-spinners';
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
   import { onDestroy, onMount, setContext } from 'svelte';
   import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
   import AlertError from "$lib/components/AlertError.svelte"
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
+  import type { ClientResponseError, ListResult, RecordModel} from 'pocketbase'
 
 	import type { PageData } from './$types'
   export let data: PageData
@@ -82,7 +81,7 @@
 
   const handleImport = async (url: string) => {
     try {
-      const data = await pb.send("/api/import-all-students", {
+      await pb.send("/api/import-all-students", {
         url
       });
       requestErrorMessage = null;
@@ -319,7 +318,7 @@
       <InfiniteScroll threshold={100} on:loadMore={handleLoadMore} />
       {#if loading}
         <div class="flex justify-center px-6 py-4">
-          <BarLoader size="60" color="#FF3E00" unit="px" duration="1s" />
+          <span class="loading loading-ball loading-lg text-accent"></span>
         </div>
       {/if}
     </tbody>
