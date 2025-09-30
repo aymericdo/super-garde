@@ -52,7 +52,7 @@
     });
 
     pb.realtime.subscribe('users', (e) => {
-      if (e.record.id === $currentUser.id) {
+      if (e.record.id === $currentUser?.id) {
         currentUser.set({
           ...e.record,
         });

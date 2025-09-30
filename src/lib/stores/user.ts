@@ -1,8 +1,8 @@
-import type { Admin, Record } from 'pocketbase';
 import { writable } from 'svelte/store';
+import type { AuthModel, RecordModel } from 'pocketbase';
 
-export interface UserRecord extends Record {
+export interface UserRecord extends RecordModel {
   role: 'student' | 'assistant' | 'god';
 }
 
-export const currentUser = writable<UserRecord | Admin | null>()
+export const currentUser = writable<UserRecord | AuthModel | null>()

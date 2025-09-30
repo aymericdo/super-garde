@@ -327,7 +327,7 @@
               >
                 Prendre
               </button>
-            {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role)}
+            {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
               <button
                 class="btn btn-primary btn-sm m-1"
                 on:click={() => {

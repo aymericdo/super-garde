@@ -19,7 +19,7 @@
     const tenMinutesAgo = now.toISOString().replace("T", " ");
 
     try {
-      const data = await pb.collection("stalkOnCallsConsent").getFirstListItem(`stalker = "${$currentUser.id}" && stalked = "${selectedStudent.id}" && consent = true && created >= "${tenMinutesAgo}"`)
+      const data = await pb.collection("stalkOnCallsConsent").getFirstListItem(`stalker = "${$currentUser!.id}" && stalked = "${selectedStudent.id}" && consent = true && created >= "${tenMinutesAgo}"`)
       if (data) {
         fetch()
       } else {
@@ -38,7 +38,7 @@
     try {
       if (consent) {
         await pb.collection("stalkOnCallsConsent").create({
-          stalker: $currentUser.id,
+          stalker: $currentUser!.id,
           stalked: selectedStudent.id, 
           consent: true,
         })

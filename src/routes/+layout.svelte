@@ -4,10 +4,11 @@
   import { resolve } from '$app/paths';
   import { applyAction, enhance } from '$app/forms'
   import { pb } from '$lib/pocketbase'
-  import { currentUser } from '$lib/stores/user'
+  import { currentUser, type UserRecord } from '$lib/stores/user'
   import { page } from '$app/state';
+  import { afterNavigate } from '$app/navigation'
+
   import type { PageData } from './$types'
-    import { afterNavigate } from '$app/navigation'
 
   export let data: PageData
 
@@ -20,7 +21,7 @@
   });
 
   // Set the current user from the data passed in from the server
-  $: currentUser.set(data.user);
+  $: currentUser.set(data.user as UserRecord);
 </script>
 
 <style>
@@ -61,7 +62,7 @@
           class="btn btn-ghost text-l mx-1"
           class:btn-active={currentRoute.toString() === resolve("/on-calls")}>Vos gardes</a>
 
-        {#if ['assistant', 'god'].includes($currentUser?.role)}
+        {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
           <a href="{resolve('/students')}"
             class="btn btn-ghost text-l mx-1"
             class:btn-active={currentRoute.toString() === resolve("/students")}>Étudiants</a>
@@ -126,7 +127,7 @@
         class="btn btn-ghost w-full text-black"
         class:btn-active={currentRoute === resolve("/on-calls")}>Vos gardes</a>
 
-      {#if ['assistant', 'god'].includes($currentUser?.role)}
+      {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
         <a href="{resolve('/students')}"
           on:click={() => (isOpen = false)}
           class="btn btn-ghost w-full text-black"

@@ -292,7 +292,7 @@
     });
 
     pb.realtime.subscribe('users', (e) => {
-      if (e.record.id === $currentUser.id) {
+      if (e.record.id === $currentUser?.id) {
         currentUser.set({
           ...e.record,
         });
@@ -335,7 +335,7 @@
     </label>
   </div>
   <div class="flex flex-1 flex-wrap items-center justify-end">
-    {#if ['assistant', 'god'].includes($currentUser?.role)}
+    {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
       <button disabled={!options.events.length} on:click={() => isConfirmationModalOpen = true} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
       <button disabled={!!options.events.length} on:click={() => isPeriodPickerModalOpen = true} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
     {/if}

@@ -234,7 +234,7 @@
     });
 
     pb.realtime.subscribe('users', (e) => {
-      if (e.record.id === $currentUser.id) {
+      if (e.record.id === $currentUser?.id) {
         currentUser.set({
           ...e.record,
         });
@@ -273,7 +273,7 @@
       <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
     {/if}
   </div>
-  {#if ['assistant', 'god'].includes($currentUser?.role)}
+  {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
     <div class="flex flex-1 flex-wrap items-center justify-end">
       {#if selectedStudents.length}
         <button on:click={handleDelete} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
