@@ -376,6 +376,7 @@
               </button>
               <button
                 class="btn btn-secondary btn-outline btn-sm m-1"
+                disabled={loading}
                 on:click={handlePutOnMarket}
               >
                 {#if loading}
@@ -386,7 +387,7 @@
             {:else if !!connectedStudent && openedEvent.isOnMarket}
               <button
                 class="btn btn-primary btn-sm m-1"
-                disabled={!!onCallErrorValidation(openedEvent, connectedStudent)}
+                disabled={!!onCallErrorValidation(openedEvent, connectedStudent) || loading}
                 on:click={handleTakeFromMarket}
               >
                 {#if loading}
@@ -397,6 +398,7 @@
             {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
               <button
                 class="btn btn-primary btn-sm m-1"
+                disabled={loading}
                 on:click={handlePutOutOfMarket}
               >
                 {#if loading}
@@ -407,6 +409,7 @@
             {:else if openedEvent.isOnTransfer}
               <button
                 class="btn btn-default btn-sm m-1"
+                disabled={loading}
                 on:click={handlePutOutOfTransfer}
               >
                 {#if loading}
@@ -417,6 +420,7 @@
               {#if onTransferSlot?.expand && connectedStudent?.id === onTransferSlot.expand.to.id}
                 <button
                   class="btn btn-primary btn-sm m-1"
+                  disabled={loading}
                   on:click={handleTakeFromTransfer}
                 >
                   {#if loading}
@@ -428,6 +432,7 @@
             {:else if openedEvent.isOnExchange}
               <button
                 class="btn btn-default btn-sm m-1"
+                disabled={loading}
                 on:click={handlePutOutOfExchange}
               >
                 {#if loading}
@@ -438,6 +443,7 @@
               {#if onExchangeSlot?.expand && connectedStudent?.id === onExchangeSlot.expand.to.id}
                 <button
                   class="btn btn-primary btn-sm m-1"
+                  disabled={loading}
                   on:click={handleTakeFromExchange}
                 >
                   {#if loading}
@@ -496,10 +502,12 @@
       {:else if modalStep === 'exchange'}
         <button class="btn btn-outline" on:click={resetModal}>Retour</button>
         <button class="btn btn-secondary"
-          disabled={!selectedStudent || !!selectedStudentError || !selectedSlot}
-          class:loading={loading}
+          disabled={!selectedStudent || !!selectedStudentError || !selectedSlot || loading}
           on:click={handlePutOnExchange}
         >
+        {#if loading}
+          <span class="loading loading-spinner"></span>
+        {/if}
         Valider
       </button>
       {/if}
