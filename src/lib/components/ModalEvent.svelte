@@ -25,8 +25,12 @@
   let onTransferSlot: RecordModel | null = null
   let onExchangeSlot: RecordModel | null = null
 
+  let loading = false
+
   const handlePutOnMarket = async () => {
     if (!openedEvent) return;
+
+    loading = true
 
     try {
       await pb.collection("onCallSlots").update(openedEvent.id, { isOnMarket: true });
@@ -35,11 +39,15 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handlePutOutOfMarket = async () => {
     if (!openedEvent) return;
+
+    loading = true
 
     try {
       await pb.collection("onCallSlots").update(openedEvent.id, { isOnMarket: false });
@@ -48,12 +56,16 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handlePutOutOfTransfer = async () => {
     if (!openedEvent) return;
     if (!onTransferSlot) return;
+
+    loading = true
 
     try {
       await pb.collection("onTransferSlots").update(onTransferSlot.id, { state: 'cancel' });
@@ -62,12 +74,16 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handlePutOutOfExchange = async () => {
     if (!openedEvent) return;
     if (!onExchangeSlot) return;
+
+    loading = true
 
     try {
       await pb.collection("onExchangeSlots").update(onExchangeSlot.id, { state: 'cancel' });
@@ -76,12 +92,16 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handleTakeFromTransfer = async () => {
     if (!openedEvent) return;
     if (!onTransferSlot) return;
+
+    loading = true
 
     try {
       await pb.collection("onTransferSlots").update(onTransferSlot.id, { state: 'done' });
@@ -90,12 +110,16 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handleTakeFromExchange = async () => {
     if (!openedEvent) return;
     if (!onExchangeSlot) return;
+
+    loading = true
 
     try {
       await pb.collection("onExchangeSlots").update(onExchangeSlot.id, { state: 'done' });
@@ -104,12 +128,16 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handleTakeFromMarket = async () => {
     if (!openedEvent) return;
     if (!connectedStudent) return;
+
+    loading = true
 
     try {
       await pb.collection("onCallSlots").update(openedEvent.id, { isOnMarket: false, student: connectedStudent?.id });
@@ -118,12 +146,16 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
   const handlePutOnTransfer = async () => {
     if (!openedEvent) return;
     if (!selectedStudent) return;
+
+    loading = true
 
     try {
       await pb.collection("onTransferSlots").create({
@@ -136,6 +168,8 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
@@ -143,6 +177,8 @@
     if (!openedEvent) return;
     if (!selectedStudent) return;
     if (!selectedSlot) return;
+
+    loading = true
 
     try {
       await pb.collection("onExchangeSlots").create({
@@ -156,6 +192,8 @@
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
+    } finally {
+      loading = false
     }
   }
 
@@ -338,29 +376,32 @@
               </button>
               <button
                 class="btn btn-secondary btn-outline btn-sm m-1"
-                on:click={() => {
-                  handlePutOnMarket()
-                }}
+                on:click={handlePutOnMarket}
               >
+                {#if loading}
+                  <span class="loading loading-spinner"></span>
+                {/if}
                 Mettre sur le marché
               </button>
             {:else if !!connectedStudent && openedEvent.isOnMarket}
               <button
                 class="btn btn-primary btn-sm m-1"
                 disabled={!!onCallErrorValidation(openedEvent, connectedStudent)}
-                on:click={() => {
-                  handleTakeFromMarket()
-                }}
+                on:click={handleTakeFromMarket}
               >
+                {#if loading}
+                  <span class="loading loading-spinner"></span>
+                {/if}
                 Prendre
               </button>
             {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
               <button
                 class="btn btn-primary btn-sm m-1"
-                on:click={() => {
-                  handlePutOutOfMarket()
-                }}
+                on:click={handlePutOutOfMarket}
               >
+                {#if loading}
+                  <span class="loading loading-spinner"></span>
+                {/if}
                 Sortir du marché
               </button>
             {:else if openedEvent.isOnTransfer}
@@ -368,13 +409,19 @@
                 class="btn btn-default btn-sm m-1"
                 on:click={handlePutOutOfTransfer}
               >
-                {!connectedStudent || connectedStudent.id === openedEvent.studentId ? 'Annuler le transfert' : 'Refuser le transfert'}
+                {#if loading}
+                  <span class="loading loading-spinner"></span>
+                {/if}
+                {!connectedStudent || connectedStudent?.id === onTransferSlot?.expand?.from.id ? 'Annuler le transfert' : 'Refuser le transfert'}
               </button>
               {#if onTransferSlot?.expand && connectedStudent?.id === onTransferSlot.expand.to.id}
                 <button
                   class="btn btn-primary btn-sm m-1"
                   on:click={handleTakeFromTransfer}
                 >
+                  {#if loading}
+                    <span class="loading loading-spinner"></span>
+                  {/if}
                   Accepter le transfert
                 </button>
               {/if}
@@ -383,13 +430,19 @@
                 class="btn btn-default btn-sm m-1"
                 on:click={handlePutOutOfExchange}
               >
-                {!connectedStudent || connectedStudent.id === openedEvent.studentId ? "Annuler l'échange" : "Refuser l'échange"}
+                {#if loading}
+                  <span class="loading loading-spinner"></span>
+                {/if}
+                {!connectedStudent || connectedStudent?.id === onExchangeSlot?.expand?.from.id ? "Annuler l'échange" : "Refuser l'échange"}
               </button>
               {#if onExchangeSlot?.expand && connectedStudent?.id === onExchangeSlot.expand.to.id}
                 <button
                   class="btn btn-primary btn-sm m-1"
                   on:click={handleTakeFromExchange}
                 >
+                  {#if loading}
+                    <span class="loading loading-spinner"></span>
+                  {/if}
                   Accepter l'échange
                 </button>
               {/if}
@@ -435,6 +488,7 @@
         <button class="btn btn-outline" on:click={resetModal}>Retour</button>
         <button class="btn btn-secondary"
           disabled={!selectedStudent || !!selectedStudentError}
+          class:loading={loading}
           on:click={handlePutOnTransfer}
         >
         Valider
@@ -443,6 +497,7 @@
         <button class="btn btn-outline" on:click={resetModal}>Retour</button>
         <button class="btn btn-secondary"
           disabled={!selectedStudent || !!selectedStudentError || !selectedSlot}
+          class:loading={loading}
           on:click={handlePutOnExchange}
         >
         Valider
