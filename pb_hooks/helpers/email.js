@@ -79,8 +79,8 @@ module.exports = {
     }
 
     try {
+      require(`${__hooks}/lib/env.js`);
       const DEV_SEND_EMAIL = process.env['DEV_SEND_EMAIL']
-
       if (DEV_SEND_EMAIL === 'true') {
         $app.newMailClient().send(messageToCurrentSlotStudent);
         if (messageToOldSlotStudent) $app.newMailClient().send(messageToOldSlotStudent);
@@ -158,6 +158,7 @@ module.exports = {
     });
 
     try {
+      require(`${__hooks}/lib/env.js`);
       const DEV_SEND_EMAIL = process.env['DEV_SEND_EMAIL']
 
       if (DEV_SEND_EMAIL === 'true') {
@@ -237,6 +238,7 @@ module.exports = {
     });
 
     try {
+      require(`${__hooks}/lib/env.js`);
       const DEV_SEND_EMAIL = process.env['DEV_SEND_EMAIL']
 
       if (DEV_SEND_EMAIL === 'true') {
