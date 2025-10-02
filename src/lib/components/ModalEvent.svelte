@@ -418,109 +418,111 @@
             {/if}
           </div>
 
-          <div class="flex flex-col">
-            {#if !openedEvent.isOnMarket && !openedEvent.isOnTransfer && !openedEvent.isOnExchange}
-              <button
-                class="btn btn-secondary btn-outline btn-sm m-1"
-                on:click={() => (modalStep = 'transfer')}
-              >
-                Transférer
-              </button>
-              <button
-                class="btn btn-secondary btn-outline btn-sm m-1"
-                on:click={() => (modalStep = 'exchange')}
-              >
-                Échanger
-              </button>
-              <button
-                class="btn btn-secondary btn-outline btn-sm m-1"
-                disabled={loading}
-                on:click={handlePutOnMarket}
-              >
-                {#if loading}
-                  <span class="loading loading-spinner"></span>
-                {/if}
-                Mettre sur le marché
-              </button>
-            {:else if !!connectedStudent && openedEvent.isOnMarket}
-              <button
-                class="btn btn-primary btn-sm m-1"
-                disabled={!!onCallErrorValidation(
-                  openedEvent,
-                  connectedStudent,
-                ) || loading}
-                on:click={handleTakeFromMarket}
-              >
-                {#if loading}
-                  <span class="loading loading-spinner"></span>
-                {/if}
-                Prendre
-              </button>
-            {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
-              <button
-                class="btn btn-primary btn-sm m-1"
-                disabled={loading}
-                on:click={handlePutOutOfMarket}
-              >
-                {#if loading}
-                  <span class="loading loading-spinner"></span>
-                {/if}
-                Sortir du marché
-              </button>
-            {:else if openedEvent.isOnTransfer}
-              <button
-                class="btn btn-default btn-sm m-1"
-                disabled={loading}
-                on:click={handlePutOutOfTransfer}
-              >
-                {#if loading}
-                  <span class="loading loading-spinner"></span>
-                {/if}
-                {!connectedStudent ||
-                connectedStudent?.id === onTransferSlot?.expand?.from.id
-                  ? 'Annuler le transfert'
-                  : 'Refuser le transfert'}
-              </button>
-              {#if onTransferSlot?.expand && connectedStudent?.id === onTransferSlot.expand.to.id}
+          {#if openedEvent.start > new Date()}
+            <div class="flex flex-col">
+              {#if !openedEvent.isOnMarket && !openedEvent.isOnTransfer && !openedEvent.isOnExchange}
                 <button
-                  class="btn btn-primary btn-sm m-1"
+                  class="btn btn-secondary btn-outline btn-sm m-1"
+                  on:click={() => (modalStep = 'transfer')}
+                >
+                  Transférer
+                </button>
+                <button
+                  class="btn btn-secondary btn-outline btn-sm m-1"
+                  on:click={() => (modalStep = 'exchange')}
+                >
+                  Échanger
+                </button>
+                <button
+                  class="btn btn-secondary btn-outline btn-sm m-1"
                   disabled={loading}
-                  on:click={handleTakeFromTransfer}
+                  on:click={handlePutOnMarket}
                 >
                   {#if loading}
                     <span class="loading loading-spinner"></span>
                   {/if}
-                  Accepter le transfert
+                  Mettre sur le marché
                 </button>
-              {/if}
-            {:else if openedEvent.isOnExchange}
-              <button
-                class="btn btn-default btn-sm m-1"
-                disabled={loading}
-                on:click={handlePutOutOfExchange}
-              >
-                {#if loading}
-                  <span class="loading loading-spinner"></span>
-                {/if}
-                {!connectedStudent ||
-                connectedStudent?.id === onExchangeSlot?.expand?.from.id
-                  ? "Annuler l'échange"
-                  : "Refuser l'échange"}
-              </button>
-              {#if onExchangeSlot?.expand && connectedStudent?.id === onExchangeSlot.expand.to.id}
+              {:else if !!connectedStudent && openedEvent.isOnMarket}
                 <button
                   class="btn btn-primary btn-sm m-1"
-                  disabled={loading}
-                  on:click={handleTakeFromExchange}
+                  disabled={!!onCallErrorValidation(
+                    openedEvent,
+                    connectedStudent,
+                  ) || loading}
+                  on:click={handleTakeFromMarket}
                 >
                   {#if loading}
                     <span class="loading loading-spinner"></span>
                   {/if}
-                  Accepter l'échange
+                  Prendre
                 </button>
+              {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
+                <button
+                  class="btn btn-primary btn-sm m-1"
+                  disabled={loading}
+                  on:click={handlePutOutOfMarket}
+                >
+                  {#if loading}
+                    <span class="loading loading-spinner"></span>
+                  {/if}
+                  Sortir du marché
+                </button>
+              {:else if openedEvent.isOnTransfer}
+                <button
+                  class="btn btn-default btn-sm m-1"
+                  disabled={loading}
+                  on:click={handlePutOutOfTransfer}
+                >
+                  {#if loading}
+                    <span class="loading loading-spinner"></span>
+                  {/if}
+                  {!connectedStudent ||
+                  connectedStudent?.id === onTransferSlot?.expand?.from.id
+                    ? 'Annuler le transfert'
+                    : 'Refuser le transfert'}
+                </button>
+                {#if onTransferSlot?.expand && connectedStudent?.id === onTransferSlot.expand.to.id}
+                  <button
+                    class="btn btn-primary btn-sm m-1"
+                    disabled={loading}
+                    on:click={handleTakeFromTransfer}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    Accepter le transfert
+                  </button>
+                {/if}
+              {:else if openedEvent.isOnExchange}
+                <button
+                  class="btn btn-default btn-sm m-1"
+                  disabled={loading}
+                  on:click={handlePutOutOfExchange}
+                >
+                  {#if loading}
+                    <span class="loading loading-spinner"></span>
+                  {/if}
+                  {!connectedStudent ||
+                  connectedStudent?.id === onExchangeSlot?.expand?.from.id
+                    ? "Annuler l'échange"
+                    : "Refuser l'échange"}
+                </button>
+                {#if onExchangeSlot?.expand && connectedStudent?.id === onExchangeSlot.expand.to.id}
+                  <button
+                    class="btn btn-primary btn-sm m-1"
+                    disabled={loading}
+                    on:click={handleTakeFromExchange}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    Accepter l'échange
+                  </button>
+                {/if}
               {/if}
-            {/if}
-          </div>
+            </div>
+          {/if}
         </div>
       </div>
     {:else if modalStep === 'transfer'}

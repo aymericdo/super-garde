@@ -88,7 +88,7 @@
       {#each slots as slot}
         <li>
           <button
-            class="p-4 w-full cursor-pointer bg-white rounded-2xl shadow flex justify-between"
+            class="relative p-4 w-full cursor-pointer bg-white rounded-2xl shadow flex justify-between"
             class:border-2={slot.student !== data.currentStudent.id}
             class:border-dashed={slot.student !== data.currentStudent.id}
             class:border-gray-400={slot.student !== data.currentStudent.id}
@@ -98,6 +98,9 @@
               isEventModalOpen = true;
             }}
           >
+            {#if new Date(slot.end) < new Date()}
+              <span class="absolute left-0 top-0 bottom-0 w-1 bg-gray-400 rounded-l-2xl"></span>
+            {/if}
             <div class="flex flex-col items-start">
               <h3 class="font-bold text-lg">{slot.sector}</h3>
               <div class="flex items-center my-2">
