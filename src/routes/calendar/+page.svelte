@@ -8,6 +8,7 @@
   import Interaction from '@event-calendar/interaction';
   import ModalEvent from '$lib/components/ModalEvent.svelte'
   import ModalConfirmation from '$lib/components/ModalConfirmation.svelte'
+  import ModalDownload from '$lib/components/ModalDownload.svelte'
   import ModalPeriodPicker from '$lib/components/ModalPeriodPicker.svelte'
   import { currentUser } from '$lib/stores/user';
   import { pb } from '$lib/pocketbase';
@@ -22,6 +23,7 @@
   let isEventModalOpen = false;
   let isPeriodPickerModalOpen = false;
   let isConfirmationModalOpen = false;
+  let isDownloadModalOpen = false;
   let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
   let loading = false;
   let isOnMarketPlaceOnly = false;
@@ -76,7 +78,7 @@
   const handleDelete = async () => {
     loading = true;
     try {
-      const data = await pb.send("/api/delete-all-on-call-slots", {});
+      await pb.send("/api/delete-all-on-call-slots", {});
       isAlertGenerateSuccessVisible = false;
       isAlertDeletionSuccessVisible = true;
 
@@ -128,7 +130,7 @@
 
   const handleGenerateSubmit = async (start: Date, end: Date) => {
     loading = true;
-    handlePeriodPickerClose();
+    isPeriodPickerModalOpen = false;
     try {
       start.setDate(start.getDate() + 1)
       start.setUTCHours(0)
@@ -153,10 +155,6 @@
     } finally {
       loading = false;
     }
-  }
-
-  const handlePeriodPickerClose = () => {
-    isPeriodPickerModalOpen = false;
   }
 
   const handleEventModalClose = () => {
@@ -204,6 +202,23 @@
     events: [],
     eventClick: handleEventClick,
     datesSet: handleDatesSet,
+    eventDidMount: (data) => {
+      const body = data.el.querySelector('.ec-event-body')
+      if (!body) return
+
+      const wrapper = document.createElement('div')
+      wrapper.className = 'tooltip tooltip-left'
+      wrapper.setAttribute('data-tip', data.event.title)
+
+      // étape 1 : retirer body de data.el
+      data.el.removeChild(body)
+
+      // étape 2 : insérer body dans le wrapper
+      wrapper.appendChild(body)
+
+      // étape 3 : insérer le wrapper dans data.el
+      data.el.appendChild(wrapper)
+    }
   };
 
   const updateEvent = async (onCallSlotId: string) => {
@@ -314,14 +329,21 @@
   setContext('isEventModalOpen', {
     handleEventModalClose,
   });
+
   setContext('isPeriodPickerModalOpen', {
-    handlePeriodPickerClose,
+    handlePeriodPickerClose: () => {
+      isPeriodPickerModalOpen = false;
+    },
     handleGenerateSubmit,
   });
 
   setContext('isConfirmationModalOpen', {
     handleModalClose: () => isConfirmationModalOpen = false,
     handleConfirm: () => handleDelete(),
+  });
+  
+  setContext('isDownloadModalOpen', {
+    handleModalClose: () => isDownloadModalOpen = false,
   });
 </script>
 
@@ -341,6 +363,7 @@
   </div>
   <div class="flex flex-1 flex-wrap items-center justify-end">
     {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
+      <button disabled={!options.events.length} on:click={() => isDownloadModalOpen = true} class="btn btn-outline text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Télécharger CSV</button>
       <button disabled={!options.events.length} on:click={() => isConfirmationModalOpen = true} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
       <button disabled={!!options.events.length} on:click={() => isPeriodPickerModalOpen = true} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
     {/if}
@@ -377,6 +400,12 @@
   description={'Voulez-vous vraiment supprimer ces événements ?'}
   action={'Supprimer'}
 />
+
+{#if isDownloadModalOpen}
+  <ModalDownload
+    {isDownloadModalOpen}
+  />
+{/if}
 
 <style>
   :global(.event-calendar .ec .ec-event) {

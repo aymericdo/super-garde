@@ -16,6 +16,7 @@ module.exports = {
         "role": 'student',
       });
 
+      // TODO: Change this password
       userRecord.setPassword("azerty1234");
       userRecord.setEmailVisibility(true);
 

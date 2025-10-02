@@ -32,7 +32,7 @@
       if (query.length) {
         const terms = query.trim().split(/\s+/)
         options.filter = terms
-          .map(term => `(firstName ?~ "${term}" || lastName ?~ "${term}") || (year ?~ "${query}") || (user.email ?~ "${query}")`)
+          .map(term => `(firstName ~ "${term}" || lastName ~ "${term}") || (year ~ "${query}") || (user.email ~ "${query}")`)
           .join(" && ")
       }
 

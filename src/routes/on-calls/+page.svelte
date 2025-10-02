@@ -89,6 +89,10 @@
         <li>
           <button
             class="p-4 w-full cursor-pointer bg-white rounded-2xl shadow flex justify-between"
+            class:border-2={slot.student !== data.currentStudent.id}
+            class:border-dashed={slot.student !== data.currentStudent.id}
+            class:border-gray-400={slot.student !== data.currentStudent.id}
+            class:opacity-50={slot.student !== data.currentStudent.id}
             on:click={() => {
               openedEvent = { ...onCallSlotRecordToCalendarEvent(slot) }
               isEventModalOpen = true;

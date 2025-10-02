@@ -14,12 +14,8 @@
   let isOpen = false
 
   const checkConsent = async (): Promise<void> => {
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - 15);
-    const tenMinutesAgo = now.toISOString().replace("T", " ");
-
     try {
-      const data = await pb.collection("stalkOnCallsConsent").getFirstListItem(`stalker = "${$currentUser!.id}" && stalked = "${selectedStudent.id}" && consent = true && created >= "${tenMinutesAgo}"`)
+      const data = await pb.collection("stalkOnCallsConsent").getFirstListItem(`stalker = "${$currentUser!.id}" && stalked = "${selectedStudent.id}" && consent = true && expiration > @now`)
       if (data) {
         fetch()
       } else {

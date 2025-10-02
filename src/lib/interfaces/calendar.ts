@@ -12,6 +12,9 @@ export interface CalendarEvent {
   hospital?: string;
   sector?: string;
   student?: string;
+  studentFullName?: string;
+  studentUHCD?: string;
+  studentYear?: string;
   studentId?: string;
   isOnMarket?: boolean;
   isOnTransfer?: boolean;
@@ -57,6 +60,15 @@ export interface CalendarOptions {
     startStr: string,
     endStr: string,
     view: ViewCalendar,
+  }) => void;
+  eventMouseEnter?: (data: {
+    el: HTMLDivElement,
+    event: RecordModel,
+    jsEvent: PointerEvent,
+  }) => void;
+  eventDidMount?: (data: {
+    el: HTMLDivElement,
+    event: RecordModel,
   }) => void;
 }
 

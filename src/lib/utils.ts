@@ -51,7 +51,9 @@ export const onCallSlotRecordToCalendarEvent = (onCallSlot: RecordModel): Calend
   durationEditable: false,
   resourceIds: [onCallSlot.student],
   hospital: onCallSlot.hospital,
-  student: onCallSlot.expand?.student ? `${onCallSlot.expand?.student.firstName} ${onCallSlot.expand?.student.lastName}` : null,
+  studentFullName: onCallSlot.expand?.student ? `${onCallSlot.expand?.student.firstName} ${onCallSlot.expand?.student.lastName}` : null,
+  studentYear: onCallSlot.expand?.student.year,
+  studentUHCD: onCallSlot.expand?.student.UHCD,
   studentId: onCallSlot.expand?.student.id,
   backgroundColor: eventStateColor(onCallSlot),
 } as unknown as CalendarEvent)
