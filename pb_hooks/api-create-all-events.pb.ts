@@ -98,15 +98,6 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
         }
 
-        function createParisDate(date, hour, minute = 0, second = 0) {
-          const d = new Date(date); // base sur la date actuelle
-          // Décalage de Paris par rapport à UTC en minutes
-          const parisOffsetMinutes = -120; // UTC+2 en été, UTC+1 en hiver → tu peux ajuster dynamiquement si tu veux
-          // Convertir en UTC
-          d.setUTCHours(hour - parisOffsetMinutes / 60, minute, second, 0);
-          return d;
-        }
-
         const stillLessThanFour = Object.values(eventCountByStudent).some((value) => value < 4)
         const MM3stillLessThan25 = Object.keys(eventCountByStudent).some((studentId) => {
           return (MM3studentIds.includes(studentId) && eventCountByStudent[studentId] < 25)
@@ -157,8 +148,25 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);
 
-          const startEventDate = createParisDate(currentDate, 18);
-          const endEventDate = createParisDate(currentDate, 19);
+          // Décalage Paris par rapport à UTC en heures
+          // 1 = hiver (UTC+1), 2 = été (UTC+2)
+          const parisOffsetHours = 2; // ici été
+
+          const startEventDate = new Date(Date.UTC(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+            18 - parisOffsetHours, // 18h Paris → heure UTC
+            0, 0
+          ));
+
+          const endEventDate = new Date(Date.UTC(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            currentDate.getDate(),
+            19 - parisOffsetHours, // 19h Paris → heure UTC
+            0, 0
+          ));
 
           const event = {
             start: startEventDate,
