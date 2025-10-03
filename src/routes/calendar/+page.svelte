@@ -47,7 +47,7 @@
       }
 
       if (data.currentStudent) {
-        options.filter += `&& (student = "${data.currentStudent?.id}" || isOnTransfer = true || isOnExchange = true)`
+        options.filter += `&& (student = "${data.currentStudent?.id}" || isOnTransfer = true || isOnExchange = true || isOnMarket = true)`
       }
 
       if (isOnMarketPlaceOnly) {
