@@ -39,9 +39,10 @@
 
   const fetchAll = async (start: string, end: string): Promise<RecordModel[] | undefined> => {
     try {
+      console.log(start, end)
       const options: { expand: string, filter: string } = {
         expand: 'student',
-        filter: `(start >= "${start}" && end < "${end}")`,
+        filter: `(start >= "${start}" && start < "${end}")`,
       }
 
       if (isOnMarketPlaceOnly) {

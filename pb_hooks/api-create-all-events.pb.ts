@@ -78,6 +78,8 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
   while (currentDate < endDate) {
     const dateKey = currentDate.toISOString();
+    const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6; // dimanche=0, samedi=6
+    const isHoliday = holidays.some((h) => h.toDateString() === currentDate.toDateString());
     Object.keys(sectorsByHospital).forEach((hospital) => {
       sectorsByHospital[hospital].forEach(([sector, year]) => {
         // defensive safeguard to avoid double booking
@@ -170,9 +172,38 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const day = currentDate.getDate();
           
           const parisOffset = isParisSummerTime(currentDate) ? 2 : 1; // UTC+2 en été, UTC+1 en hiver
+
+          const dayOfWeek = currentDate.getDay(); // 0=dimanche, 1=lundi, ..., 6=samedi
+
+          let onCallHours = null
+          if (dayOfWeek === 0 || isHoliday) {
+            // Dimanche ou jour férié : 8h30-8h30 (jour suivant)
+            onCallHours = { startHour: 8, startMinute: 30, endHour: 8, endMinute: 30, nextDay: true };
+          } else if (dayOfWeek === 6) {
+            // Samedi : 12h30-8h30 (jour suivant)
+            onCallHours = { startHour: 12, startMinute: 30, endHour: 8, endMinute: 30, nextDay: true };
+          } else {
+            // Semaine (lundi-vendredi) : 18h30-8h30 (jour suivant)
+            onCallHours = { startHour: 18, startMinute: 30, endHour: 8, endMinute: 30, nextDay: true };
+          }
+
+          const startEventDate = new Date(Date.UTC(
+            year, 
+            month, 
+            day, 
+            onCallHours.startHour - parisOffset, 
+            onCallHours.startMinute, 
+            0
+          ));
           
-          const startEventDate = new Date(Date.UTC(year, month, day, 18 - parisOffset, 30, 0));
-          const endEventDate = new Date(Date.UTC(year, month, day + 1, 8 - parisOffset, 30, 0));
+          const endEventDate = new Date(Date.UTC(
+            year, 
+            month, 
+            onCallHours.nextDay ? day + 1 : day, 
+            onCallHours.endHour - parisOffset, 
+            onCallHours.endMinute, 
+            0
+          ));
 
           const event = {
             start: startEventDate,
@@ -196,9 +227,6 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           lastEventDateByStudent[currentStudentId] = new Date(currentDate);
 
           // calcul du poids de la journée
-          const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6; // dimanche=0, samedi=6
-          const isHoliday = holidays.some((h) => h.toDateString() === currentDate.toDateString()); 
-
           const weight = isUHCD ? 0 : (isWeekend || isHoliday) ? 2 : 1;
 
           // incrément pondéré
