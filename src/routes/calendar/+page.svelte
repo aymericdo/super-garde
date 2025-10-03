@@ -45,6 +45,10 @@
         filter: `(start >= "${start}" && start < "${end}")`,
       }
 
+      if (data.currentStudent) {
+        options.filter += `&& (student = "${data.currentStudent?.id}" || isOnTransfer = true || isOnExchange = true)`
+      }
+
       if (isOnMarketPlaceOnly) {
         options.filter += ' && isOnMarket = true';
       }
