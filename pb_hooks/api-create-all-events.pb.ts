@@ -148,14 +148,14 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);
 
-          const startEventDate = new Date(currentDate);
-          const endEventDate = new Date(currentDate);
-          startEventDate.setHours(18);
-          startEventDate.setMinutes(0);
-          startEventDate.setSeconds(0);
-          endEventDate.setHours(19);
-          endEventDate.setMinutes(0);
-          endEventDate.setSeconds(0);
+          const date = new Date(currentDate);
+          const timeZone = "Europe/Paris";
+
+          const startEventDate = new Date(date.toLocaleString("fr-FR", { timeZone }));
+          startEventDate.setHours(18, 0, 0); // 18h Paris
+
+          const endEventDate = new Date(date.toLocaleString("fr-FR", { timeZone }));
+          endEventDate.setHours(19, 0, 0);
 
           const event = {
             start: startEventDate,
