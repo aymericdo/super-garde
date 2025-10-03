@@ -98,6 +98,22 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
         }
 
+        function isParisSummerTime(date) {
+          const year = date.getFullYear();
+          const month = date.getMonth();
+          const day = date.getDate();
+          
+          // Heure d'été : dernier dimanche de mars à dernier dimanche d'octobre
+          const march = new Date(year, 2, 31); // 31 mars
+          const lastSundayMarch = new Date(march.getTime() - (march.getDay() * 24 * 60 * 60 * 1000));
+          
+          const october = new Date(year, 9, 31); // 31 octobre  
+          const lastSundayOctober = new Date(october.getTime() - (october.getDay() * 24 * 60 * 60 * 1000));
+          
+          const currentDateOnly = new Date(year, month, day);
+          return currentDateOnly >= lastSundayMarch && currentDateOnly < lastSundayOctober;
+        }
+
         const stillLessThanFour = Object.values(eventCountByStudent).some((value) => value < 4)
         const MM3stillLessThan25 = Object.keys(eventCountByStudent).some((studentId) => {
           return (MM3studentIds.includes(studentId) && eventCountByStudent[studentId] < 25)
@@ -148,25 +164,15 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);
 
-          // Décalage Paris par rapport à UTC en heures
-          // 1 = hiver (UTC+1), 2 = été (UTC+2)
-          const parisOffsetHours = 2; // ici été
-
-          const startEventDate = new Date(Date.UTC(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            currentDate.getDate(),
-            18 - parisOffsetHours, // 18h Paris → heure UTC
-            0, 0
-          ));
-
-          const endEventDate = new Date(Date.UTC(
-            currentDate.getFullYear(),
-            currentDate.getMonth(),
-            currentDate.getDate(),
-            19 - parisOffsetHours, // 19h Paris → heure UTC
-            0, 0
-          ));
+          // Créer les dates en heure de Paris (fonctionne même si le serveur est en UTC)
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth();
+          const day = currentDate.getDate();
+          
+          const parisOffset = isParisSummerTime(currentDate) ? 2 : 1; // UTC+2 en été, UTC+1 en hiver
+          
+          const startEventDate = new Date(Date.UTC(year, month, day, 18 - parisOffset, 30, 0));
+          const endEventDate = new Date(Date.UTC(year, month, day + 1, 8 - parisOffset, 30, 0));
 
           const event = {
             start: startEventDate,
