@@ -98,6 +98,15 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
         }
 
+        function createParisDate(date, hour, minute = 0, second = 0) {
+          const d = new Date(date); // base sur la date actuelle
+          // Décalage de Paris par rapport à UTC en minutes
+          const parisOffsetMinutes = -120; // UTC+2 en été, UTC+1 en hiver → tu peux ajuster dynamiquement si tu veux
+          // Convertir en UTC
+          d.setUTCHours(hour - parisOffsetMinutes / 60, minute, second, 0);
+          return d;
+        }
+
         const stillLessThanFour = Object.values(eventCountByStudent).some((value) => value < 4)
         const MM3stillLessThan25 = Object.keys(eventCountByStudent).some((studentId) => {
           return (MM3studentIds.includes(studentId) && eventCountByStudent[studentId] < 25)
@@ -148,14 +157,8 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const utils = require(`${__hooks}/helpers/utils.js`);
           const currentStudentId = utils.randomItemFromList(relevantIds);
 
-          const date = new Date(currentDate);
-          const timeZone = "Europe/Paris";
-
-          const startEventDate = new Date(date.toLocaleString("fr-FR", { timeZone }));
-          startEventDate.setHours(18, 0, 0); // 18h Paris
-
-          const endEventDate = new Date(date.toLocaleString("fr-FR", { timeZone }));
-          endEventDate.setHours(19, 0, 0);
+          const startEventDate = createParisDate(currentDate, 18);
+          const endEventDate = createParisDate(currentDate, 19);
 
           const event = {
             start: startEventDate,
