@@ -4,6 +4,8 @@ const SHEET_HEADERS = [
   "email",
   "year",
   "UHCD",
+  "onCallCount2025",
+  "totalOnCallCount"
 ];
 
 module.exports = {

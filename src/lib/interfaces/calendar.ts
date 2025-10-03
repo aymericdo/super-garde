@@ -29,6 +29,7 @@ export interface CalendarOptions {
   dayMaxEvents: boolean;
   allDaySlot: boolean;
   firstDay: number;
+  date: Date;
   headerToolbar: {
     start: string;
     center: string;
@@ -45,6 +46,7 @@ export interface CalendarOptions {
   eventBackgroundColor?: string;
   eventContent?: string;
   eventClassNames?: string;
+  noEventsContent?: string;
   events: CalendarEvent[];
   dateClick?: (data: {
     date: Date,

@@ -13,6 +13,8 @@
   import StudentSelector from './StudentSelector.svelte'
   import OnCallSelector from './OnCallSelector.svelte'
   import { pb } from '$lib/pocketbase'
+  import AlertSuccess from './AlertSuccess.svelte'
+
   import type { CalendarEvent } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
 
@@ -29,6 +31,9 @@
 
   let loading = false
 
+  let alertMessage: string | null = null;
+  let alertMessageTimeout: NodeJS.Timeout | null = null;
+
   const handlePutOnMarket = async () => {
     if (!openedEvent) return
 
@@ -38,7 +43,9 @@
       await pb
         .collection('onCallSlots')
         .update(openedEvent.id, { isOnMarket: true })
-      handleEventModalClose()
+
+      setAlertMessage('La garde a bien été mise sur le marché.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -57,7 +64,9 @@
       await pb
         .collection('onCallSlots')
         .update(openedEvent.id, { isOnMarket: false })
-      handleEventModalClose()
+
+      setAlertMessage('La garde a bien été redonnée à l\'étudiant d\'origine.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -77,7 +86,9 @@
       await pb
         .collection('onTransferSlots')
         .update(onTransferSlot.id, { state: 'cancel' })
-      handleEventModalClose()
+
+      setAlertMessage('Le transfert a bien été annulé.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -97,7 +108,9 @@
       await pb
         .collection('onExchangeSlots')
         .update(onExchangeSlot.id, { state: 'cancel' })
-      handleEventModalClose()
+
+      setAlertMessage('L\'échange a bien été annulé.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -117,7 +130,9 @@
       await pb
         .collection('onTransferSlots')
         .update(onTransferSlot.id, { state: 'done' })
-      handleEventModalClose()
+
+      setAlertMessage('Le tranfert a bien été enregistré.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -137,7 +152,9 @@
       await pb
         .collection('onExchangeSlots')
         .update(onExchangeSlot.id, { state: 'done' })
-      handleEventModalClose()
+
+      setAlertMessage('L\'échange a bien été enregistré.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -160,7 +177,9 @@
           isOnMarket: false,
           student: connectedStudent?.id,
         })
-      handleEventModalClose()
+
+      setAlertMessage('La garde a bien été récupérée.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -182,7 +201,9 @@
         to: selectedStudent.id,
         from: openedEvent.studentId,
       })
-      handleEventModalClose()
+
+      setAlertMessage('Le transfert a bien été initié.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -206,7 +227,9 @@
         from: openedEvent.studentId,
         toSlot: selectedSlot.id,
       })
-      handleEventModalClose()
+
+      setAlertMessage('L\'échange a bien été initié.')
+      closeModal()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error)
@@ -214,6 +237,16 @@
     } finally {
       loading = false
     }
+  }
+
+  const setAlertMessage = (message: string) => {
+    if (alertMessageTimeout) clearTimeout(alertMessageTimeout)
+
+    alertMessage = message;
+
+    alertMessageTimeout = setTimeout(() => {
+      alertMessage = null;
+    }, 3 * 1000);
   }
 
   const handleStudentListOpen = async () => {
@@ -257,371 +290,384 @@
     modalStep = 'default'
   })
 
-  onMount(async () => {
-    try {
-      if (openedEvent.isOnTransfer) {
-        let filter = `state="progress"&&slot="${openedEvent.id}"`
-        onTransferSlot = await pb
-          .collection('onTransferSlots')
-          .getFirstListItem(filter, {
-            expand: 'from,to',
-          })
-      } else if (openedEvent.isOnExchange) {
-        let filter = `state="progress"&&(slot="${openedEvent.id}"||toSlot="${openedEvent.id}")`
-        onExchangeSlot = await pb
-          .collection('onExchangeSlots')
-          .getFirstListItem(filter, {
-            expand: 'from,to,slot,toSlot',
-          })
+  $: if (openedEvent) {
+    (async () => {
+      try {
+        if (openedEvent.isOnTransfer) {
+          const filter = `state="progress"&&slot="${openedEvent.id}"`;
+          onTransferSlot = await pb
+            .collection('onTransferSlots')
+            .getFirstListItem(filter, {
+              expand: 'from,to',
+            });
+        } else if (openedEvent.isOnExchange) {
+          const filter = `state="progress"&&(slot="${openedEvent.id}"||toSlot="${openedEvent.id}")`;
+          onExchangeSlot = await pb
+            .collection('onExchangeSlots')
+            .getFirstListItem(filter, {
+              expand: 'from,to,slot,toSlot',
+            });
+        }
+      } catch (error) {
+        if (!(error as ClientResponseError).isAbort) {
+          console.error(error);
+        }
       }
-    } catch (error) {
-      if (!(error as ClientResponseError).isAbort) {
-        console.error(error)
-      }
-    }
-  })
-
-  const { handleEventModalClose } = getContext('isEventModalOpen') as {
-    handleEventModalClose: () => void
+    })();
   }
 
-  export let isEventModalOpen: boolean = false
-  export let openedEvent: CalendarEvent
-  export let connectedStudent: RecordModel | undefined
+  function closeModal() {
+    resetModal()
+    handleEventModalClose()
+  }
 
   function resetModal() {
     modalStep = 'default'
     selectedStudent = null
     selectedSlot = null
   }
+
+  const { handleEventModalClose } = getContext('isEventModalOpen') as {
+    handleEventModalClose: () => void
+  }
+
+  export let isEventModalOpen: boolean = false
+  export let openedEvent: CalendarEvent | undefined
+  export let connectedStudent: RecordModel | undefined
 </script>
 
-<div class="modal" class:modal-open={isEventModalOpen}>
-  <div class="modal-box">
-    <!-- Transition sur le contenu -->
-    {#if modalStep === 'default'}
-      <div
-        in:fly|global={{ x: 300, duration: 300 }}
-        out:fly|global={{ x: -300, duration: 300 }}
-      >
-        <h3 class="font-bold text-lg">{openedEvent.title}</h3>
-        <div class="py-4">
-          <div class="flex items-center mb-2">
-            <ClockTimeFiveOutline class="mr-2" size="1.5em" />
-            <span class="capitalize">
-              {openedEvent &&
-                displayDateRange(openedEvent.start, openedEvent.end)}
-            </span>
-          </div>
-          <div class="flex items-center mb-2">
-            <MapMarker class="mr-2" size="1.5em" />
-            <span>{openedEvent.hospital}</span>
-          </div>
-          <div class="flex items-center mb-2">
-            <Doctor class="mr-2" size="1.5em" />
-            {#if !!openedEvent.studentFullName}
-              <span
-                >{openedEvent.studentFullName} ({openedEvent.studentYear})</span
-              >
-            {:else}
-              <span>Pas d'étudiant·e</span>
-            {/if}
-          </div>
+{#if alertMessage}
+  <AlertSuccess message={alertMessage} />
+{/if}
 
-          <div class="mt-4">
-            {#if openedEvent.isOnMarket}
-              <div class="flex items-center mb-2">
-                Cette garde est actuellement sur le marché.
-              </div>
-            {:else if openedEvent.isOnTransfer && onTransferSlot?.expand}
-              <div class="flex items-center mb-2">
-                {#if connectedStudent?.id === onTransferSlot?.expand.to.id}
-                  <ArrowBottomRightThinCircleOutline
-                    class="mr-2"
-                    size="1.5em"
-                  />
-                {:else}
-                  <ArrowTopRightThinCircleOutline class="mr-2" size="1.5em" />
-                {/if}
-                <span>
-                  Cette garde est actuellement en transfert vers
-                  <span class="font-bold"
-                    >{connectedStudent?.id === onTransferSlot?.expand.to.id
-                      ? 'toi'
-                      : `${onTransferSlot?.expand.to.firstName} ${onTransferSlot?.expand.to.lastName}`}</span
-                  >
-                </span>
-              </div>
-            {:else if openedEvent.isOnExchange && onExchangeSlot?.expand}
-              <div class="flex mb-2">
-                {#if connectedStudent?.id === onExchangeSlot?.expand.to.id}
-                  <Autorenew class="mr-2" size="1.5em" />
-                  <ArrowBottomRightThinCircleOutline
-                    class="mr-2"
-                    size="1.5em"
-                  />
-                {:else}
-                  <div class="flex flex-col mr-2">
-                    <Autorenew class="mb-1" size="1.5em" />
-                    <ArrowTopRightThinCircleOutline size="1.5em" />
-                  </div>
-                {/if}
-                <span>
-                  Cette garde est actuellement en échange avec
-                  {#if openedEvent.id === onExchangeSlot?.expand.slot.id}
-                    <span class="font-bold">
-                      {connectedStudent?.id === onExchangeSlot?.expand.to.id
-                        ? 'toi'
-                        : `${onExchangeSlot?.expand.to.firstName} ${onExchangeSlot?.expand.to.lastName}`}.
-                    </span>
-
-                    <span>Voici la garde en retour :</span>
-                    <div class="mt-4">
-                      <span class="capitalize">
-                        {onExchangeSlot?.expand.toSlot &&
-                          displayDateRange(
-                            new Date(onExchangeSlot?.expand.toSlot.start),
-                            new Date(onExchangeSlot?.expand.toSlot.end),
-                          )}
-                      </span>
-                      <div class="flex items-center mb-2">
-                        <MapMarker class="mr-2" size="1.5em" />
-                        <span>{onExchangeSlot?.expand.toSlot.hospital}</span
-                        >-<span>{onExchangeSlot?.expand.toSlot.sector}</span>
-                      </div>
-                    </div>
-                  {:else if openedEvent.id === onExchangeSlot?.expand.toSlot.id}
-                    <span class="font-bold">
-                      {connectedStudent?.id === onExchangeSlot?.expand.from.id
-                        ? 'toi'
-                        : `${onExchangeSlot?.expand.from.firstName} ${onExchangeSlot?.expand.from.lastName}`}.
-                    </span>
-
-                    <span>Voici la garde en retour :</span>
-                    <div class="mt-4">
-                      <span class="capitalize">
-                        {onExchangeSlot?.expand.slot &&
-                          displayDateRange(
-                            new Date(onExchangeSlot?.expand.slot.start),
-                            new Date(onExchangeSlot?.expand.slot.end),
-                          )}
-                      </span>
-                      <div class="flex items-center mb-2">
-                        <MapMarker class="mr-2" size="1.5em" />
-                        <span>{onExchangeSlot?.expand.slot.hospital}</span
-                        >-<span>{onExchangeSlot?.expand.slot.sector}</span>
-                      </div>
-                    </div>
-                  {/if}
-                </span>
-              </div>
-            {/if}
-          </div>
-
-          {#if openedEvent.start > new Date()}
-            <div class="flex flex-col">
-              {#if !openedEvent.isOnMarket && !openedEvent.isOnTransfer && !openedEvent.isOnExchange}
-                <button
-                  class="btn btn-secondary btn-outline btn-sm m-1"
-                  on:click={() => (modalStep = 'transfer')}
-                >
-                  Transférer
-                </button>
-                <button
-                  class="btn btn-secondary btn-outline btn-sm m-1"
-                  on:click={() => (modalStep = 'exchange')}
-                >
-                  Échanger
-                </button>
-                <button
-                  class="btn btn-secondary btn-outline btn-sm m-1"
-                  disabled={loading}
-                  on:click={handlePutOnMarket}
-                >
-                  {#if loading}
-                    <span class="loading loading-spinner"></span>
-                  {/if}
-                  Mettre sur le marché
-                </button>
-              {:else if !!connectedStudent && openedEvent.isOnMarket}
-                <button
-                  class="btn btn-primary btn-sm m-1"
-                  disabled={!!onCallErrorValidation(
-                    openedEvent,
-                    connectedStudent,
-                  ) || loading}
-                  on:click={handleTakeFromMarket}
-                >
-                  {#if loading}
-                    <span class="loading loading-spinner"></span>
-                  {/if}
-                  Prendre
-                </button>
-              {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
-                <button
-                  class="btn btn-primary btn-sm m-1"
-                  disabled={loading}
-                  on:click={handlePutOutOfMarket}
-                >
-                  {#if loading}
-                    <span class="loading loading-spinner"></span>
-                  {/if}
-                  Sortir du marché
-                </button>
-              {:else if openedEvent.isOnTransfer}
-                <button
-                  class="btn btn-default btn-sm m-1"
-                  disabled={loading}
-                  on:click={handlePutOutOfTransfer}
-                >
-                  {#if loading}
-                    <span class="loading loading-spinner"></span>
-                  {/if}
-                  {!connectedStudent ||
-                  connectedStudent?.id === onTransferSlot?.expand?.from.id
-                    ? 'Annuler le transfert'
-                    : 'Refuser le transfert'}
-                </button>
-                {#if onTransferSlot?.expand && connectedStudent?.id === onTransferSlot.expand.to.id}
-                  <button
-                    class="btn btn-primary btn-sm m-1"
-                    disabled={loading}
-                    on:click={handleTakeFromTransfer}
-                  >
-                    {#if loading}
-                      <span class="loading loading-spinner"></span>
-                    {/if}
-                    Accepter le transfert
-                  </button>
-                {/if}
-              {:else if openedEvent.isOnExchange}
-                <button
-                  class="btn btn-default btn-sm m-1"
-                  disabled={loading}
-                  on:click={handlePutOutOfExchange}
-                >
-                  {#if loading}
-                    <span class="loading loading-spinner"></span>
-                  {/if}
-                  {!connectedStudent ||
-                  connectedStudent?.id === onExchangeSlot?.expand?.from.id
-                    ? "Annuler l'échange"
-                    : "Refuser l'échange"}
-                </button>
-                {#if onExchangeSlot?.expand && connectedStudent?.id === onExchangeSlot.expand.to.id}
-                  <button
-                    class="btn btn-primary btn-sm m-1"
-                    disabled={loading}
-                    on:click={handleTakeFromExchange}
-                  >
-                    {#if loading}
-                      <span class="loading loading-spinner"></span>
-                    {/if}
-                    Accepter l'échange
-                  </button>
-                {/if}
-              {/if}
-            </div>
-          {/if}
-        </div>
-      </div>
-    {:else if modalStep === 'transfer'}
-      <div
-        in:fly|global={{ x: 300, duration: 300 }}
-        out:fly|global={{ x: -300, duration: 300 }}
-      >
-        <h3 class="font-bold text-lg">Choisir un étudiant</h3>
-        <div class="py-4">
-          <StudentSelector {selectedStudentError} />
-        </div>
-      </div>
-    {:else if modalStep === 'exchange'}
-      <div
-        in:fly|global={{ x: 300, duration: 300 }}
-        out:fly|global={{ x: -300, duration: 300 }}
-      >
-        <h3 class="font-bold text-lg">Choisir un étudiant et une garde</h3>
-        <div class="py-4">
-          <StudentSelector {selectedStudentError} />
-
-          {#if selectedStudent}
-            <OnCallSelector {selectedStudent} />
-          {/if}
-        </div>
-      </div>
-    {:else if modalStep === 'studentList' && sameDayStudents}
-      <div
-        in:fly|global={{ x: 300, duration: 300 }}
-        out:fly|global={{ x: -300, duration: 300 }}
-      >
-        <h3 class="font-bold text-lg">Étudiants - {openedEvent.hospital}</h3>
-        <h4 class="font-bold text-sm capitalize">{displayDateRange(openedEvent.start, openedEvent.end)}</h4>
-        <div class="py-4 max-h-80 overflow-y-auto">
-          {#each Object.keys(sameDayStudents) as sector}
-            <h5 class="mt-4">{sector}</h5>
-            <ul class="list-disc list-inside bg-base-200 rounded-box space-y-2 p-4">
-              {#each sameDayStudents[sector] as student}
-                <li>{student}</li>
-              {/each}
-            </ul>
-          {/each}
-        </div>
-      </div>
-    {/if}
-
-    <!-- Action de fermeture globale -->
-    <div class="modal-action">
+{#if openedEvent}
+  <div class="modal" class:modal-open={isEventModalOpen}>
+    <div class="modal-box">
+      <!-- Transition sur le contenu -->
       {#if modalStep === 'default'}
         <div
-          class="tooltip"
-          data-tip="Voir la liste complète des étudiants présents dans l'hôpital en même temps"
+          in:fly|global={{ x: 300, duration: 300 }}
+          out:fly|global={{ x: -300, duration: 300 }}
         >
+          <h3 class="font-bold text-lg">{openedEvent.title}</h3>
+          <div class="py-4">
+            <div class="flex items-center mb-2">
+              <ClockTimeFiveOutline class="mr-2" size="1.5em" />
+              <span class="capitalize">
+                {openedEvent &&
+                  displayDateRange(openedEvent.start, openedEvent.end)}
+              </span>
+            </div>
+            <div class="flex items-center mb-2">
+              <MapMarker class="mr-2" size="1.5em" />
+              <span>{openedEvent.hospital}</span>
+            </div>
+            <div class="flex items-center mb-2">
+              <Doctor class="mr-2" size="1.5em" />
+              {#if !!openedEvent.studentFullName}
+                <span
+                  >{openedEvent.studentFullName} ({openedEvent.studentYear})</span
+                >
+              {:else}
+                <span>Pas d'étudiant·e</span>
+              {/if}
+            </div>
+
+            <div class="mt-4">
+              {#if openedEvent.isOnMarket}
+                <div class="flex items-center mb-2">
+                  Cette garde est actuellement <b>sur le marché</b>.
+                </div>
+              {:else if openedEvent.isOnTransfer && onTransferSlot?.expand}
+                <div class="flex items-center mb-2">
+                  {#if connectedStudent?.id === onTransferSlot?.expand.to.id}
+                    <ArrowBottomRightThinCircleOutline
+                      class="mr-2"
+                      size="1.5em"
+                    />
+                  {:else}
+                    <ArrowTopRightThinCircleOutline class="mr-2" size="1.5em" />
+                  {/if}
+                  <span>
+                    Cette garde est actuellement <b>en transfert</b> vers
+                    <span class="font-bold"
+                      >{connectedStudent?.id === onTransferSlot?.expand.to.id
+                        ? 'toi'
+                        : `${onTransferSlot?.expand.to.firstName} ${onTransferSlot?.expand.to.lastName}`}</span
+                    >
+                  </span>
+                </div>
+              {:else if openedEvent.isOnExchange && onExchangeSlot?.expand}
+                <div class="flex mb-2">
+                  {#if connectedStudent?.id === onExchangeSlot?.expand.to.id}
+                    <Autorenew class="mr-2" size="1.5em" />
+                    <ArrowBottomRightThinCircleOutline
+                      class="mr-2"
+                      size="1.5em"
+                    />
+                  {:else}
+                    <div class="flex flex-col mr-2">
+                      <Autorenew class="mb-1" size="1.5em" />
+                      <ArrowTopRightThinCircleOutline size="1.5em" />
+                    </div>
+                  {/if}
+                  <span>
+                    Cette garde est actuellement <b>en échange</b> avec
+                    {#if openedEvent.id === onExchangeSlot?.expand.slot.id}
+                      <span class="font-bold">
+                        {connectedStudent?.id === onExchangeSlot?.expand.to.id
+                          ? 'toi'
+                          : `${onExchangeSlot?.expand.to.firstName} ${onExchangeSlot?.expand.to.lastName}`}.
+                      </span>
+
+                      <span>Voici la garde en retour :</span>
+                      <div class="mt-4">
+                        <span class="capitalize">
+                          {onExchangeSlot?.expand.toSlot &&
+                            displayDateRange(
+                              new Date(onExchangeSlot?.expand.toSlot.start),
+                              new Date(onExchangeSlot?.expand.toSlot.end),
+                            )}
+                        </span>
+                        <div class="flex items-center mb-2">
+                          <MapMarker class="mr-2" size="1.5em" />
+                          <span>{onExchangeSlot?.expand.toSlot.hospital}</span
+                          >-<span>{onExchangeSlot?.expand.toSlot.sector}</span>
+                        </div>
+                      </div>
+                    {:else if openedEvent.id === onExchangeSlot?.expand.toSlot.id}
+                      <span class="font-bold">
+                        {connectedStudent?.id === onExchangeSlot?.expand.from.id
+                          ? 'toi'
+                          : `${onExchangeSlot?.expand.from.firstName} ${onExchangeSlot?.expand.from.lastName}`}.
+                      </span>
+
+                      <span>Voici la garde en retour :</span>
+                      <div class="mt-4">
+                        <span class="capitalize">
+                          {onExchangeSlot?.expand.slot &&
+                            displayDateRange(
+                              new Date(onExchangeSlot?.expand.slot.start),
+                              new Date(onExchangeSlot?.expand.slot.end),
+                            )}
+                        </span>
+                        <div class="flex items-center mb-2">
+                          <MapMarker class="mr-2" size="1.5em" />
+                          <span>{onExchangeSlot?.expand.slot.hospital}</span
+                          >-<span>{onExchangeSlot?.expand.slot.sector}</span>
+                        </div>
+                      </div>
+                    {/if}
+                  </span>
+                </div>
+              {/if}
+            </div>
+
+            {#if openedEvent.start > new Date()}
+              <div class="flex flex-col">
+                {#if !openedEvent.isOnMarket && !openedEvent.isOnTransfer && !openedEvent.isOnExchange}
+                  <button
+                    class="btn btn-secondary btn-outline btn-sm m-1"
+                    on:click={() => (modalStep = 'transfer')}
+                  >
+                    Transférer
+                  </button>
+                  <button
+                    class="btn btn-secondary btn-outline btn-sm m-1"
+                    on:click={() => (modalStep = 'exchange')}
+                  >
+                    Échanger
+                  </button>
+                  <button
+                    class="btn btn-secondary btn-outline btn-sm m-1"
+                    disabled={loading}
+                    on:click={handlePutOnMarket}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    Mettre sur le marché
+                  </button>
+                {:else if !!connectedStudent && openedEvent.isOnMarket}
+                  <button
+                    class="btn btn-primary btn-sm m-1"
+                    disabled={!!onCallErrorValidation(
+                      openedEvent,
+                      connectedStudent,
+                    ) || loading}
+                    on:click={handleTakeFromMarket}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    Prendre
+                  </button>
+                {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
+                  <button
+                    class="btn btn-default btn-sm m-1"
+                    disabled={loading}
+                    on:click={handlePutOutOfMarket}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    Sortir du marché
+                  </button>
+                {:else if openedEvent.isOnTransfer}
+                  <button
+                    class="btn btn-default btn-sm m-1"
+                    disabled={loading}
+                    on:click={handlePutOutOfTransfer}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    {!connectedStudent ||
+                    connectedStudent?.id === onTransferSlot?.expand?.from.id
+                      ? 'Annuler le transfert'
+                      : 'Refuser le transfert'}
+                  </button>
+                  {#if onTransferSlot?.expand && connectedStudent?.id === onTransferSlot.expand.to.id}
+                    <button
+                      class="btn btn-primary btn-sm m-1"
+                      disabled={loading}
+                      on:click={handleTakeFromTransfer}
+                    >
+                      {#if loading}
+                        <span class="loading loading-spinner"></span>
+                      {/if}
+                      Accepter le transfert
+                    </button>
+                  {/if}
+                {:else if openedEvent.isOnExchange}
+                  <button
+                    class="btn btn-default btn-sm m-1"
+                    disabled={loading}
+                    on:click={handlePutOutOfExchange}
+                  >
+                    {#if loading}
+                      <span class="loading loading-spinner"></span>
+                    {/if}
+                    {!connectedStudent ||
+                    connectedStudent?.id === onExchangeSlot?.expand?.from.id
+                      ? "Annuler l'échange"
+                      : "Refuser l'échange"}
+                  </button>
+                  {#if onExchangeSlot?.expand && connectedStudent?.id === onExchangeSlot.expand.to.id}
+                    <button
+                      class="btn btn-primary btn-sm m-1"
+                      disabled={loading}
+                      on:click={handleTakeFromExchange}
+                    >
+                      {#if loading}
+                        <span class="loading loading-spinner"></span>
+                      {/if}
+                      Accepter l'échange
+                    </button>
+                  {/if}
+                {/if}
+              </div>
+            {/if}
+          </div>
+        </div>
+      {:else if modalStep === 'transfer'}
+        <div
+          in:fly|global={{ x: 300, duration: 300 }}
+          out:fly|global={{ x: -300, duration: 300 }}
+        >
+          <h3 class="font-bold text-lg">Choisir un étudiant</h3>
+          <div class="py-4">
+            <StudentSelector {selectedStudentError} />
+          </div>
+        </div>
+      {:else if modalStep === 'exchange'}
+        <div
+          in:fly|global={{ x: 300, duration: 300 }}
+          out:fly|global={{ x: -300, duration: 300 }}
+        >
+          <h3 class="font-bold text-lg">Choisir un étudiant et une garde</h3>
+          <div class="py-4">
+            <StudentSelector {selectedStudentError} />
+
+            {#if selectedStudent}
+              <OnCallSelector {selectedStudent} />
+            {/if}
+          </div>
+        </div>
+      {:else if modalStep === 'studentList' && sameDayStudents}
+        <div
+          in:fly|global={{ x: 300, duration: 300 }}
+          out:fly|global={{ x: -300, duration: 300 }}
+        >
+          <h3 class="font-bold text-lg">Étudiants - {openedEvent.hospital}</h3>
+          <h4 class="font-bold text-sm capitalize">{displayDateRange(openedEvent.start, openedEvent.end)}</h4>
+          <div class="py-4 max-h-80 overflow-y-auto">
+            {#each Object.keys(sameDayStudents) as sector}
+              <h5 class="mt-4">{sector}</h5>
+              <ul class="list-disc list-inside bg-base-200 rounded-box space-y-2 p-4">
+                {#each sameDayStudents[sector] as student}
+                  <li>{student}</li>
+                {/each}
+              </ul>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Action de fermeture globale -->
+      <div class="modal-action">
+        {#if modalStep === 'default'}
+          <div
+            class="tooltip"
+            data-tip="Voir la liste complète des étudiants présents dans l'hôpital en même temps"
+          >
+            <button
+              class="btn btn-outline"
+              disabled={loading}
+              on:click={handleStudentListOpen}
+            >
+              {#if loading}
+                <span class="loading loading-spinner"></span>
+              {/if}
+              Étudiants présents
+            </button>
+          </div>
+          <button class="btn" on:click={handleEventModalClose}>Fermer</button>
+        {:else if modalStep === 'transfer'}
+          <button class="btn btn-outline" on:click={resetModal}>Retour</button>
           <button
-            class="btn btn-outline"
-            disabled={loading}
-            on:click={handleStudentListOpen}
+            class="btn btn-secondary"
+            disabled={!selectedStudent || !!selectedStudentError || loading}
+            on:click={handlePutOnTransfer}
           >
             {#if loading}
               <span class="loading loading-spinner"></span>
             {/if}
-            Étudiants présents
+            Valider
           </button>
-        </div>
-        <button class="btn" on:click={handleEventModalClose}>Fermer</button>
-      {:else if modalStep === 'transfer'}
-        <button class="btn btn-outline" on:click={resetModal}>Retour</button>
-        <button
-          class="btn btn-secondary"
-          disabled={!selectedStudent || !!selectedStudentError || loading}
-          on:click={handlePutOnTransfer}
-        >
-          {#if loading}
-            <span class="loading loading-spinner"></span>
-          {/if}
-          Valider
-        </button>
-      {:else if modalStep === 'exchange'}
-        <button class="btn btn-outline" on:click={resetModal}>Retour</button>
-        <button
-          class="btn btn-secondary"
-          disabled={!selectedStudent ||
-            !!selectedStudentError ||
-            !selectedSlot ||
-            loading}
-          on:click={handlePutOnExchange}
-        >
-          {#if loading}
-            <span class="loading loading-spinner"></span>
-          {/if}
-          Valider
-        </button>
-      {:else}
-        <button class="btn btn-outline" on:click={resetModal}>Retour</button>
-      {/if}
+        {:else if modalStep === 'exchange'}
+          <button class="btn btn-outline" on:click={resetModal}>Retour</button>
+          <button
+            class="btn btn-secondary"
+            disabled={!selectedStudent ||
+              !!selectedStudentError ||
+              !selectedSlot ||
+              loading}
+            on:click={handlePutOnExchange}
+          >
+            {#if loading}
+              <span class="loading loading-spinner"></span>
+            {/if}
+            Valider
+          </button>
+        {:else}
+          <button class="btn btn-outline" on:click={resetModal}>Retour</button>
+        {/if}
+      </div>
+    </div>
+
+    <div class="modal-backdrop">
+      <button on:click={handleEventModalClose}>Fermer</button>
     </div>
   </div>
-
-  <div class="modal-backdrop">
-    <button on:click={handleEventModalClose}>Fermer</button>
-  </div>
-</div>
+{/if}

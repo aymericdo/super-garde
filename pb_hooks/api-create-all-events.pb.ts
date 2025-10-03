@@ -23,11 +23,56 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
   const studentsByDate = {};
   const eventByDate = {};
-  const eventCountByStudent = {};
   const lastEventDateByStudent = {};
+  const eventCountByStudent = {};
+  const totalEventCountByStudent = {};
+  const MM3studentIds = [];
   
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
+
+  let period = null;
+
+  const month = startDate.getMonth() + 1;
+  const year = startDate.getFullYear();
+  if (month >= 10) {
+    // Octobre à décembre
+    period = [new Date(year, 9, 1), new Date(year, 8, 30)];
+  } else if (month <= 4) {
+    // Janvier à avril
+    period = [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
+  } else {
+    // Mai à septembre
+    period = [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
+  }
+
+  students.forEach((student) => {
+    const onCallCount2025 = student.get('onCallCount2025')
+    const totalOnCallCount = student.get('totalOnCallCount')
+
+    // const studentFilter = $dbx.exp("student = {:student}", { student: student.id })
+    // const uhcdFilter = $dbx.exp("sector != {:uhcdFilter}", { uhcdFilter: 'UHCD' })
+    // const dateFilter = $dbx.exp("start = {:start} AND end = {:end}", {
+    //   start: period[0].toString(),
+    //   end: period[1].toString(),
+    // })
+    // const onCallSlotsCount = $app.countRecords("onCallSlots", studentFilter, dateFilter, uhcdFilter)
+
+    // const threeYearsAgo = new Date(period[0])
+    // threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
+    // const totalDateFilter = $dbx.exp("start = {:start} AND end = {:end}", {
+    //   start: threeYearsAgo.toString(),
+    //   end: period[1].toString(),
+    // })
+    // const totalOnCallSlotsCount = $app.countRecords("onCallSlots", studentFilter, totalDateFilter)
+
+    eventCountByStudent[student.id] = onCallCount2025 // onCallSlotsCount
+    totalEventCountByStudent[student.id] = totalOnCallCount // totalOnCallSlotsCount
+
+    if (student.get('year') === 'MM3') {
+      MM3studentIds.push(student.id)
+    }
+  })
 
   const currentDate = startDate;
 
@@ -53,6 +98,11 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24));
         }
 
+        const stillLessThanFour = Object.values(eventCountByStudent).some((value) => value < 4)
+        const MM3stillLessThan25 = Object.keys(eventCountByStudent).some((studentId) => {
+          return (MM3studentIds.includes(studentId) && eventCountByStudent[studentId] < 25)
+        })
+
         for (const student of students) {
           const studentYear = student.get('year');
           const yearValid = year === '*' || year.split(';').includes(studentYear);
@@ -63,16 +113,33 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           const lastDate = lastEventDateByStudent[id];
           const tooClose = lastDate && Math.abs(daysBetween(currentDate, lastDate)) < 1;
 
-          if (!tooClose && yearValid && uhcdValid && !alreadyBookedStudentIds.includes(id) && !isInBlockedPeriod(studentYear, currentDate)) {
-            const count = eventCountByStudent[id] ?? 0;
+          let MM3totalCount = studentYear === 'MM3' ? (totalEventCountByStudent[id] ?? 0) : 0
+          MM3totalCount += (eventCountByStudent[id] ?? 0)
 
-            if (minCount === null || count < minCount) {
-              // nouveau minimum trouvé → on reset la liste
-              minCount = count;
-              relevantIds = [id];
-            } else if (count === minCount) {
-              // égal au minimum actuel → on l’ajoute aussi
-              relevantIds.push(id);
+          if (!tooClose && yearValid && uhcdValid && !alreadyBookedStudentIds.includes(id) && !isInBlockedPeriod(studentYear, currentDate) && MM3totalCount < 25) {
+            if (stillLessThanFour || !MM3stillLessThan25) {
+              const count = eventCountByStudent[id] ?? 0;
+              if (minCount === null || count < minCount) {
+                // nouveau minimum trouvé → on reset la liste
+                minCount = count;
+                relevantIds = [id];
+              } else if (count === minCount) {
+                // égal au minimum actuel → on l’ajoute aussi
+                relevantIds.push(id);
+              }
+            } else {
+              const rand = Math.random(); // nombre entre 0 et 1
+              if (studentYear === 'MM3') {
+                if (rand < 0.7) {
+                  // 70% de chance de pousser un MM3
+                  relevantIds.push(id);
+                }
+              } else if (studentYear === 'MM1' || studentYear === 'MM2') {
+                if (rand >= 0.7) {
+                  // 30% de chance de pousser un MM1/MM2
+                  relevantIds.push(id);
+                }
+              }
             }
           }
         }

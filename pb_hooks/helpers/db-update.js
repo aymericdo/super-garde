@@ -5,6 +5,8 @@ module.exports = {
     const {
       year,
       UHCD,
+      onCallCount2025,
+      totalOnCallCount,
     } = data;
 
     try {
@@ -12,6 +14,8 @@ module.exports = {
 
       studentRecord.set("year", year);
       studentRecord.set("UHCD", UHCD);
+      if (onCallCount2025) studentRecord.set("onCallCount2025", onCallCount2025);
+      if (totalOnCallCount) studentRecord.set("totalOnCallCount", totalOnCallCount);
 
       $app.save(studentRecord);
 

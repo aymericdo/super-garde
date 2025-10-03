@@ -18,6 +18,8 @@
   import type { CalendarElement, CalendarEvent, CalendarOptions, ViewCalendar } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
+  import { page } from '$app/state'
+  import { goto } from '$app/navigation'
   export let data: PageData
   
   let isEventModalOpen = false;
@@ -25,24 +27,21 @@
   let isConfirmationModalOpen = false;
   let isDownloadModalOpen = false;
   let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
-  let loading = false;
+  let loading = true;
   let isOnMarketPlaceOnly = false;
 
-  let isAlertGenerateSuccessVisible = false;
-  let isAlertDeletionSuccessVisible = false;
+  let alertMessage: string | null = null;
+  let alertMessageTimeout: NodeJS.Timeout | null = null;
 
   let tempOptionsEvents: CalendarEvent[] = [];
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
 
-  const fetchAll = async (view?: ViewCalendar): Promise<RecordModel[] | undefined> => {
+  const fetchAll = async (start: string, end: string): Promise<RecordModel[] | undefined> => {
     try {
-      if (!(view || myCalendar)) return;
-
       const options: { expand: string, filter: string } = {
         expand: 'student',
-        filter: `(start >= "${(view || myCalendar?.getView())?.activeStart.toISOString()}"` +
-          `&& end < "${(view || myCalendar?.getView())?.activeEnd.toISOString()}")`,
+        filter: `(start >= "${start}" && end < "${end}")`,
       }
 
       if (isOnMarketPlaceOnly) {
@@ -79,12 +78,7 @@
     loading = true;
     try {
       await pb.send("/api/delete-all-on-call-slots", {});
-      isAlertGenerateSuccessVisible = false;
-      isAlertDeletionSuccessVisible = true;
-
-      setTimeout(() => {
-        isAlertDeletionSuccessVisible = false;
-      }, 3*1000);
+      setAlertMessage('Les gardes ont bien été supprimées 😊')
     } catch (error) {
       console.error(error);
     } finally {
@@ -115,8 +109,13 @@
     endStr: string,
     view: ViewCalendar,
   }) => {
+    page.url.searchParams.set('view', info.view.type)
+    page.url.searchParams.set('date', new Date(info.view.currentStart).toDateString())
+    goto(`?${page.url.searchParams.toString()}`, { replaceState: true, noScroll: true });
+
     loading = true;
-    const list = await fetchAll(info.view);
+
+    const list = await fetchAll(info.startStr, info.endStr);
 
     if (list) {
       tempOptionsEvents = list.map((event: RecordModel) => {
@@ -144,17 +143,22 @@
         }
       });
 
-      isAlertGenerateSuccessVisible = true;
-      isAlertDeletionSuccessVisible = false;
-
-      setTimeout(() => {
-        isAlertGenerateSuccessVisible = false;
-      }, 3*1000);
+      setAlertMessage('Les gardes ont bien été générées 😊')
     } catch(error) {
       console.error(error);
     } finally {
       loading = false;
     }
+  }
+
+  const setAlertMessage = (message: string) => {
+    if (alertMessageTimeout) clearTimeout(alertMessageTimeout)
+
+    alertMessage = message;
+
+    alertMessageTimeout = setTimeout(() => {
+      alertMessage = null;
+    }, 3 * 1000);
   }
 
   const handleEventModalClose = () => {
@@ -163,9 +167,15 @@
   }
 
   const handleIsOnMarketPlaceOnlyChanged = async () => {
+    if (!myCalendar) return
+ 
     loading = true;
     isOnMarketPlaceOnly = !isOnMarketPlaceOnly;
-    const list = await fetchAll();
+
+    const start = (myCalendar.getView())?.activeStart.toISOString()
+    const end = (myCalendar.getView())?.activeEnd.toISOString()
+
+    const list = await fetchAll(start, end);
 
     if (list) {
       tempOptionsEvents = list.map((event: RecordModel) => {
@@ -178,15 +188,18 @@
     loading = false;
   }
 
-  loading = true;
+  const date = page.url.searchParams.get('date')
+  const viewType = page.url.searchParams.get('view') as 'dayGridMonth' | 'timeGridWeek' | 'listDay' | 'listWeek'
+
   let myCalendar: CalendarElement | null = null;
   let options: CalendarOptions = {
-    view: 'dayGridMonth',
+    view: viewType ? viewType : 'dayGridMonth',
     slotDuration: '00:15',
     allDaySlot: false,
     firstDay: 1,
     selectable: false,
     dayMaxEvents: true,
+    date: date ? new Date(date) : new Date(),
     headerToolbar: {
       start: 'prev,next today',
       center: 'title',
@@ -199,26 +212,10 @@
       listDay: 'Jour',
       listYear: 'Liste',
     },
+    noEventsContent: 'Aucune garde',
     events: [],
     eventClick: handleEventClick,
     datesSet: handleDatesSet,
-    eventDidMount: (data) => {
-      const body = data.el.querySelector('.ec-event-body')
-      if (!body) return
-
-      const wrapper = document.createElement('div')
-      wrapper.className = 'tooltip tooltip-left'
-      wrapper.setAttribute('data-tip', data.event.title)
-
-      // étape 1 : retirer body de data.el
-      data.el.removeChild(body)
-
-      // étape 2 : insérer body dans le wrapper
-      wrapper.appendChild(body)
-
-      // étape 3 : insérer le wrapper dans data.el
-      data.el.appendChild(wrapper)
-    }
   };
 
   const updateEvent = async (onCallSlotId: string) => {
@@ -383,16 +380,13 @@
   </div>
 </div>
 
-{#if isAlertGenerateSuccessVisible}
-  <AlertSuccess message={'Les gardes ont bien été générées 😊'} />
-  {:else if isAlertDeletionSuccessVisible}
-  <AlertSuccess message={'Les gardes ont bien été supprimées 😊'} />
+
+{#if alertMessage}
+  <AlertSuccess message={alertMessage} />
 {/if}
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
-{#if isEventModalOpen && openedEvent}
-  <ModalEvent {isEventModalOpen} openedEvent={openedEvent.event} connectedStudent={data.currentStudent} />
-{/if}
+<ModalEvent {isEventModalOpen} openedEvent={openedEvent?.event} connectedStudent={data.currentStudent} />
 
 <ModalConfirmation
   {isConfirmationModalOpen}

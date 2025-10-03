@@ -19,7 +19,7 @@ const config = {
   safelist: [
     'bg-[#be3144]',
     'bg-[#ee7214]',
-    'bg-[#ff00bf]',
+    'bg-[#1e00ff]',
     'bg-[#62ff00]',
   ],
 }

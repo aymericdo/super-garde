@@ -9,6 +9,7 @@
   import Autorenew from 'svelte-material-icons/Autorenew.svelte'
   import { pb } from '$lib/pocketbase';
   import ModalEvent from '$lib/components/ModalEvent.svelte'
+  import ModalAddSlot from '$lib/components/ModalAddSlot.svelte'
   import { displayDateRange, eventStateColor, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   
   import type { ClientResponseError, RecordModel } from 'pocketbase'
@@ -17,8 +18,9 @@
 
   export let data: PageData
 
+  let isAddSlotModalOpen = false;
   let isEventModalOpen = false;
-  let openedEvent: CalendarEvent | null = null;
+  let openedEvent: CalendarEvent | undefined;
   let loading = true;
   let slots: RecordModel[] = [];
 
@@ -29,7 +31,7 @@
       const options: { expand: string, filter: string, sort: string } = {
         expand: 'student',
         filter: `student = "${data.currentStudent?.id}" || isOnTransfer = true || isOnExchange = true`,
-        sort: 'start',
+        sort: '-start',
       };
 
       slots = await pb.collection("onCallSlots").getFullList(options);
@@ -70,6 +72,12 @@
       isEventModalOpen = false;
     },
   });
+
+  setContext('isAddSlotModalOpen', {
+    handleModalClose: () => {
+      isAddSlotModalOpen = false;
+    },
+  });
 </script>
 
 <div class="flex justify-between mb-4">
@@ -93,14 +101,12 @@
             class:border-dashed={slot.student !== data.currentStudent.id}
             class:border-gray-400={slot.student !== data.currentStudent.id}
             class:opacity-50={slot.student !== data.currentStudent.id}
+            class:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.2)_0,rgba(0,0,0,0.2)_10px,transparent_10px,transparent_20px)]={new Date(slot.end) < new Date()}
             on:click={() => {
               openedEvent = { ...onCallSlotRecordToCalendarEvent(slot) }
               isEventModalOpen = true;
             }}
           >
-            {#if new Date(slot.end) < new Date()}
-              <span class="absolute left-0 top-0 bottom-0 w-1 bg-gray-400 rounded-l-2xl"></span>
-            {/if}
             <div class="flex flex-col items-start">
               <h3 class="font-bold text-lg">{slot.sector}</h3>
               <div class="flex items-center my-2">
@@ -115,7 +121,11 @@
               </div>
               <div class="flex items-center mb-2">
                 <MapMarker class="mr-2" size="1.5em" />
-                <span>{slot.hospital}</span>
+                {#if slot.hospital === 'Autre'}
+                  <span>{slot.otherHospital}</span>
+                {:else}
+                  <span>{slot.hospital}</span>
+                {/if}
               </div>
               <div class="flex items-center mb-2">
                 <Doctor class="mr-2" size="1.5em" />
@@ -160,7 +170,25 @@
   Tu n'as pas de garde car tu n'es pas étudiant.
 {/if}
 
-{#if isEventModalOpen && openedEvent}
-  <ModalEvent {isEventModalOpen} {openedEvent} connectedStudent={data.currentStudent} />
-{/if}
+<button
+  class="absolute bottom-6 right-6 btn btn-lg btn-circle btn-secondary"
+  on:click={() => {
+    isAddSlotModalOpen = true;
+  }}
+>
+  <svg
+    aria-label="New"
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke-width="2"
+    stroke="currentColor"
+    class="size-6"
+  >
+    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+  </svg>
+</button>
+
+<ModalAddSlot {isAddSlotModalOpen} connectedStudent={data.currentStudent} />
+<ModalEvent {isEventModalOpen} {openedEvent} connectedStudent={data.currentStudent} />
 

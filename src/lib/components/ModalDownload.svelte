@@ -62,12 +62,12 @@
             "etudiant id": studentId,
             "etudiant prenom": row.expand!.student.firstName,
             "etudiant nom": row.expand!.student.lastName,
+            "etudiant annee": row.expand!.student.year,
             "etudiant UHCD": row.expand!.student.UHCD,
             "nombre de creneaux": 1,
           };
         } else {
-          acc[studentId]["nombre de créneaux"] += 1;
-          // max prénom / nom arbitraire : on garde celui existant
+          acc[studentId]["nombre de creneaux"] += 1;
         }
         return acc;
       }, {} as Record<string, any>)

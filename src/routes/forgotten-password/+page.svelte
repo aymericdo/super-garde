@@ -25,7 +25,7 @@
         }
 
         await applyAction(result)
-        await goto('/login?forgetten-password=true')
+        await goto('/login?forgotten-password=true')
 
         // Clear previous error
         serverError = null

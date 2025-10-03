@@ -5,6 +5,7 @@
   import { pb } from '$lib/pocketbase'
   import { goto } from '$app/navigation'
   import { resolve } from '$app/paths'
+  import { page } from '$app/state';
 
   let email = ''
   let password = ''
@@ -18,6 +19,8 @@
     }
     return 'Une erreur est survenue'
   }
+
+  const forgottenPassword = page.url.searchParams.get('forgotten-password')
 </script>
 
 <form
@@ -49,6 +52,12 @@
   {#if serverError}
     <div class="alert alert-error mb-4">
       {serverError}
+    </div>
+  {/if}
+
+  {#if forgottenPassword}
+    <div class="alert alert-success mb-4">
+      Un mail t'a été envoyé pour la réinitialisation du mot de passe. Vérifie tes spams.
     </div>
   {/if}
 

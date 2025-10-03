@@ -35,6 +35,8 @@ module.exports = {
       lastName,
       year,
       UHCD,
+      onCallCount2025,
+      totalOnCallCount
     } = data;
 
     try {
@@ -46,6 +48,8 @@ module.exports = {
         "user": userRecord.id,
         "year": year,
         "UHCD": UHCD,
+        "onCallCount2025": onCallCount2025,
+        "totalOnCallCount": totalOnCallCount,
       });
 
       $app.save(studentRecord)
