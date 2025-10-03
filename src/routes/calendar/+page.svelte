@@ -39,9 +39,11 @@
 
   const fetchAll = async (start: string, end: string): Promise<RecordModel[] | undefined> => {
     try {
+      const startISO = new Date(start).toISOString()
+      const endISO = new Date(end).toISOString()
       const options: { expand: string, filter: string } = {
         expand: 'student',
-        filter: `(start >= "${start}" && start < "${end}")`,
+        filter: `(start < "${endISO}" && end > "${startISO}")`,
       }
 
       if (data.currentStudent) {
