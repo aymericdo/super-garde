@@ -7,8 +7,7 @@ pb.authStore.onChange(() => {
   document.cookie = pb.authStore.exportToCookie({
     httpOnly: false,
     secure: true,
-    sameSite: 'None',
+    sameSite: 'none',
     path: '/',
-    domain: 'super-garde.aymericdo.ovh',
   })
 }, true)

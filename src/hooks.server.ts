@@ -30,9 +30,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     pb.authStore.exportToCookie({
       httpOnly: false, // tu veux manipuler le cookie côté client
       secure: true, // obligatoire si sameSite='None'
-      sameSite: 'None', // autorise les contextes externes (ex: lien depuis mail)
+      sameSite: 'none', // autorise les contextes externes (ex: lien depuis mail)
       path: '/', // pour tout le site
-      domain: 'super-garde.aymericdo.ovh',
     }),
   )
 
