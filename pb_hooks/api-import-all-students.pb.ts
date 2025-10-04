@@ -40,7 +40,7 @@ routerAdd("GET", "/api/import-all-students", (e) => {
         dbUpdate.student({ year, UHCD, onCallCount2025, totalOnCallCount }, userSameEmail, { $app: txApp });
       } else {
         const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-        const userRecord = dbCreate.user({ email, name }, { $app: txApp });
+        const userRecord = dbCreate.user({ email, name }, { $app: txApp, $security });
         dbCreate.student({ firstName, lastName, year, UHCD, onCallCount2025, totalOnCallCount }, userRecord, { $app: txApp });
       }
     });

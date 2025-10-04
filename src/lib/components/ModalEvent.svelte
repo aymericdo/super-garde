@@ -376,7 +376,7 @@
             <div class="mt-4">
               {#if openedEvent.isOnMarket}
                 <div class="flex items-center mb-2">
-                  Cette garde est actuellement <b>sur le marché</b>.
+                  Cette garde est actuellement&nbsp;<b>sur le marché</b>.
                 </div>
               {:else if openedEvent.isOnTransfer && onTransferSlot?.expand}
                 <div class="flex items-center mb-2">
@@ -389,7 +389,7 @@
                     <ArrowTopRightThinCircleOutline class="mr-2" size="1.5em" />
                   {/if}
                   <span>
-                    Cette garde est actuellement <b>en transfert</b> vers
+                    Cette garde est actuellement&nbsp;<b>en transfert</b> vers
                     <span class="font-bold"
                       >{connectedStudent?.id === onTransferSlot?.expand.to.id
                         ? 'toi'
@@ -412,7 +412,7 @@
                     </div>
                   {/if}
                   <span>
-                    Cette garde est actuellement <b>en échange</b> avec
+                    Cette garde est actuellement&nbsp;<b>en échange</b> avec
                     {#if openedEvent.id === onExchangeSlot?.expand.slot.id}
                       <span class="font-bold">
                         {connectedStudent?.id === onExchangeSlot?.expand.to.id

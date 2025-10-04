@@ -53,18 +53,20 @@ routerAdd("GET", "/api/create-all-events", (e) => {
     // const studentFilter = $dbx.exp("student = {:student}", { student: student.id })
     // const uhcdFilter = $dbx.exp("sector != {:uhcdFilter}", { uhcdFilter: 'UHCD' })
     // const dateFilter = $dbx.exp("start = {:start} AND end = {:end}", {
-    //   start: period[0].toString(),
-    //   end: period[1].toString(),
+    //   start: period[0].toISOString(),
+    //   end: period[1].toISOString(),
     // })
     // const onCallSlotsCount = $app.countRecords("onCallSlots", studentFilter, dateFilter, uhcdFilter)
+    // TODO: ^ faire x2 si WE ou ferié
 
     // const threeYearsAgo = new Date(period[0])
     // threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
     // const totalDateFilter = $dbx.exp("start = {:start} AND end = {:end}", {
-    //   start: threeYearsAgo.toString(),
-    //   end: period[1].toString(),
+    //   start: threeYearsAgo.toISOString(),
+    //   end: period[1].toISOString(),
     // })
     // const totalOnCallSlotsCount = $app.countRecords("onCallSlots", studentFilter, totalDateFilter)
+    // TODO: ^ faire x2 si WE ou ferié
 
     eventCountByStudent[student.id] = onCallCount2025 // onCallSlotsCount
     totalEventCountByStudent[student.id] = totalOnCallCount // totalOnCallSlotsCount
@@ -213,7 +215,9 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           }
 
           const dbCreate = require(`${__hooks}/helpers/db-create.js`);
-          dbCreate.onCallSlot(event, currentStudentId, { $app });
+          const slot = dbCreate.onCallSlot(event, currentStudentId, { $app });
+          $app.expandRecord(slot, ['student'], null);
+          const student = slot.expandedOne('student');
 
           // init arrays si pas encore
           if (!Object.prototype.hasOwnProperty.call(studentsByDate, dateKey)) {
@@ -226,8 +230,9 @@ routerAdd("GET", "/api/create-all-events", (e) => {
           eventByDate[dateKey].push(event);
           lastEventDateByStudent[currentStudentId] = new Date(currentDate);
 
+          const studentYear = student.get('year')
           // calcul du poids de la journée
-          const weight = isUHCD ? 0 : (isWeekend || isHoliday) ? 2 : 1;
+          const weight = (studentYear !== 'MM3' && isUHCD) ? 0 : (isWeekend || isHoliday) ? 2 : 1;
 
           // incrément pondéré
           eventCountByStudent[currentStudentId] = (eventCountByStudent[currentStudentId] ?? 0) + weight;

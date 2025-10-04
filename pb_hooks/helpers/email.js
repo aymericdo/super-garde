@@ -11,14 +11,16 @@ module.exports = {
     const user = student.expandedOne('user');
     const email = user.get('email');
 
+    const { displayDateRange } = require(`${__hooks}/helpers/utils.js`);
+
     let subject = '';
     let html = '';
     if (model.get('isOnMarket')) {
       subject = "Votre garde est maintenant disponible";
-      html = `<div>La garde du ${slot.get('start')}/${slot.get('end')} est dispo pour tout le monde 😊</div>`;
+      html = `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est dispo pour tout le monde 😊</div>`;
     } else {
       subject = "Tu as une nouvelle garde !";
-      html = `<div>La garde du ${slot.get('start')}/${slot.get('end')} est à toi 😊</div>`;
+      html = `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est à toi 😊</div>`;
     }
 
     const messageToCurrentSlotStudent = new MailerMessage({
@@ -50,7 +52,7 @@ module.exports = {
           address: oldStudentEmail,
         }],
         subject: "Votre garde a bien été récupérée !",
-        html: `<div>La garde du ${slot.get('start')}/${slot.get('end')} n'est plus pour toi 😊</div>`,
+        html: `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} n'est plus pour toi 😊</div>`,
       });
     }
 
@@ -74,7 +76,7 @@ module.exports = {
         },
         to: studentEmails,
         subject: "Nouvelle garde dispo !",
-        html: `<div>La garde du ${slot.get('start')}/${slot.get('end')} est disponible 😊</div>`,
+        html: `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est disponible 😊</div>`,
       });
     }
 
@@ -116,21 +118,23 @@ module.exports = {
 
     const onCallsUrl = 'https://super-garde.aymericdo.ovh/on-calls'
 
+    const { displayDateRange } = require(`${__hooks}/helpers/utils.js`);
+
     if (onTransferSlots.get('state') === 'progress') {
       toSubject = "Une garde est proposée au transfert";
-      toHtml = `<div>La garde du ${slot.get('start')} au ${slot.get('end')} est proposée au transfert.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      toHtml = `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est proposée au transfert.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
       fromSubject = "Vous avez proposé votre garde au transfert";
-      fromHtml = `<div>Vous avez proposé la garde du ${slot.get('start')} au ${slot.get('end')} au transfert.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      fromHtml = `<div>Vous avez proposé la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} au transfert.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     } else if (onTransferSlots.get('state') === 'cancel') {
       toSubject = "Une proposition de garde a été annulée";
-      toHtml = `<div>La garde du ${slot.get('start')} au ${slot.get('end')} n’est plus proposée.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      toHtml = `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} n’est plus proposée.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
       fromSubject = "Vous avez annulé votre proposition de garde";
-      fromHtml = `<div>Vous avez annulé la proposition de transfert de la garde du ${slot.get('start')} au ${slot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      fromHtml = `<div>Vous avez annulé la proposition de transfert de la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     } else if (onTransferSlots.get('state') === 'done') {
       toSubject = "Vous avez récupéré une garde 🎉";
-      toHtml = `<div>Vous avez récupéré la garde du ${slot.get('start')} au ${slot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      toHtml = `<div>Vous avez récupéré la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
       fromSubject = "Votre garde a été transférée";
-      fromHtml = `<div>Votre garde du ${slot.get('start')} au ${slot.get('end')} a été transférée à un collègue.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      fromHtml = `<div>Votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été transférée à un collègue.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     }
 
     const messageToFromStudent = new MailerMessage({
@@ -196,21 +200,23 @@ module.exports = {
 
     const onCallsUrl = 'https://super-garde.aymericdo.ovh/on-calls'
 
+    const { displayDateRange } = require(`${__hooks}/helpers/utils.js`);
+
     if (onExchangeSlots.get('state') === 'progress') {
       toSubject = "Une garde vous est proposée en échange";
-      toHtml = `<div>La garde du ${slot.get('start')} au ${slot.get('end')} est proposée en échange contre votre garde du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      toHtml = `<div>La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est proposée en échange contre votre garde du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
       fromSubject = "Vous avez proposé un échange de garde";
-      fromHtml = `<div>Vous avez proposé d’échanger votre garde du ${slot.get('start')} au ${slot.get('end')} contre la garde du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      fromHtml = `<div>Vous avez proposé d’échanger votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la garde du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     } else if (onExchangeSlots.get('state') === 'cancel') {
       toSubject = "Une proposition d’échange de garde a été annulée";
-      toHtml = `<div>La proposition d’échanger la garde du ${slot.get('start')} au ${slot.get('end')} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été annulée.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      toHtml = `<div>La proposition d’échanger la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été annulée.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
       fromSubject = "Vous avez annulé votre proposition d’échange";
-      fromHtml = `<div>Vous avez annulé la proposition d’échange entre votre garde du ${slot.get('start')} au ${slot.get('end')} et celle du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      fromHtml = `<div>Vous avez annulé la proposition d’échange entre votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} et celle du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     } else if (onExchangeSlots.get('state') === 'done') {
       toSubject = "Vous avez accepté un échange de garde 🎉";
-      toHtml = `<div>Vous avez échangé votre garde du ${toSlot.get('start')} au ${toSlot.get('end')} avec la garde du ${slot.get('start')} au ${slot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      toHtml = `<div>Vous avez échangé votre garde du ${toSlot.get('start')} au ${toSlot.get('end')} avec la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
       fromSubject = "Votre échange de garde a été confirmé";
-      fromHtml = `<div>Votre garde du ${slot.get('start')} au ${slot.get('end')} a été échangée avec celle du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
+      fromHtml = `<div>Votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été échangée avec celle du ${toSlot.get('start')} au ${toSlot.get('end')}.<br/><a class="btn" href="${onCallsUrl}">Gérer mes gardes</a></div>`;
     }
 
     const messageToFromStudent = new MailerMessage({

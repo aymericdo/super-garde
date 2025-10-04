@@ -153,7 +153,7 @@
                 Sur le marché
               </span>
             {:else if slot.isOnTransfer}
-              <span class={`px-3 py-1 text-xs bg-[${eventStateColor(slot)}] text-black font-bold rounded-full self-start`}>
+              <span class={`px-3 py-1 text-xs bg-[${eventStateColor(slot)}] text-white font-bold rounded-full self-start`}>
                 En transfert
               </span>
             {:else if slot.isOnExchange}

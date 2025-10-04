@@ -30,4 +30,24 @@ module.exports = {
   randomItemFromList: (list) => {
     return list[Math.floor(Math.random() * list.length)];
   },
+  displayDateRange: (start, end) => {
+    const pad = n => String(n).padStart(2, '0');
+    const weekdays = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+
+    const formatFull = (d) =>
+      `${weekdays[d.getDay()]} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}, ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    const formatTime = (d) =>
+      `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+    const datesAreOnSameDay = start.getFullYear() === end.getFullYear() &&
+      start.getMonth() === end.getMonth() &&
+      start.getDate() === end.getDate()
+
+    if (datesAreOnSameDay) {
+      return `${formatFull(start)} - ${formatTime(end)}`;
+    }
+
+    return `${formatFull(start)} - ${formatFull(end)}`;
+  }
 };

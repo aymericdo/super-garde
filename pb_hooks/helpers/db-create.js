@@ -1,6 +1,6 @@
 module.exports = {
   user: (data, options) => {
-    const { $app } = options;
+    const { $app, $security } = options;
 
     const {
       email,
@@ -18,6 +18,7 @@ module.exports = {
 
       // TODO: Change this password
       userRecord.setPassword("azerty1234");
+      // $security.randomString(8)
       userRecord.setEmailVisibility(true);
 
       $app.save(userRecord)
