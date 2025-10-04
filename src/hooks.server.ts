@@ -27,7 +27,13 @@ export const handle: Handle = async ({ event, resolve }) => {
   // send back the default 'pb_auth' cookie to the client with the latest store state
   response.headers.set(
     'set-cookie',
-    pb.authStore.exportToCookie({ httpOnly: false })
+    pb.authStore.exportToCookie({
+      httpOnly: false, // tu veux manipuler le cookie côté client
+      secure: true, // obligatoire si sameSite='None'
+      sameSite: 'None', // autorise les contextes externes (ex: lien depuis mail)
+      path: '/', // pour tout le site
+      domain: 'super-garde.aymericdo.ovh',
+    }),
   )
 
   return response
