@@ -23,7 +23,8 @@
   let openedEvent: CalendarEvent | undefined;
   let loading = true;
   let slots: RecordModel[] = [];
-  let currentYearSlots: RecordModel[] = [];
+  let currentYearCount: number = 0;
+  let past3YearsCount: number = 0;
 
   const fetchAll = async () => {
     if (!data.currentStudent?.id) return;
@@ -35,27 +36,36 @@
         sort: '-start',
       };
 
+      const currentDate = new Date()
+      const month = currentDate.getMonth() + 1;
+      const year = currentDate.getFullYear();
+      const period = (month >= 10) ?
+        // Octobre à décembre
+        [new Date(year, 9, 1), new Date(year + 1, 8, 30)]
+      : (month <= 4) ?
+        // Janvier à avril
+        [new Date(year - 1, 9, 1), new Date(year, 8, 30)]
+      :
+        // Mai à septembre
+        [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
+
       slots = await pb.collection("onCallSlots").getFullList(options);
 
-      if (data.currentStudent.year !== 'MM3') {
-        const currentDate = new Date()
-        const month = currentDate.getMonth() + 1;
-        const year = currentDate.getFullYear();
-        const period = (month >= 10) ?
-          // Octobre à décembre
-          [new Date(year, 9, 1), new Date(year + 1, 8, 30)]
-        : (month <= 4) ?
-          // Janvier à avril
-          [new Date(year - 1, 9, 1), new Date(year, 8, 30)]
-        :
-          // Mai à septembre
-          [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
+      const threeYearsAgo = new Date(period[0])
+      threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
 
-        const currentYearFilter = `${options.filter} && (start > "${period[0].toISOString()}" && end <= "${period[1].toISOString()}")`
-        currentYearSlots = await pb.collection("onCallSlots").getFullList({
+      const past3YearsFilter = `${options.filter} && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`
+      past3YearsCount = (await pb.collection("onCallSlots").getFullList({
+        ...options,
+        filter: past3YearsFilter,
+      })).length;
+
+      if (data.currentStudent.year !== 'MM3') {
+        const currentYearFilter = `${options.filter} && (start > "${period[0].toISOString()}" && end <= @now)`
+        currentYearCount = (await pb.collection("onCallSlots").getFullList({
           ...options,
           filter: currentYearFilter,
-        });
+        })).length;
       }
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
@@ -116,19 +126,19 @@
   {:else}
     <div class="flex justify-center mb-4">
       {#if data.currentStudent.year === 'MM3'}
-        <div class="radial-progress text-secondary" style="--value:{slots.length * 100 / 25};"
-        aria-valuenow="{slots.length * 100 / 25}"
-        class:text-success={currentYearSlots.length === 25}
-        role="progressbar">{slots.length}/25</div>
+        <div class="radial-progress text-secondary" style="--value:{past3YearsCount * 100 / 25};"
+        aria-valuenow="{past3YearsCount * 100 / 25}"
+        class:text-success={past3YearsCount === 25}
+        role="progressbar">{past3YearsCount}/25</div>
       {:else}
         <div class="radial-progress text-primary mx-2"
-          style="--value:{currentYearSlots.length * 100 / 4};" aria-valuenow="{currentYearSlots.length * 100 / 4}"
-          class:text-success={currentYearSlots.length === 4}
-          role="progressbar">{currentYearSlots.length}/4</div>
+          style="--value:{currentYearCount * 100 / 4};" aria-valuenow="{currentYearCount * 100 / 4}"
+          class:text-success={currentYearCount === 4}
+          role="progressbar">{currentYearCount}/4</div>
         <div class="radial-progress text-secondary mx-2"
-          style="--value:{slots.length * 100 / 25};" aria-valuenow="{slots.length * 100 / 25}"
-          class:text-success={currentYearSlots.length === 25}
-          role="progressbar">{slots.length}/25</div>
+          style="--value:{past3YearsCount * 100 / 25};" aria-valuenow="{past3YearsCount * 100 / 25}"
+          class:text-success={past3YearsCount === 25}
+          role="progressbar">{past3YearsCount}/25</div>
       {/if}
     </div>
     <ul class="space-y-3">
