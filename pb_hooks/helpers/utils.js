@@ -49,5 +49,16 @@ module.exports = {
     }
 
     return `${formatFull(start)} - ${formatFull(end)}`;
+  },
+  emailHtml: (message) => {
+    return `<p>Bonjour,</p>
+    <p>${message}</p>
+    <p>
+      <a class="btn" href="https://super-garde.aymericdo.ovh/on-calls" target="_blank" rel="noopener">Voir mes gardes</a>
+    </p>
+    <p>
+      Merci,<br/>
+      L’équipe Super Garde
+    </p>`
   }
 };
