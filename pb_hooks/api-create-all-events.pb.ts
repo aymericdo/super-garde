@@ -31,20 +31,17 @@ routerAdd("GET", "/api/create-all-events", (e) => {
   const dbRead = require(`${__hooks}/helpers/db-read.js`);
   const students = dbRead.students({ $app });
 
-  let period = null;
-
   const month = startDate.getMonth() + 1;
   const year = startDate.getFullYear();
-  if (month >= 10) {
+  const period = (month >= 10) ?
     // Octobre à décembre
-    period = [new Date(year, 9, 1), new Date(year, 8, 30)];
-  } else if (month <= 4) {
+    [new Date(year, 9, 1), new Date(year + 1, 8, 30)]
+  : (month <= 4) ?
     // Janvier à avril
-    period = [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
-  } else {
+    [new Date(year - 1, 9, 1), new Date(year, 8, 30)]
+  :
     // Mai à septembre
-    period = [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
-  }
+    [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
 
   students.forEach((student) => {
     const onCallCount2025 = student.get('onCallCount2025')
@@ -52,7 +49,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
     // const studentFilter = $dbx.exp("student = {:student}", { student: student.id })
     // const uhcdFilter = $dbx.exp("sector != {:uhcdFilter}", { uhcdFilter: 'UHCD' })
-    // const dateFilter = $dbx.exp("start = {:start} AND end = {:end}", {
+    // const dateFilter = $dbx.exp("start > {:start} AND end <= {:end}", {
     //   start: period[0].toISOString(),
     //   end: period[1].toISOString(),
     // })
@@ -61,7 +58,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
 
     // const threeYearsAgo = new Date(period[0])
     // threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
-    // const totalDateFilter = $dbx.exp("start = {:start} AND end = {:end}", {
+    // const totalDateFilter = $dbx.exp("start > {:start} AND end <= {:end}", {
     //   start: threeYearsAgo.toISOString(),
     //   end: period[1].toISOString(),
     // })

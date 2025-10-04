@@ -43,7 +43,7 @@
       const endISO = new Date(end).toISOString()
       const options: { expand: string, filter: string } = {
         expand: 'student',
-        filter: `(start < "${endISO}" && end > "${startISO}")`,
+        filter: `(start > "${startISO}" && start < "${endISO}")`,
       }
 
       if (data.currentStudent) {
