@@ -10,6 +10,7 @@ export interface CalendarEvent {
   durationEditable: boolean;
   resourceIds: string[];
   hospital?: string;
+  otherHospital?: string;
   sector?: string;
   student?: string;
   studentFullName?: string;

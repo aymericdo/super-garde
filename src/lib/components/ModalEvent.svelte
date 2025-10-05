@@ -360,7 +360,11 @@
             </div>
             <div class="flex items-center mb-2">
               <MapMarker class="mr-2" size="1.5em" />
-              <span>{openedEvent.hospital}</span>
+              {#if openedEvent.hospital === 'Autre'}
+                <span>{openedEvent.otherHospital}</span>
+              {:else}
+                <span>{openedEvent.hospital}</span>
+              {/if}
             </div>
             <div class="flex items-center mb-2">
               <Doctor class="mr-2" size="1.5em" />
