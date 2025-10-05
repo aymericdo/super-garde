@@ -45,30 +45,30 @@
 </style>
 
 <div class="bg-neutral text-neutral-content">
-  <div class="max-w-6xl mx-auto navbar px-4">
+  <div class="max-w-7xl mx-auto navbar px-4">
     <!-- Logo / Accueil -->
     <div class="navbar-start">
       <a href="{resolve('/')}" class="btn btn-ghost text-xl font-bold">(Super) logiciel de garde</a>
     </div>
 
     <!-- Desktop menu -->
-    <div class="navbar-center hidden lg:flex space-x-2">
+    <div class="navbar-center hidden xl:flex space-x-1">
       {#if $currentUser}
         <a href="{resolve('/calendar')}"
-          class="btn btn-ghost text-l mx-1"
+          class="btn btn-ghost text-l"
           class:btn-active={currentRoute.toString() === resolve("/calendar")}>Calendrier</a>
 
         <a href="{resolve('/on-calls')}"
-          class="btn btn-ghost text-l mx-1"
+          class="btn btn-ghost text-l"
           class:btn-active={currentRoute.toString() === resolve("/on-calls")}>Vos gardes</a>
  
         <a href="{resolve('/marketplace')}"
-          class="btn btn-ghost text-l mx-1"
+          class="btn btn-ghost text-l"
           class:btn-active={currentRoute.toString() === resolve("/marketplace")}>Le marché</a>
 
         {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
           <a href="{resolve('/students')}"
-            class="btn btn-ghost text-l mx-1"
+            class="btn btn-ghost text-l"
             class:btn-active={currentRoute.toString() === resolve("/students")}>Étudiants</a>
         {/if}
       {/if}
@@ -77,7 +77,7 @@
     <!-- Navbar end -->
     <div class="navbar-end">
       <!-- Desktop user -->
-      <div class="hidden lg:flex items-center space-x-2">
+      <div class="hidden xl:flex items-center space-x-2">
         {#if $currentUser}
           <a class="btn btn-ghost text-l flex items-center" href="{resolve('/')}">
             <span>{$currentUser.email}</span>
@@ -92,12 +92,12 @@
             <button type="submit" class="btn btn-ghost text-l">Déconnexion</button>
           </form>
         {:else}
-          <a class="btn btn-ghost text-l mx-1" href="{resolve('/login')}">Login</a>
+          <a class="btn btn-ghost text-l" href="{resolve('/login')}">Login</a>
         {/if}
       </div>
 
       <!-- Mobile burger -->
-      <div class="lg:hidden flex items-center">
+      <div class="xl:hidden flex items-center">
         <button on:click={() => (isOpen = !isOpen)}
           aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
           class="btn">
@@ -119,7 +119,7 @@
   <!-- Overlay + Mobile menu -->
   <button class:hidden={!isOpen} class="fixed inset-0 bg-black/40 z-20" on:click={() => (isOpen = false)}></button>
 
-  <div class="lg:hidden fixed top-16 right-2 w-48 bg-white rounded shadow-lg z-30 p-2 mobile-menu {isOpen ? '' : 'closed'}">
+  <div class="xl:hidden fixed top-16 right-2 w-48 bg-white rounded shadow-lg z-30 p-2 mobile-menu {isOpen ? '' : 'closed'}">
     {#if $currentUser}
       <a href="{resolve('/calendar')}"
         on:click={() => (isOpen = false)}
@@ -151,7 +151,7 @@
             await applyAction(result)
           }
         }}>
-        <button type="submit" class="btn btn-ghost">Déconnexion</button>
+        <button type="submit">Déconnexion</button>
       </form>
     {:else}
       <a class="btn btn-ghost w-full text-black" href="{resolve('/login')}" on:click={() => (isOpen = false)}>Log in</a>
