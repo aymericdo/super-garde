@@ -10,7 +10,7 @@
   import { pb } from '$lib/pocketbase';
   import ModalEvent from '$lib/components/ModalEvent.svelte'
   import ModalAddSlot from '$lib/components/ModalAddSlot.svelte'
-  import { displayDateRange, eventStateColor, onCallSlotRecordToCalendarEvent } from '$lib/utils'
+  import { displayDateRange, eventStateColor, holidays, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   
   import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
@@ -25,6 +25,21 @@
   let slots: RecordModel[] = [];
   let currentYearCount: number = 0;
   let past3YearsCount: number = 0;
+
+  const getCurrentYearCount = async (options: { expand: string, filter: string, sort: string }) => {
+    const slots = (await pb.collection("onCallSlots").getFullList(options));
+
+    let count = 0;
+    for (const slot of slots) {
+      const start = new Date(slot.start);
+      const isWeekend = start.getDay() === 0 || start.getDay() === 6; // dimanche=0, samedi=6
+      const isHoliday = holidays.some((h) => h.toDateString() === start.toDateString());
+      const weight = (isWeekend || isHoliday) ? 2 : 1;
+      count += weight;
+    }
+
+    return count;
+  }
 
   const fetchAll = async () => {
     if (!data.currentStudent?.id) return;
@@ -61,11 +76,9 @@
       })).length;
 
       if (data.currentStudent.year !== 'MM3') {
-        const currentYearFilter = `${options.filter} && (start > "${period[0].toISOString()}" && end <= @now)`
-        currentYearCount = (await pb.collection("onCallSlots").getFullList({
+        currentYearCount = await getCurrentYearCount({
           ...options,
-          filter: currentYearFilter,
-        })).length;
+          filter: `${options.filter} && (start > "${period[0].toISOString()}" && end <= @now)`})
       }
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
@@ -126,19 +139,46 @@
   {:else}
     <div class="flex justify-center mb-4">
       {#if data.currentStudent.year === 'MM3'}
-        <div class="radial-progress text-secondary" style="--value:{past3YearsCount * 100 / 25};"
-        aria-valuenow="{past3YearsCount * 100 / 25}"
-        class:text-success={past3YearsCount === 25}
-        role="progressbar">{past3YearsCount}/25</div>
-      {:else}
-        <div class="radial-progress text-primary mx-2"
-          style="--value:{currentYearCount * 100 / 4};" aria-valuenow="{currentYearCount * 100 / 4}"
-          class:text-success={currentYearCount === 4}
-          role="progressbar">{currentYearCount}/4</div>
-        <div class="radial-progress text-secondary mx-2"
-          style="--value:{past3YearsCount * 100 / 25};" aria-valuenow="{past3YearsCount * 100 / 25}"
+        <div class="flex flex-col items-center m-4">
+          <span class="mb-2">
+            {#if currentYearCount > 1}
+              Gardes réalisées sur vos 3 années
+            {:else}
+              Garde réalisée sur vos 3 années
+            {/if}
+          </span>
+          <div class="radial-progress text-secondary" style="--value:{past3YearsCount * 100 / 25};"
+          aria-valuenow="{past3YearsCount * 100 / 25}"
           class:text-success={past3YearsCount === 25}
           role="progressbar">{past3YearsCount}/25</div>
+        </div>
+      {:else}
+        <div class="flex flex-col items-center m-4">
+          <span class="mb-2">
+            {#if currentYearCount > 1}
+              Gardes réalisées sur l'année
+            {:else}
+              Garde réalisée sur l'année
+            {/if}
+          </span>
+          <div class="radial-progress text-primary mx-2"
+            style="--value:{currentYearCount * 100 / 4};" aria-valuenow="{currentYearCount * 100 / 4}"
+            class:text-success={currentYearCount === 4}
+            role="progressbar">{currentYearCount}/4</div>
+        </div>
+        <div class="flex flex-col items-center m-4">
+          <span class="mb-2">
+            {#if currentYearCount > 1}
+              Gardes réalisées sur vos 3 années
+            {:else}
+              Garde réalisée sur vos 3 années
+            {/if}
+          </span>
+          <div class="radial-progress text-secondary mx-2"
+            style="--value:{past3YearsCount * 100 / 25};" aria-valuenow="{past3YearsCount * 100 / 25}"
+            class:text-success={past3YearsCount === 25}
+            role="progressbar">{past3YearsCount}/25</div>
+        </div>
       {/if}
     </div>
     <ul class="space-y-3">
