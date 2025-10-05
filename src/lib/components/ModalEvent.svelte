@@ -424,22 +424,23 @@
                           : `${onExchangeSlot?.expand.to.firstName} ${onExchangeSlot?.expand.to.lastName}`}.
                       </span>
 
-                      <span>Voici la garde en retour :</span>
-                      <div class="mt-4">
-                        <span class="capitalize">
-                          {onExchangeSlot?.expand.toSlot &&
-                            displayDateRange(
+                      {#if onExchangeSlot?.expand.toSlot}
+                        <span>Voici la garde en retour :</span>
+                        <div class="mt-4">
+                          <span class="capitalize">
+                            {displayDateRange(
                               new Date(onExchangeSlot?.expand.toSlot.start),
                               new Date(onExchangeSlot?.expand.toSlot.end),
                             )}
-                        </span>
-                        <div class="flex items-center mb-2">
-                          <MapMarker class="mr-2" size="1.5em" />
-                          <span>{onExchangeSlot?.expand.toSlot.hospital}</span
-                          >-<span>{onExchangeSlot?.expand.toSlot.sector}</span>
+                          </span>
+                          <div class="flex items-center mb-2">
+                            <MapMarker class="mr-2" size="1.5em" />
+                            <span>{onExchangeSlot?.expand.toSlot.hospital}</span
+                            >-<span>{onExchangeSlot?.expand.toSlot.sector}</span>
+                          </div>
                         </div>
-                      </div>
-                    {:else if openedEvent.id === onExchangeSlot?.expand.toSlot.id}
+                      {/if}
+                    {:else if openedEvent.id === onExchangeSlot?.expand.toSlot?.id}
                       <span class="font-bold">
                         {connectedStudent?.id === onExchangeSlot?.expand.from.id
                           ? 'toi'
