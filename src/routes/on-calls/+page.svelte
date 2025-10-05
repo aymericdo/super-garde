@@ -69,7 +69,7 @@
       const threeYearsAgo = new Date(period[0])
       threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
 
-      const past3YearsFilter = `${options.filter} && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`
+      const past3YearsFilter = `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`
       past3YearsCount = (await pb.collection("onCallSlots").getFullList({
         ...options,
         filter: past3YearsFilter,
@@ -78,7 +78,7 @@
       if (data.currentStudent.year !== 'MM3') {
         currentYearCount = await getCurrentYearCount({
           ...options,
-          filter: `${options.filter} && (start > "${period[0].toISOString()}" && end <= @now)`})
+          filter: `student = "${data.currentStudent?.id}" && (start > "${period[0].toISOString()}" && end <= @now)`})
       }
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
