@@ -51,10 +51,7 @@ module.exports = {
     return `${formatFull(start)} - ${formatFull(end)}`;
   },
   emailHtml: (message) => {
-    return `<head>
-      <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    </head>
-    <p>Bonjour,</p>
+    return `<p>Bonjour,</p>
     <p>${message}</p>
     <p>
       <a class="btn" href="https://super-garde.aymericdo.ovh/on-calls" target="_blank" rel="noopener">Voir mes gardes</a>

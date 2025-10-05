@@ -124,10 +124,10 @@ module.exports = {
       fromSubject = "Vous avez proposé votre garde au transfert";
       fromHtml = emailHtml(`Vous avez proposé la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} au transfert.`);
     } else if (onTransferSlots.get('state') === 'cancel') {
-      toSubject = "Une proposition de garde a été annulée";
-      toHtml = emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} n’est plus proposée.`);
-      fromSubject = "Vous avez annulé votre proposition de garde";
-      fromHtml = emailHtml(`Vous avez annulé la proposition de transfert de la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.`);
+      toSubject = "Transfert refusé";
+      toHtml = emailHtml(`La proposition de transfert de la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été refusée.`);
+      fromSubject = "Transfert refusé";
+      fromHtml = emailHtml(`La proposition de transfert de la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été refusée.`);
     } else if (onTransferSlots.get('state') === 'done') {
       toSubject = "Vous avez récupéré une garde 🎉";
       toHtml = emailHtml(`Vous avez récupéré la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.`);
@@ -204,10 +204,10 @@ module.exports = {
       fromSubject = "Vous avez proposé un échange de garde";
       fromHtml = emailHtml(`Vous avez proposé d’échanger votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la garde du ${toSlot.get('start')} au ${toSlot.get('end')}.`);
     } else if (onExchangeSlots.get('state') === 'cancel') {
-      toSubject = "Une proposition d’échange de garde a été annulée";
-      toHtml = emailHtml(`La proposition d’échanger la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été annulée.`);
-      fromSubject = "Vous avez annulé votre proposition d’échange";
-      fromHtml = emailHtml(`Vous avez annulé la proposition d’échange entre votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} et celle du ${toSlot.get('start')} au ${toSlot.get('end')}.`);
+      toSubject = "Échange refusé";
+      toHtml = emailHtml(`La proposition d’échanger la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été refusée.`);
+      fromSubject = "Échange refusé";
+      fromHtml = emailHtml(`La proposition d’échanger la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été refusée.`);
     } else if (onExchangeSlots.get('state') === 'done') {
       toSubject = "Vous avez accepté un échange de garde 🎉";
       toHtml = emailHtml(`Vous avez échangé votre garde du ${toSlot.get('start')} au ${toSlot.get('end')} avec la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.`);
