@@ -18,28 +18,10 @@
 
   export let data: PageData
 
-  let isAddSlotModalOpen = false;
   let isEventModalOpen = false;
   let openedEvent: CalendarEvent | undefined;
   let loading = true;
   let slots: RecordModel[] = [];
-  let currentYearCount: number = 0;
-  let past3YearsCount: number = 0;
-
-  const getCurrentYearCount = async (options: { expand: string, filter: string, sort: string }) => {
-    const slots = (await pb.collection("onCallSlots").getFullList(options));
-
-    let count = 0;
-    for (const slot of slots) {
-      const start = new Date(slot.start);
-      const isWeekend = start.getDay() === 0 || start.getDay() === 6; // dimanche=0, samedi=6
-      const isHoliday = holidays.some((h) => h.toDateString() === start.toDateString());
-      const weight = (isWeekend || isHoliday) ? 2 : 1;
-      count += weight;
-    }
-
-    return count;
-  }
 
   const fetchAll = async () => {
     if (!data.currentStudent?.id) return;
@@ -47,39 +29,11 @@
     try {
       const options: { expand: string, filter: string, sort: string } = {
         expand: 'student',
-        filter: `(student = "${data.currentStudent?.id}" || isOnTransfer = true || isOnExchange = true)`,
+        filter: `isOnMarket = true`,
         sort: '-start',
       };
 
-      const currentDate = new Date()
-      const month = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
-      const period = (month >= 10) ?
-        // Octobre à décembre
-        [new Date(year, 9, 1), new Date(year + 1, 8, 30)]
-      : (month <= 4) ?
-        // Janvier à avril
-        [new Date(year - 1, 9, 1), new Date(year, 8, 30)]
-      :
-        // Mai à septembre
-        [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
-
       slots = await pb.collection("onCallSlots").getFullList(options);
-
-      const threeYearsAgo = new Date(period[0])
-      threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
-
-      const past3YearsFilter = `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`
-      past3YearsCount = (await pb.collection("onCallSlots").getFullList({
-        ...options,
-        filter: past3YearsFilter,
-      })).length;
-
-      if (data.currentStudent.year !== 'MM3') {
-        currentYearCount = await getCurrentYearCount({
-          ...options,
-          filter: `student = "${data.currentStudent?.id}" && (start > "${period[0].toISOString()}" && end <= @now)`})
-      }
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
@@ -117,16 +71,10 @@
       isEventModalOpen = false;
     },
   });
-
-  setContext('isAddSlotModalOpen', {
-    handleModalClose: () => {
-      isAddSlotModalOpen = false;
-    },
-  });
 </script>
 
 <div class="flex justify-between mb-4">
-  <h1 class="font-bold text-gray-900 text-lg">Vos gardes</h1>
+  <h1 class="font-bold text-gray-900 text-lg">Le marché</h1>
 </div>
 
 {#if data.currentStudent}
@@ -135,52 +83,8 @@
       <span class="loading loading-ball loading-lg text-accent"></span>
     </div>
   {:else if slots.length === 0}
-    <p class="text-gray-500 text-center italic">Aucune garde prévue.</p>
+    <p class="text-gray-500 text-center italic">Aucune garde sur le marché.</p>
   {:else}
-    <div class="flex justify-center mb-4">
-      {#if data.currentStudent.year === 'MM3'}
-        <div class="flex flex-col items-center m-4">
-          <span class="mb-2">
-            {#if currentYearCount > 1}
-              Gardes réalisées sur vos 3 années
-            {:else}
-              Garde réalisée sur vos 3 années
-            {/if}
-          </span>
-          <div class="radial-progress text-secondary" style="--value:{past3YearsCount * 100 / 25};"
-          aria-valuenow="{past3YearsCount * 100 / 25}"
-          class:text-success={past3YearsCount === 25}
-          role="progressbar">{past3YearsCount}/25</div>
-        </div>
-      {:else}
-        <div class="flex flex-col items-center m-4">
-          <span class="mb-2">
-            {#if currentYearCount > 1}
-              Gardes réalisées sur l'année
-            {:else}
-              Garde réalisée sur l'année
-            {/if}
-          </span>
-          <div class="radial-progress text-primary mx-2"
-            style="--value:{currentYearCount * 100 / 4};" aria-valuenow="{currentYearCount * 100 / 4}"
-            class:text-success={currentYearCount === 4}
-            role="progressbar">{currentYearCount}/4</div>
-        </div>
-        <div class="flex flex-col items-center m-4">
-          <span class="mb-2">
-            {#if currentYearCount > 1}
-              Gardes réalisées sur vos 3 années
-            {:else}
-              Garde réalisée sur vos 3 années
-            {/if}
-          </span>
-          <div class="radial-progress text-secondary mx-2"
-            style="--value:{past3YearsCount * 100 / 25};" aria-valuenow="{past3YearsCount * 100 / 25}"
-            class:text-success={past3YearsCount === 25}
-            role="progressbar">{past3YearsCount}/25</div>
-        </div>
-      {/if}
-    </div>
     <ul class="space-y-3">
       {#each slots as slot}
         <li>
@@ -237,21 +141,12 @@
               </div>
             </div>
 
-            {#if slot.isOnTransfer}
-              <span
-                class={`px-3 py-1 text-xs text-white font-bold rounded-full self-start`}
-                style="background-color: {eventStateColor(slot)};"
-              >
-                En transfert
-              </span>
-            {:else if slot.isOnExchange}
-              <span
-                class={`px-3 py-1 text-xs text-black font-bold rounded-full self-start`}
-                style="background-color: {eventStateColor(slot)};"
-              >
-                En échange
-              </span>
-            {/if}
+            <span
+              class={`px-3 py-1 text-xs text-white font-bold rounded-full self-start`}
+              style="background-color: {eventStateColor(slot)};"
+            >
+              Sur le marché
+            </span>
           </button>
         </li>
       {/each}
@@ -261,25 +156,4 @@
   Tu n'as pas de garde car tu n'es pas étudiant.
 {/if}
 
-<button
-  class="absolute bottom-6 right-6 btn btn-lg btn-circle btn-secondary"
-  on:click={() => {
-    isAddSlotModalOpen = true;
-  }}
->
-  <svg
-    aria-label="New"
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    stroke-width="2"
-    stroke="currentColor"
-    class="size-6"
-  >
-    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-  </svg>
-</button>
-
-<ModalAddSlot {isAddSlotModalOpen} connectedStudent={data.currentStudent} />
 <ModalEvent {isEventModalOpen} {openedEvent} connectedStudent={data.currentStudent} />
-

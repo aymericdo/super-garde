@@ -61,6 +61,10 @@
         <a href="{resolve('/on-calls')}"
           class="btn btn-ghost text-l mx-1"
           class:btn-active={currentRoute.toString() === resolve("/on-calls")}>Vos gardes</a>
+ 
+        <a href="{resolve('/marketplace')}"
+          class="btn btn-ghost text-l mx-1"
+          class:btn-active={currentRoute.toString() === resolve("/marketplace")}>Le marché</a>
 
         {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
           <a href="{resolve('/students')}"
@@ -127,6 +131,11 @@
         class="btn btn-ghost w-full text-black"
         class:btn-active={currentRoute === resolve("/on-calls")}>Vos gardes</a>
 
+      <a href="{resolve('/marketplace')}"
+        on:click={() => (isOpen = false)}
+        class="btn btn-ghost w-full text-black"
+        class:btn-active={currentRoute === resolve("/marketplace")}>Le marché</a>
+
       {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
         <a href="{resolve('/students')}"
           on:click={() => (isOpen = false)}
@@ -151,7 +160,7 @@
 </div>
 
 <div class="flex flex-col h-[calc(100vh-64px)] py-8 px-4 overflow-y-auto">
-  <div class="flex flex-col max-w-3xl mx-auto ">
+  <div class="flex flex-col w-full max-w-3xl mx-auto">
     <slot />
   </div>
 </div>

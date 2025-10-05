@@ -35,7 +35,7 @@ export const datesAreOnSameDay = (first: Date, second: Date) =>
 
 export const eventStateColor = (onCallSlot: RecordModel): string => {
   return (!onCallSlot.student ? '#be3144' :
-    onCallSlot.isOnMarket ? '#ee7214' :
+    onCallSlot.isOnMarket ? '#ff6900' :
     onCallSlot.isOnTransfer ? '#1e00ff' :
     onCallSlot.isOnExchange ? '#62ff00' :
     '');

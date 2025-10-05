@@ -209,7 +209,7 @@
     headerToolbar: {
       start: 'prev,next today',
       center: 'title',
-      end: 'dayGridMonth listDay listYear',
+      end: 'dayGridMonth timeGridWeek listDay',
     },
     buttonText: {
       today: "Aujourd'hui",
