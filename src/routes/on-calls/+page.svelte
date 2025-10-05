@@ -26,7 +26,7 @@
   let currentYearCount: number = 0;
   let past3YearsCount: number = 0;
 
-  const getCurrentYearCount = async (options: { expand: string, filter: string, sort: string }) => {
+  const getTotalYearCount = async (options: { expand: string, filter: string, sort: string }) => {
     const slots = (await pb.collection("onCallSlots").getFullList(options));
 
     let count = 0;
@@ -69,14 +69,12 @@
       const threeYearsAgo = new Date(period[0])
       threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
 
-      const past3YearsFilter = `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`
-      past3YearsCount = (await pb.collection("onCallSlots").getFullList({
-        ...options,
-        filter: past3YearsFilter,
-      })).length;
+      past3YearsCount = await getTotalYearCount({
+          ...options,
+          filter:  `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`})
 
       if (data.currentStudent.year !== 'MM3') {
-        currentYearCount = await getCurrentYearCount({
+        currentYearCount = await getTotalYearCount({
           ...options,
           filter: `student = "${data.currentStudent?.id}" && (start > "${period[0].toISOString()}" && end <= @now)`})
       }
