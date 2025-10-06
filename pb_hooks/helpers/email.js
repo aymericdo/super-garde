@@ -97,7 +97,12 @@ module.exports = {
 
     const slot = $app.findRecordById('onCallSlots', model.id);
 
-    const onTransferSlots = $app.findFirstRecordByFilter('onTransferSlots', "slot = {:slot}", { slot: slot.id });
+    const onTransferSlots = $app.findFirstRecordByFilter(
+      'onTransferSlots',
+      "slot = {:slot}",
+      { slot: slot.id },
+      { sort: '-updated' },
+    );
     $app.expandRecord(onTransferSlots, ['from', 'to'], null);
 
     const fromStudent = onTransferSlots.expandedOne('from');
@@ -176,7 +181,12 @@ module.exports = {
 
     const slot = $app.findRecordById('onCallSlots', model.id);
 
-    const onExchangeSlots = $app.findFirstRecordByFilter('onExchangeSlots', "slot = {:slot}", { slot: slot.id });
+    const onExchangeSlots = $app.findFirstRecordByFilter(
+      'onExchangeSlots',
+      "slot = {:slot}",
+      { slot: slot.id },
+      { sort: '-updated' },
+    );
     $app.expandRecord(onExchangeSlots, ['from', 'to', 'toSlot'], null);
 
     const fromStudent = onExchangeSlots.expandedOne('from');
