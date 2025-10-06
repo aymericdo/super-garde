@@ -103,11 +103,13 @@ module.exports = {
 
     const slot = $app.findRecordById('onCallSlots', model.id);
 
-    const onTransferSlots = $app.findFirstRecordByFilter(
-      'onTransferSlots',
+    const onTransferSlots = $app.findRecordsByFilter(
+      "onTransferSlots",
       "slot = {:slot}",
+      "-updated",
+      1,
+      0,
       { slot: slot.id },
-      { sort: '-updated' },
     );
     $app.expandRecord(onTransferSlots, ['from', 'to'], null);
 
@@ -199,11 +201,13 @@ module.exports = {
 
     const slot = $app.findRecordById('onCallSlots', model.id);
 
-    const onExchangeSlots = $app.findFirstRecordByFilter(
-      'onExchangeSlots',
+    const onExchangeSlots = $app.findRecordsByFilter(
+      "onExchangeSlots",
       "slot = {:slot}",
+      "-updated",
+      1,
+      0,
       { slot: slot.id },
-      { sort: '-updated' },
     );
     $app.expandRecord(onExchangeSlots, ['from', 'to', 'toSlot'], null);
 
