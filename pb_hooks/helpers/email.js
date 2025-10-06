@@ -17,10 +17,14 @@ module.exports = {
     let html = '';
     if (model.get('isOnMarket')) {
       subject = "Votre garde est maintenant disponible";
-      html = emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est dispo pour tout le monde 😊`);
+      html = emailHtml(
+        `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> est désormais disponible pour tout le monde 😊`
+      );
     } else {
       subject = "Tu as une nouvelle garde !";
-      html = emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est à toi 😊`);
+      html = emailHtml(
+        `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> est à toi 😊`
+      );
     }
 
     const messageToCurrentSlotStudent = new MailerMessage({
@@ -52,33 +56,35 @@ module.exports = {
           address: oldStudentEmail,
         }],
         subject: "Votre garde a bien été récupérée !",
-        html: emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} n'est plus pour toi 😊`),
+        html: emailHtml(
+          `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> n’est plus pour vous 😊`
+        ),
       });
     }
 
-    let messageToAllStudents;
-    if (model.get('isOnMarket')) {
-      const dbRead = require(`${__hooks}/helpers/db-read.js`);
-      const students = dbRead.students({ $app });
-      const studentEmails = students.reduce((prev, stud) => {
-        if (student.id !== stud.id) {
-          $app.expandRecord(stud, ['user'], null);
-          const oldUser = stud.expandedOne('user');
-          prev.push({ address: oldUser.get('email') });
-        }
-        return prev;
-      }, [])
+    // let messageToAllStudents;
+    // if (model.get('isOnMarket')) {
+    //   const dbRead = require(`${__hooks}/helpers/db-read.js`);
+    //   const students = dbRead.students({ $app });
+    //   const studentEmails = students.reduce((prev, stud) => {
+    //     if (student.id !== stud.id) {
+    //       $app.expandRecord(stud, ['user'], null);
+    //       const oldUser = stud.expandedOne('user');
+    //       prev.push({ address: oldUser.get('email') });
+    //     }
+    //     return prev;
+    //   }, [])
 
-      messageToAllStudents = new MailerMessage({
-        from: {
-          address: $app.settings().meta.senderAddress,
-          name: $app.settings().meta.senderName,
-        },
-        to: studentEmails,
-        subject: "Nouvelle garde dispo !",
-        html: emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est disponible 😊`),
-      });
-    }
+    //   messageToAllStudents = new MailerMessage({
+    //     from: {
+    //       address: $app.settings().meta.senderAddress,
+    //       name: $app.settings().meta.senderName,
+    //     },
+    //     to: studentEmails,
+    //     subject: "Nouvelle garde dispo !",
+    //     html: emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est disponible 😊`),
+    //   });
+    // }
 
     try {
       require(`${__hooks}/lib/env.js`);
@@ -124,20 +130,32 @@ module.exports = {
     const { displayDateRange, emailHtml } = require(`${__hooks}/helpers/utils.js`);
 
     if (onTransferSlots.get('state') === 'progress') {
-      toSubject = "Une garde est proposée au transfert";
-      toHtml = emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est proposée au transfert.`);
-      fromSubject = "Vous avez proposé votre garde au transfert";
-      fromHtml = emailHtml(`Vous avez proposé la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} au transfert.`);
+      toSubject = "Une garde vous est proposée en transfert";
+      toHtml = emailHtml(
+        `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> vous est proposée en transfert.`
+      );
+      fromSubject = "Vous avez proposé votre garde en transfert";
+      fromHtml = emailHtml(
+        `Vous avez proposé la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> en transfert.`
+      );
     } else if (onTransferSlots.get('state') === 'cancel') {
       toSubject = "Transfert refusé";
-      toHtml = emailHtml(`La proposition de transfert de la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été refusée.`);
+      toHtml = emailHtml(
+        `La proposition de transfert de la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> a été refusée.`
+      );
       fromSubject = "Transfert refusé";
-      fromHtml = emailHtml(`La proposition de transfert de la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été refusée.`);
+      fromHtml = emailHtml(
+        `Votre proposition de transfert de la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> a été refusée.`
+      );
     } else if (onTransferSlots.get('state') === 'done') {
       toSubject = "Vous avez récupéré une garde 🎉";
-      toHtml = emailHtml(`Vous avez récupéré la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.`);
+      toHtml = emailHtml(
+        `Vous avez récupéré la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b>.`
+      );
       fromSubject = "Votre garde a été transférée";
-      fromHtml = emailHtml(`Votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été transférée à un collègue.`);
+      fromHtml = emailHtml(
+        `Votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> a été transférée à un collègue.`
+      );
     }
 
     const messageToFromStudent = new MailerMessage({
@@ -210,20 +228,33 @@ module.exports = {
 
     if (onExchangeSlots.get('state') === 'progress') {
       toSubject = "Une garde vous est proposée en échange";
-      toHtml = emailHtml(`La garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} est proposée en échange contre votre garde du ${toSlot.get('start')} au ${toSlot.get('end')}.`);
+      toHtml = emailHtml(
+        `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> vous est proposée en échange de votre garde du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
+      );
       fromSubject = "Vous avez proposé un échange de garde";
-      fromHtml = emailHtml(`Vous avez proposé d’échanger votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la garde du ${toSlot.get('start')} au ${toSlot.get('end')}.`);
+      fromHtml = emailHtml(
+        `Vous avez proposé d’échanger votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre celle du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
+      );
     } else if (onExchangeSlots.get('state') === 'cancel') {
       toSubject = "Échange refusé";
-      toHtml = emailHtml(`La proposition d’échanger la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été refusée.`);
+      toHtml = emailHtml(
+        `La proposition d’échanger la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre la vôtre du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> a été refusée.`
+      );
       fromSubject = "Échange refusé";
-      fromHtml = emailHtml(`La proposition d’échanger la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} contre la vôtre du ${toSlot.get('start')} au ${toSlot.get('end')} a été refusée.`);
+      fromHtml = emailHtml(
+        `Votre proposition d’échanger la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre celle du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> a été refusée.`
+      );
     } else if (onExchangeSlots.get('state') === 'done') {
       toSubject = "Vous avez accepté un échange de garde 🎉";
-      toHtml = emailHtml(`Vous avez échangé votre garde du ${toSlot.get('start')} au ${toSlot.get('end')} avec la garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}.`);
+      toHtml = emailHtml(
+        `Vous avez échangé votre garde du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> avec la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b>.`
+      );
       fromSubject = "Votre échange de garde a été confirmé";
-      fromHtml = emailHtml(`Votre garde du ${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))} a été échangée avec celle du ${toSlot.get('start')} au ${toSlot.get('end')}.`);
+      fromHtml = emailHtml(
+        `Votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> a été échangée avec celle du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
+      );
     }
+
 
     const messageToFromStudent = new MailerMessage({
       from: {
