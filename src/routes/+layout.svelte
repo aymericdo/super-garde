@@ -52,7 +52,7 @@
     </div>
 
     <!-- Desktop menu -->
-    <div class="navbar-center hidden xl:flex space-x-1">
+    <div class="navbar-center hidden lg:flex space-x-1">
       {#if $currentUser}
         <a href="{resolve('/calendar')}"
           class="btn btn-ghost text-l"
@@ -77,7 +77,7 @@
     <!-- Navbar end -->
     <div class="navbar-end">
       <!-- Desktop user -->
-      <div class="hidden xl:flex items-center space-x-2">
+      <div class="hidden lg:flex items-center space-x-2">
         {#if $currentUser}
           <a class="btn btn-ghost text-l flex items-center" href="{resolve('/')}">
             <span>{$currentUser.email}</span>
@@ -97,7 +97,7 @@
       </div>
 
       <!-- Mobile burger -->
-      <div class="xl:hidden flex items-center">
+      <div class="lg:hidden flex items-center">
         <button on:click={() => (isOpen = !isOpen)}
           aria-label={isOpen ? "Fermer le menu" : "Ouvrir le menu"}
           class="btn">
@@ -119,7 +119,7 @@
   <!-- Overlay + Mobile menu -->
   <button class:hidden={!isOpen} class="fixed inset-0 bg-black/40 z-20" on:click={() => (isOpen = false)}></button>
 
-  <div class="xl:hidden fixed top-16 right-2 w-48 bg-white rounded shadow-lg z-30 p-2 mobile-menu {isOpen ? '' : 'closed'}">
+  <div class="lg:hidden fixed top-16 right-2 w-48 bg-white rounded shadow-lg z-30 p-2 mobile-menu {isOpen ? '' : 'closed'}">
     {#if $currentUser}
       <a href="{resolve('/calendar')}"
         on:click={() => (isOpen = false)}
