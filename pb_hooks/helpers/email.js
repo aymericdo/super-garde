@@ -110,7 +110,7 @@ module.exports = {
       1,
       0,
       { slot: slot.id },
-    );
+    )[0];
     $app.expandRecord(onTransferSlots, ['from', 'to'], null);
 
     const fromStudent = onTransferSlots.expandedOne('from');
@@ -208,7 +208,7 @@ module.exports = {
       1,
       0,
       { slot: slot.id },
-    );
+    )[0];
     $app.expandRecord(onExchangeSlots, ['from', 'to', 'toSlot'], null);
 
     const fromStudent = onExchangeSlots.expandedOne('from');

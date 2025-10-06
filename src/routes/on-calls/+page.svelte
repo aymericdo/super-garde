@@ -249,6 +249,13 @@
               >
                 En échange
               </span>
+            {:else if slot.isOnMarket}
+              <span
+                class={`px-3 py-1 text-xs text-white font-bold rounded-full self-start`}
+                style="background-color: {eventStateColor(slot)};"
+              >
+                Sur le marché
+              </span>
             {/if}
           </button>
         </li>
