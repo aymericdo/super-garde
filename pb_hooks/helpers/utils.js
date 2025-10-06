@@ -54,7 +54,23 @@ module.exports = {
     return `<p>Bonjour,</p>
     <p>${message}</p>
     <p>
-      <a class="btn" href="https://super-garde.aymericdo.ovh/on-calls" target="_blank" rel="noopener">Voir mes gardes</a>
+      <a href="https://super-garde.aymericdo.ovh/on-calls"
+        target="_blank"
+        rel="noopener"
+        style="
+          display: inline-block;
+          background-color: #f43098;
+          color: #ffffff;
+          font-weight: 600;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+          text-decoration: none;
+          padding: 12px 24px;
+          border-radius: 8px;
+          text-align: center;
+          transition: background-color 0.3s ease;
+        ">
+        Voir mes gardes
+      </a>
     </p>
     <p>
       Merci,<br/>
