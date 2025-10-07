@@ -14,6 +14,7 @@
   import OnCallSelector from './OnCallSelector.svelte'
   import { pb } from '$lib/pocketbase'
   import AlertSuccess from './AlertSuccess.svelte'
+  import ModalConfirmation from './ModalConfirmation.svelte'
 
   import type { CalendarEvent } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
@@ -30,6 +31,7 @@
   let sameDayStudents: { [sector: string]: string[] } | null = null
 
   let loading = false
+  let isConfirmationModalOpen: 'exchange' | 'transfer' | 'marketplace' | null = null
 
   let alertMessage: string | null = null;
   let alertMessageTimeout: NodeJS.Timeout | null = null;
@@ -331,6 +333,19 @@
     handleEventModalClose: () => void
   }
 
+  setContext('isConfirmationModalOpen', {
+    handleModalClose: () => isConfirmationModalOpen = null,
+    handleConfirm: () => {
+        isConfirmationModalOpen === 'exchange' ?
+      handlePutOnExchange() :
+        isConfirmationModalOpen === 'transfer' ?
+      handlePutOnTransfer() :
+        isConfirmationModalOpen === 'marketplace' ?
+      handlePutOnMarket() :
+        null
+    },
+  });
+
   export let isEventModalOpen: boolean = false
   export let openedEvent: CalendarEvent | undefined
   export let connectedStudent: RecordModel | undefined
@@ -486,7 +501,7 @@
                   <button
                     class="btn btn-secondary btn-outline btn-sm m-1"
                     disabled={loading}
-                    on:click={handlePutOnMarket}
+                    on:click={() => isConfirmationModalOpen = 'marketplace'}
                   >
                     {#if loading}
                       <span class="loading loading-spinner"></span>
@@ -643,7 +658,7 @@
           <button
             class="btn btn-secondary"
             disabled={!selectedStudent || !!selectedStudentError || loading}
-            on:click={handlePutOnTransfer}
+            on:click={() => isConfirmationModalOpen = 'transfer'}
           >
             {#if loading}
               <span class="loading loading-spinner"></span>
@@ -658,7 +673,7 @@
               !!selectedStudentError ||
               !selectedSlot ||
               loading}
-            on:click={handlePutOnExchange}
+            on:click={() => isConfirmationModalOpen = 'exchange'}
           >
             {#if loading}
               <span class="loading loading-spinner"></span>
@@ -676,3 +691,17 @@
     </div>
   </div>
 {/if}
+
+<ModalConfirmation
+  isConfirmationModalOpen={!!isConfirmationModalOpen}
+  title={"Confirmation"}
+  description={isConfirmationModalOpen === 'exchange' ?
+    'Tu confirmes que tu veux échanger cette garde ?' :
+    isConfirmationModalOpen === 'transfer' ?
+    'Tu confirmes que tu veux transférer cette garde ?' :
+    isConfirmationModalOpen === 'marketplace' ?
+    'Tu confirmes que tu veux mettre cette garde sur le marché ?' :
+    ''
+  }
+  action={'Ok'}
+/>
