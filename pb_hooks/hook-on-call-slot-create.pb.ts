@@ -17,3 +17,17 @@ onRecordCreateRequest((e) => {
 
   e.next()
 }, "onCallSlots");
+
+onRecordCreate((e) => {
+  if (!e.record) return;
+
+  const manualSaved = e.record.get('manualSaved')
+
+  if (manualSaved) {
+    if (!e.record.get('proof')) {
+       throw 'attestation is required'
+    }
+  }
+
+  e.next()
+}, "onCallSlots");
