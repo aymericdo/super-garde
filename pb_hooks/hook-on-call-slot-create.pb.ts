@@ -9,6 +9,10 @@ onRecordCreateRequest((e) => {
       'manualSaved',
       true,
     );
+    e.record.set(
+      'validated',
+      false,
+    );
   }
 
   e.next()
