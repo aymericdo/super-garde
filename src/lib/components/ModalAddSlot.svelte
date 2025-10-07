@@ -8,21 +8,32 @@
   let sector: string = ''
   let error: string = ''
   let loading: boolean = false
+  let attestationFile: File | null = null
 
   const handleSave = async () => {
-    if (!connectedStudent) return;
+    if (!connectedStudent) return
 
     loading = true
+
     // Vérification que la date est dans le passé
     if (!date || new Date(date) > new Date()) {
       error = 'La date doit être dans le passé'
+      loading = false
       return
     }
 
     if (!hospital.trim() || !sector.trim()) {
       error = 'Hôpital et secteur sont requis'
+      loading = false
       return
     }
+
+    if (!attestationFile) {
+      error = 'Une attestation est requise'
+      loading = false
+      return
+    }
+
     error = ''
 
     const startDate = new Date(date)
@@ -33,17 +44,29 @@
     endDate.setHours(13)
     endDate.setMinutes(0)
 
-    await pb.collection("onCallSlots").create({
-      student: connectedStudent.id,
-      start: startDate,
-      end: endDate,
-      hospital: 'Autre',
-      otherHospital: hospital,
-      sector
-    })
+    const formData = new FormData()
+    formData.append('student', connectedStudent.id)
+    formData.append('start', startDate.toISOString())
+    formData.append('end', endDate.toISOString())
+    formData.append('hospital', 'Autre')
+    formData.append('otherHospital', hospital)
+    formData.append('sector', sector)
+    formData.append('proof', attestationFile)
+
+    await pb.collection('onCallSlots').create(formData)
+
+    date = ''
+    hospital = ''
+    sector = ''
+    error = ''
+    attestationFile = null
 
     handleModalClose()
     loading = false
+  }
+
+  const setFile = (e: Event) => {
+    attestationFile = (e.target as HTMLInputElement).files?.[0] || null
   }
 
   const {
@@ -96,6 +119,21 @@
           placeholder="Nom du secteur"
           class="input input-bordered w-full"
         />
+      </div>
+
+      <!-- Champ d'attestation -->
+      <div>
+        <label class="label mb-2" for="attestation">Attestation</label>
+        <input
+          id="attestation"
+          type="file"
+          accept=".jpg,image/jpeg,.png,image/png,.svg,image/svg+xml,.webp,image/webp,.pdf,application/pdf"
+          class="file-input file-input-bordered w-full"
+          on:change={setFile}
+        />
+        <p class="text-sm text-gray-500 mt-1">
+          Formats acceptés : JPG, PNG, SVG, WEBP, PDF
+        </p>
       </div>
 
       {#if error}
