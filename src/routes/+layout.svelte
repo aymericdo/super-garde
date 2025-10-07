@@ -7,11 +7,14 @@
   import { currentUser, type UserRecord } from '$lib/stores/user'
   import { page } from '$app/state';
   import { afterNavigate } from '$app/navigation'
+  import { onDestroy, onMount } from 'svelte'
 
   import type { PageData } from './$types'
+  import type { ClientResponseError } from 'pocketbase'
 
   export let data: PageData
 
+  let marketplaceCount: number = 0;
   let isOpen: boolean = false;
 
   let currentRoute = page.url.pathname;
@@ -19,6 +22,35 @@
   afterNavigate(() => {
     currentRoute = page.url.pathname;
   });
+
+  const fetchAll = async () => {
+    try {
+      const options: { filter: string } = {
+        filter: `isOnMarket = true`,
+      };
+
+      const data = await pb.collection("onCallSlots").getList(1, 1, options);
+      marketplaceCount = data.totalItems
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    }
+  }
+
+  onMount(async () => {
+    await fetchAll();
+
+    pb.realtime.subscribe('onCallSlots', async (e) => {
+      if (['create', 'update'].includes(e.action)) {
+        await fetchAll();
+      }
+    });
+  })
+
+  onDestroy(() => {
+    pb.realtime.unsubscribe('onCallSlots');
+  })
 
   // Set the current user from the data passed in from the server
   $: currentUser.set(data.user as UserRecord);
@@ -64,7 +96,12 @@
  
         <a href="{resolve('/marketplace')}"
           class="btn btn-ghost text-l"
-          class:btn-active={currentRoute.toString() === resolve("/marketplace")}>Le marché</a>
+          class:btn-active={currentRoute.toString() === resolve("/marketplace")}>
+          Le marché
+          {#if marketplaceCount !== 0}
+            <div class="badge badge-sm badge-default">{marketplaceCount}</div>
+          {/if}
+        </a>
 
         {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
           <a href="{resolve('/students')}"

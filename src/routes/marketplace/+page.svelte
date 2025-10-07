@@ -9,8 +9,7 @@
   import Autorenew from 'svelte-material-icons/Autorenew.svelte'
   import { pb } from '$lib/pocketbase';
   import ModalEvent from '$lib/components/ModalEvent.svelte'
-  import ModalAddSlot from '$lib/components/ModalAddSlot.svelte'
-  import { displayDateRange, eventStateColor, holidays, onCallSlotRecordToCalendarEvent } from '$lib/utils'
+  import { displayDateRange, eventStateColor, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   
   import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'

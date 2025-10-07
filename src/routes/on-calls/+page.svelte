@@ -71,12 +71,12 @@
 
       past3YearsCount = await getTotalYearCount({
           ...options,
-          filter:  `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now)`})
+          filter: `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now) && (manualSaved = false || validated = true)`})
 
       if (data.currentStudent.year !== 'MM3') {
         currentYearCount = await getTotalYearCount({
           ...options,
-          filter: `student = "${data.currentStudent?.id}" && (start > "${period[0].toISOString()}" && end <= @now)`})
+          filter: `student = "${data.currentStudent?.id}" && (start > "${period[0].toISOString()}" && end <= @now) && (manualSaved = false || validated = true)`})
       }
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
@@ -188,7 +188,7 @@
             class:border-dashed={slot.student !== data.currentStudent.id}
             class:border-gray-400={slot.student !== data.currentStudent.id}
             class:opacity-50={slot.student !== data.currentStudent.id}
-            class:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.2)_0,rgba(0,0,0,0.2)_10px,transparent_10px,transparent_20px)]={new Date(slot.end) < new Date()}
+            class:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.1)_0,rgba(0,0,0,0.1)_10px,transparent_10px,transparent_20px)]={new Date(slot.end) < new Date()}
             on:click={() => {
               openedEvent = { ...onCallSlotRecordToCalendarEvent(slot) }
               isEventModalOpen = true;
@@ -256,6 +256,32 @@
               >
                 Sur le marché
               </span>
+            {/if}
+
+            {#if slot.manualSaved}
+              <div>
+                <span
+                  class={`px-3 py-1 text-xs text-white font-bold rounded-full self-start`}
+                  style="background-color: #000;"
+                >
+                  Garde de périphérie
+                </span>
+                {#if !slot.validated}
+                  <span
+                    class={`px-3 py-1 text-xs text-black font-bold rounded-full self-start`}
+                    style="background-color: #00bafe;"
+                  >
+                    En cours de validation
+                  </span>
+                {:else}
+                  <span
+                    class={`px-3 py-1 text-xs text-black font-bold rounded-full self-start`}
+                    style="background-color: #00d390;"
+                  >
+                    Validée
+                  </span>
+                {/if}
+              </div>
             {/if}
           </button>
         </li>
