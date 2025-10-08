@@ -128,7 +128,7 @@
     <!-- Navbar end -->
     <div class="navbar-end">
       <!-- Desktop user -->
-      <div class="hidden lg:flex items-center space-x-2">
+      <div class="hidden lg:flex items-center space-x-2 ml-2">
         {#if $currentUser}
           <a class="btn btn-ghost text-l flex items-center" href="{resolve('/')}">
             <span>{$currentUser.email}</span>

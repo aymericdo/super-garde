@@ -13,16 +13,17 @@
   let isConfirmationModalOpen = false
   let isOpen = false
 
-  const checkConsent = async (): Promise<void> => {
+  const fetch = async (): Promise<void> => {
     try {
-      const data = await pb.collection("stalkOnCallsConsent").getFirstListItem(`stalker = "${$currentUser!.id}" && stalked = "${selectedStudent.id}" && consent = true && expiration > @now`)
-      if (data) {
-        fetch()
-      } else {
-        isConfirmationModalOpen = true;
-      }
+      const data = await pb.send("/api/get-stalked-slots", {
+        params: {
+          stalkedStudent: selectedStudent.id,
+        }
+      });
+      setSlots(data.slots);
+      isOpen = true
     } catch (error) {
-      if ((error as ClientResponseError).status === 404) {
+      if ((error as ClientResponseError).status === 401) {
         isConfirmationModalOpen = true;
       } else if (!(error as ClientResponseError).isAbort) {
         console.error(error);
@@ -30,18 +31,14 @@
     }
   }
 
-  const fetch = async (consent = false): Promise<void> => {
+  const createConsent = async (): Promise<void> => {
     try {
-      if (consent) {
-        await pb.collection("stalkOnCallsConsent").create({
-          stalker: $currentUser!.id,
-          stalked: selectedStudent.id, 
-          consent: true,
-        })
-      }
-      const data = await pb.collection("onCallSlots").getFullList({ filter: `student = "${selectedStudent.id}" && start >= @now` })
-      setSlots(data);
-      isOpen = true
+      await pb.collection("stalkOnCallsConsent").create({
+        stalker: $currentUser!.id,
+        stalked: selectedStudent.id, 
+        consent: true,
+      })
+      await fetch()
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
@@ -62,7 +59,7 @@
 
   setContext('isConfirmationModalOpen', {
     handleModalClose: () => isConfirmationModalOpen = false,
-    handleConfirm: () => fetch(true),
+    handleConfirm: () => createConsent(),
   });
 
   onDestroy(() => {
@@ -73,7 +70,7 @@
   export let selectedStudent: RecordModel
   export let selectedSlotError: string | null = null;
 
-  $: selectedStudent && checkConsent();
+  $: selectedStudent && fetch();
 </script>
 
 <ModalConfirmation

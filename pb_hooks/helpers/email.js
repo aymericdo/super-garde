@@ -203,12 +203,17 @@ module.exports = {
 
     const onExchangeSlots = $app.findRecordsByFilter(
       "onExchangeSlots",
-      "slot = {:slot}",
+      "slot = {:slot} || toSlot = {:slot}",
       "-updated",
       1,
       0,
       { slot: slot.id },
     )[0];
+
+    if (onExchangeSlots.get('toSlot') === slot.id) {
+      return;
+    }
+
     $app.expandRecord(onExchangeSlots, ['from', 'to', 'toSlot'], null);
 
     const fromStudent = onExchangeSlots.expandedOne('from');
