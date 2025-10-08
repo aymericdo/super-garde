@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pb } from "$lib/pocketbase"
   import { ClientResponseError } from "pocketbase"
-  import { getContext, onMount } from "svelte"
+  import { getContext, onDestroy, onMount } from "svelte"
   import { debounce } from "$lib/utils"
   import type { RecordModel } from 'pocketbase'
 
@@ -42,9 +42,13 @@
     query = (<HTMLInputElement>inputEvent.target).value || '';
     fetchWithDebounce();
   }
-  
-  onMount(fetch)
 
+  onDestroy(() => {
+    query = ''
+    selected = null;
+    isOpen = false
+  })
+  
   const {
     handleSelectStudent,
   } = getContext('studentSelector') as {

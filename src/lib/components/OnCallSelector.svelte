@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pb } from "$lib/pocketbase"
   import { ClientResponseError } from "pocketbase"
-  import { getContext, setContext } from "svelte"
+  import { getContext, onDestroy, setContext } from "svelte"
   import { currentUser } from '$lib/stores/user';
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
   import ModalConfirmation from '$lib/components/ModalConfirmation.svelte'
@@ -64,6 +64,11 @@
     handleModalClose: () => isConfirmationModalOpen = false,
     handleConfirm: () => fetch(true),
   });
+
+  onDestroy(() => {
+    selected = null;
+    isOpen = false
+  })
 
   export let selectedStudent: RecordModel
   export let selectedSlotError: string | null = null;

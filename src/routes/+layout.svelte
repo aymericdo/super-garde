@@ -80,7 +80,12 @@
   <div class="max-w-7xl mx-auto navbar px-4">
     <!-- Logo / Accueil -->
     <div class="navbar-start">
-      <a href="{resolve('/')}" class="btn btn-ghost text-xl font-bold">(Super) logiciel de garde</a>
+      <a href="{resolve('/')}" class="btn btn-ghost text-xl font-bold">
+        <!-- Texte pour grand écran -->
+        <span class="hidden lg:inline">(Super) logiciel de garde</span>
+        <!-- Texte pour petits écrans -->
+        <span class="inline lg:hidden">(Super) garde</span>
+      </a>
     </div>
 
     <!-- Desktop menu -->
