@@ -39,7 +39,6 @@ routerAdd("GET", "/api/get-stalked-slots", (e) => {
 
     return e.json(200, { slots });
   } catch (error) {
-    console.log(JSON.stringify(error))
     return e.json(401, { message: 'give the consent first' });
   }
 });
