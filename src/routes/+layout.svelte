@@ -90,23 +90,32 @@
           class="btn btn-ghost text-l"
           class:btn-active={currentRoute.toString() === resolve("/calendar")}>Calendrier</a>
 
-        <a href="{resolve('/on-calls')}"
-          class="btn btn-ghost text-l"
-          class:btn-active={currentRoute.toString() === resolve("/on-calls")}>Vos gardes</a>
- 
-        <a href="{resolve('/marketplace')}"
-          class="btn btn-ghost text-l"
-          class:btn-active={currentRoute.toString() === resolve("/marketplace")}>
-          Le marché
-          {#if marketplaceCount !== 0}
-            <div class="badge badge-sm badge-default">{marketplaceCount}</div>
-          {/if}
-        </a>
+        {#if ['student'].includes($currentUser?.role ?? '')}
+          <a href="{resolve('/on-calls')}"
+            class="btn btn-ghost text-l"
+            class:btn-active={currentRoute.toString() === resolve("/on-calls")}>Vos gardes</a>
+  
+          <a href="{resolve('/marketplace')}"
+            class="btn btn-ghost text-l"
+            class:btn-active={currentRoute.toString() === resolve("/marketplace")}>
+            Le marché
+            {#if marketplaceCount !== 0}
+              <div class="badge badge-sm badge-default">{marketplaceCount}</div>
+            {/if}
+          </a>
+        {/if}
 
         {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
+          <a href="{resolve('/on-calls-validation')}"
+            class="btn btn-ghost text-l"
+            class:btn-active={currentRoute.toString() === resolve("/on-calls-validation")}>
+            Garde à valider
+          </a>
           <a href="{resolve('/students')}"
             class="btn btn-ghost text-l"
-            class:btn-active={currentRoute.toString() === resolve("/students")}>Étudiants</a>
+            class:btn-active={currentRoute.toString() === resolve("/students")}>
+            Étudiants
+          </a>
         {/if}
       {/if}
     </div>
@@ -163,21 +172,33 @@
         class="btn btn-ghost w-full text-black"
         class:btn-active={currentRoute === resolve("/calendar")}>Calendrier</a>
         
-      <a href="{resolve('/on-calls')}"
-        on:click={() => (isOpen = false)}
-        class="btn btn-ghost w-full text-black"
-        class:btn-active={currentRoute === resolve("/on-calls")}>Vos gardes</a>
-
-      <a href="{resolve('/marketplace')}"
-        on:click={() => (isOpen = false)}
-        class="btn btn-ghost w-full text-black"
-        class:btn-active={currentRoute === resolve("/marketplace")}>Le marché</a>
+      {#if ['student'].includes($currentUser?.role ?? '')}
+        <a href="{resolve('/on-calls')}"
+          on:click={() => (isOpen = false)}
+          class="btn btn-ghost w-full text-black"
+          class:btn-active={currentRoute === resolve("/on-calls")}>
+          Vos gardes
+        </a>
+        <a href="{resolve('/marketplace')}"
+          on:click={() => (isOpen = false)}
+          class="btn btn-ghost w-full text-black"
+          class:btn-active={currentRoute === resolve("/marketplace")}>
+          Le marché
+        </a>
+      {/if}
 
       {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
+        <a href="{resolve('/on-calls-validation')}"
+          class="btn btn-ghost text-l"
+          class:btn-active={currentRoute.toString() === resolve("/on-calls-validation")}>
+          Garde à valider
+        </a>
         <a href="{resolve('/students')}"
           on:click={() => (isOpen = false)}
           class="btn btn-ghost w-full text-black"
-          class:btn-active={currentRoute === resolve('/students')}>Étudiants</a>
+          class:btn-active={currentRoute === resolve('/students')}>
+          Étudiants
+        </a>
       {/if}
 
       <form method="POST" action="{resolve('/logout')}"

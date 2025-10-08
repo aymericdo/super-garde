@@ -20,6 +20,9 @@ export interface CalendarEvent {
   isOnMarket?: boolean;
   isOnTransfer?: boolean;
   isOnExchange?: boolean;
+  manualSaved?: boolean;
+  validated?: boolean;
+  proof?: string;
   backgroundColor?: string;
 }
 

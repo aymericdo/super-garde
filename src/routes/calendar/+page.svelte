@@ -373,7 +373,6 @@
   </div>
 </div>
 
-
 {#if loading}
   <div class="flex justify-center px-6 py-4">
     <span class="loading loading-ball loading-lg text-accent"></span>

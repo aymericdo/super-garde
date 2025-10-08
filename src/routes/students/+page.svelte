@@ -1,16 +1,17 @@
 <script lang="ts">
-  import InfiniteScroll from "svelte-infinite-scroll";
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
   import { onDestroy, onMount, setContext } from 'svelte';
   import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
   import AlertError from "$lib/components/AlertError.svelte"
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
+  import InfiniteScroll from '$lib/components/InfiniteScroll.svelte'
+  
   import type { ClientResponseError, ListResult, RecordModel} from 'pocketbase'
-
 	import type { PageData } from './$types'
-  export let data: PageData
 
+  export let data: PageData
+  
   const totalItemsAtBeginning = data.studentList.totalItems;
   let isNewStudentsNotVisible = false;
   let isStudentSourceModalOpen = false;
@@ -19,6 +20,8 @@
   let selectedStudents: string[] = [];
   let loading = false;
   const error = data.error;
+  
+  let scrollContainer: HTMLElement;
 
   let requestErrorMessage: string | null = null;
   let isAlertSuccessVisible: boolean = false;
@@ -282,50 +285,66 @@
     </div>
   {/if}
 </div>
-<div class="students-table relative overflow-y-hidden overflow-x-auto shadow-md sm:rounded-lg">
-  <table class="table-fixed w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-    <thead class="block text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-      <tr class="flex odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
-        <th class="basis-1/12 px-6 py-3 min-w-[36px] -checkbox">
-          <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
-            indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
-        </th>
-        <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Prénom</th>
-        <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Nom</th>
-        <th class="basis-6/12 px-6 py-3 flex items-center min-w-[100px]">Email</th>
-        <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Année</th>
-      </tr>
-    </thead>
-    <tbody class="block overflow-y-auto w-full bg-white pb-8 h-[640px] sm:h-[700px] lg:h-[700px]">
-      {#each data.studentList.items as item}
-        <tr class="flex">
-          <td class="basis-1/12 px-6 py-4 flex items-center min-w-[36px] -checkbox">
-            <input type="checkbox" checked="{selectedStudents.includes(item.id)}"
-              on:input={() => handleCheck(item)}
-              class="checkbox checkbox-ghost checkbox-md" />
-          </td>
-          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-900 min-w-[100px]">
-            <span>{item.firstName}</span>
-          </td>
-          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
-            <span>{item.lastName}</span>
-          </td>
-          <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
-            {#if item.expand?.user?.email}<span>{item.expand?.user?.email}</span>{/if}
-          </td>
-          <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
-            <span>{item.year}</span>
-          </td>
+<div class="students-table relative overflow-y-hidden shadow-md sm:rounded-lg">
+  <div class="thead-container w-full">
+    <table class="w-full">
+      <thead class="block text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+        <tr class="flex w-full">
+          <th class="basis-1/12 px-6 py-3 min-w-[36px] -checkbox">
+            <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
+              indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
+          </th>
+          <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Prénom</th>
+          <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Nom</th>
+          <th class="basis-6/12 px-6 py-3 flex items-center min-w-[100px]">Email</th>
+          <th class="basis-2/12 px-6 py-3 flex items-center min-w-[100px]">Année</th>
         </tr>
-      {/each}
-      <InfiniteScroll threshold={100} on:loadMore={handleLoadMore} />
-      {#if loading}
-        <div class="flex justify-center px-6 py-4">
-          <span class="loading loading-ball loading-lg text-accent"></span>
-        </div>
-      {/if}
-    </tbody>
-  </table>
+      </thead>
+    </table>
+  </div>
+  <div
+    class="block w-full overflow-y-auto bg-white pb-8 h-[500px] sm:h-[700px] lg:h-[700px]"
+    bind:this={scrollContainer}
+  >
+    <InfiniteScroll
+      threshold={100}
+      hasMore={data.studentList.totalPages > data.page}
+      rootEl={scrollContainer}
+      on:loadMore={handleLoadMore}
+    >
+      <table class="table-fixed w-full">
+        <tbody class="w-full">
+          {#each data.studentList.items as item}
+            <tr class="flex w-full">
+              <td class="basis-1/12 px-6 py-4 flex items-center min-w-[36px] -checkbox">
+                <input type="checkbox" checked="{selectedStudents.includes(item.id)}"
+                  on:input={() => handleCheck(item)}
+                  class="checkbox checkbox-ghost checkbox-md" />
+              </td>
+              <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-900 min-w-[100px]">
+                <span>{item.firstName}</span>
+              </td>
+              <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
+                <span>{item.lastName}</span>
+              </td>
+              <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[300px]">
+                {#if item.expand?.user?.email}<span>{item.expand?.user?.email}</span>{/if}
+              </td>
+              <td class="basis-2/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
+                <span>{item.year}</span>
+              </td>
+            </tr>
+          {/each}
+          <InfiniteScroll threshold={100} on:loadMore={handleLoadMore} />
+          {#if loading}
+            <div class="flex justify-center px-6 py-4">
+              <span class="loading loading-ball loading-lg text-accent"></span>
+            </div>
+          {/if}
+        </tbody>
+      </table>
+    </InfiniteScroll>
+  </div>
 </div>
 
 {#if error}

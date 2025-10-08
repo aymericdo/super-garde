@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
-  import { getContext, onDestroy, setContext } from 'svelte'
+  import { getContext, onDestroy, onMount, setContext } from 'svelte'
   import { displayDateRange } from '$lib/utils'
   import { onCallErrorValidation } from '$lib/validations'
   import ClockTimeFiveOutline from 'svelte-material-icons/ClockTimeFiveOutline.svelte'
@@ -18,8 +18,9 @@
 
   import type { CalendarEvent } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
+    import DisplayProof from './DisplayProof.svelte'
 
-  let modalStep: 'default' | 'exchange' | 'transfer' | 'studentList' = 'default'
+  let modalStep: 'default' | 'exchange' | 'transfer' | 'studentList' | 'proof' = 'default'
 
   let selectedStudent: RecordModel | null = null
   let selectedStudentError: string | null = null
@@ -35,7 +36,9 @@
 
   let alertMessage: string | null = null;
   let alertMessageTimeout: NodeJS.Timeout | null = null;
-
+  
+  let baseUrl: string = '';
+ 
   const handlePutOnMarket = async () => {
     if (!openedEvent) return
 
@@ -286,6 +289,10 @@
       if (!openedEvent) return
       selectedSlot = { ...slot }
     },
+  })
+  
+  onMount(() => {
+    baseUrl = pb.baseUrl
   })
 
   onDestroy(() => {
@@ -632,26 +639,45 @@
             {/each}
           </div>
         </div>
+      {:else if modalStep === 'proof'}
+        <div
+          in:fly|global={{ x: 300, duration: 300 }}
+          out:fly|global={{ x: -300, duration: 300 }}
+        >
+          <DisplayProof {openedEvent} {baseUrl} />
+        </div>
       {/if}
 
-      <!-- Action de fermeture globale -->
       <div class="modal-action">
         {#if modalStep === 'default'}
-          <div
-            class="tooltip"
-            data-tip="Voir la liste complète des étudiants présents dans l'hôpital en même temps"
-          >
+          {#if openedEvent.manualSaved && !openedEvent.validated}
             <button
               class="btn btn-outline"
               disabled={loading}
-              on:click={handleStudentListOpen}
+              on:click={() => modalStep = 'proof'}
             >
               {#if loading}
                 <span class="loading loading-spinner"></span>
               {/if}
-              Étudiants présents
+              Voir l'attestation
             </button>
-          </div>
+          {:else}
+            <div
+              class="tooltip"
+              data-tip="Voir la liste complète des étudiants présents dans l'hôpital en même temps"
+            >
+              <button
+                class="btn btn-outline"
+                disabled={loading}
+                on:click={handleStudentListOpen}
+              >
+                {#if loading}
+                  <span class="loading loading-spinner"></span>
+                {/if}
+                Étudiants présents
+              </button>
+            </div>
+          {/if}
           <button class="btn" on:click={handleEventModalClose}>Fermer</button>
         {:else if modalStep === 'transfer'}
           <button class="btn btn-outline" on:click={resetModal}>Retour</button>
@@ -680,6 +706,21 @@
             {/if}
             Valider
           </button>
+        {:else if modalStep === 'proof'}
+          <button class="btn btn-outline" on:click={resetModal}>Retour</button>
+          <button class="btn btn-secondary" on:click={async () => {
+            const url = `${baseUrl}/api/files/onCallSlots/${openedEvent.id}/${openedEvent.proof}`;
+            const res = await fetch(url);
+            const blob = await res.blob();
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+
+            link.download = `attestation_${openedEvent.studentFullName}_${openedEvent.id}`;
+            link.click();
+
+            URL.revokeObjectURL(link.href);
+          }}>Télécharger</button>
         {:else}
           <button class="btn btn-outline" on:click={resetModal}>Retour</button>
         {/if}
