@@ -39,6 +39,27 @@
   
   let baseUrl: string = '';
  
+  const handlePutAsValidated = async () => {
+    if (!openedEvent) return
+
+    loading = true
+
+    try {
+      await pb
+        .collection('onCallSlots')
+        .update(openedEvent.id, { validated: true })
+
+      setAlertMessage('La garde a bien été validée.')
+      closeModal()
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error)
+      }
+    } finally {
+      loading = false
+    }
+  }
+
   const handlePutOnMarket = async () => {
     if (!openedEvent) return
 
@@ -651,6 +672,16 @@
       <div class="modal-action">
         {#if modalStep === 'default'}
           {#if openedEvent.manualSaved && !openedEvent.validated}
+            <button
+              class="btn btn-outline btn-success"
+              disabled={loading}
+              on:click={handlePutAsValidated}
+            >
+              {#if loading}
+                <span class="loading loading-spinner"></span>
+              {/if}
+              Valider
+            </button>
             <button
               class="btn btn-outline"
               disabled={loading}
