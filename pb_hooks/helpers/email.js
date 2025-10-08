@@ -238,29 +238,29 @@ module.exports = {
     if (onExchangeSlots.get('state') === 'progress') {
       toSubject = "Une garde vous est proposée en échange";
       toHtml = emailHtml(
-        `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> vous est proposée en échange de votre garde du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
+        `La garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> vous est proposée en échange de votre garde du <b>${displayDateRange(new Date(toSlot.get('start')), new Date(toSlot.get('end')))}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
       );
       fromSubject = "Vous avez proposé un échange de garde";
       fromHtml = emailHtml(
-        `Vous avez proposé d’échanger votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre celle du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
+        `Vous avez proposé d’échanger votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre celle du <b>${displayDateRange(new Date(toSlot.get('start')), new Date(toSlot.get('end')))}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
       );
     } else if (onExchangeSlots.get('state') === 'cancel') {
       toSubject = "Échange refusé";
       toHtml = emailHtml(
-        `La proposition d’échanger la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre la vôtre du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> a été refusée.`
+        `La proposition d’échanger la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre la vôtre du <b>${displayDateRange(new Date(toSlot.get('start')), new Date(toSlot.get('end')))}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> a été refusée.`
       );
       fromSubject = "Échange refusé";
       fromHtml = emailHtml(
-        `Votre proposition d’échanger la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre celle du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> a été refusée.`
+        `Votre proposition d’échanger la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> contre celle du <b>${displayDateRange(new Date(toSlot.get('start')), new Date(toSlot.get('end')))}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> a été refusée.`
       );
     } else if (onExchangeSlots.get('state') === 'done') {
       toSubject = "Vous avez accepté un échange de garde 🎉";
       toHtml = emailHtml(
-        `Vous avez échangé votre garde du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> avec la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b>.`
+        `Vous avez échangé votre garde du <b>${displayDateRange(new Date(toSlot.get('start')), new Date(toSlot.get('end')))}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b> avec la garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b>.`
       );
       fromSubject = "Votre échange de garde a été confirmé";
       fromHtml = emailHtml(
-        `Votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> a été échangée avec celle du <b>${toSlot.get('start')}</b> au <b>${toSlot.get('end')}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
+        `Votre garde du <b>${displayDateRange(new Date(slot.get('start')), new Date(slot.get('end')))}</b> à <b>${slot.get('hospital')} - ${slot.get('sector')}</b> a été échangée avec celle du <b>${displayDateRange(new Date(toSlot.get('start')), new Date(toSlot.get('end')))}</b> à <b>${toSlot.get('hospital')} - ${toSlot.get('sector')}</b>.`
       );
     }
 
