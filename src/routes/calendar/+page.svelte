@@ -14,12 +14,14 @@
   import { pb } from '$lib/pocketbase';
   import { debounce, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
+  import { page } from '$app/state'
+  import { goto } from '$app/navigation'
+  import StudentSelector from '$lib/components/StudentSelector.svelte'
   
   import type { CalendarElement, CalendarEvent, CalendarOptions, ViewCalendar } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
   import type { PageData } from './$types'
-  import { page } from '$app/state'
-  import { goto } from '$app/navigation'
+  
   export let data: PageData
   
   let isEventModalOpen = false;
@@ -29,6 +31,9 @@
   let openedEvent: { event: CalendarEvent, element: HTMLDivElement } | null = null;
   let loading = true;
   let isOnMarketPlaceOnly = false;
+  let openCalendarStudent: RecordModel | null = null
+  let openCalendarYear: string | null = 'all'
+  let students: RecordModel[] = []
 
   let alertMessage: string | null = null;
   let alertMessageTimeout: NodeJS.Timeout | null = null;
@@ -37,7 +42,17 @@
 
   const plugins = [TimeGrid, DayGrid, List, ResourceTimeGrid, Interaction];
 
-  const fetchAll = async (start: string, end: string): Promise<RecordModel[] | undefined> => {
+  const fetchAll = async (start: string | null = null, end: string | null = null): Promise<void> => {
+    if (myCalendar && !start) {
+      start = (myCalendar.getView())?.activeStart.toISOString()
+    }
+
+    if (myCalendar && !end) {
+      end = (myCalendar.getView())?.activeEnd.toISOString()
+    }
+
+    if (!start || !end) return
+
     try {
       const startISO = new Date(start).toISOString()
       const endISO = new Date(end).toISOString()
@@ -50,16 +65,59 @@
         options.filter += `&& (student = "${data.currentStudent?.id}" || isOnTransfer = true || isOnExchange = true || isOnMarket = true)`
       }
 
+      if (openCalendarStudent) {
+        options.filter += `&& (student = "${openCalendarStudent.id}")`
+      }
+
+      if (openCalendarYear && openCalendarYear !== 'all') {
+        options.filter += `&& (student.year = "${openCalendarYear}")`
+      }
+
       if (isOnMarketPlaceOnly) {
         options.filter += ' && isOnMarket = true';
       }
 
-      return await pb.collection("onCallSlots").getFullList(options);
+      const list = await pb.collection("onCallSlots").getFullList(options);
+
+      if (list) {
+        tempOptionsEvents = list.map((event: RecordModel) => {
+          return onCallSlotRecordToCalendarEvent(event);
+        });
+
+        setOptionsEvents();
+      }
+      loading = false;
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
       }
     }
+  }
+
+  const fetchStudents = async () => {
+    try {
+      students = await pb.collection("students").getFullList(options)
+    } catch (error) {
+      if (!(error as ClientResponseError).isAbort) {
+        console.error(error);
+      }
+    } 
+  }
+
+  const handleSelectStudent = async (event: CustomEvent<RecordModel> | null = null) => {
+    const student = (event) ?
+      event.detail :
+      null
+    openCalendarStudent = student
+    await fetchAll()
+  }
+
+  const handleSelectYear = async (event: Event | null = null) => {
+    const year = (event) ?
+      (<HTMLInputElement>event.target).value :
+      null
+    openCalendarYear = year
+    await fetchAll()
   }
 
   const fetchOne = async (id: string): Promise<RecordModel | undefined> => {
@@ -121,16 +179,7 @@
 
     loading = true;
 
-    const list = await fetchAll(info.startStr, info.endStr);
-
-    if (list) {
-      tempOptionsEvents = list.map((event: RecordModel) => {
-        return onCallSlotRecordToCalendarEvent(event);
-      });
-
-      setOptionsEvents();
-    }
-    loading = false;
+    await fetchAll(info.startStr, info.endStr);
   }
 
   const handleGenerateSubmit = async (start: Date, end: Date) => {
@@ -178,20 +227,7 @@
     loading = true;
     isOnMarketPlaceOnly = !isOnMarketPlaceOnly;
 
-    const start = (myCalendar.getView())?.activeStart.toISOString()
-    const end = (myCalendar.getView())?.activeEnd.toISOString()
-
-    const list = await fetchAll(start, end);
-
-    if (list) {
-      tempOptionsEvents = list.map((event: RecordModel) => {
-        return onCallSlotRecordToCalendarEvent(event);
-      });
-
-      setOptionsEvents();
-    }
-
-    loading = false;
+    await fetchAll();
   }
 
   const date = page.url.searchParams.get('date')
@@ -282,6 +318,8 @@
   const setOptionsEventsWithDebounce = debounce(setOptionsEvents, 200);
 
   onMount(async () => {
+    await fetchStudents();
+
     pb.realtime.subscribe('onCallSlots', async (e) => {
       if (!myCalendar ||
         !(myCalendar.getView().activeStart <= new Date(e.record.start) && myCalendar.getView().activeEnd > new Date(e.record.end))) {
@@ -343,7 +381,49 @@
   </h1>
 </div>
 
-<div class="flex justify-between items-center flex-wrap mb-1">
+{#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
+  <div class="flex flex-col justify-between flex-wrap px-4 my-2">
+    <div class="mb-4">
+      <span class="flex items-center -mb-2 text-sm font-medium text-gray-900 dark:text-gray-500">Étudiant</span>
+      <div class="-mx-4 -mb-4">
+        <StudentSelector
+          on:selectStudent={handleSelectStudent}
+        />
+      </div>
+      {#if openCalendarStudent}
+        <div class="badge badge-soft badge-info px-4">
+          <button
+            class="cursor-pointer"
+            on:click={() => {
+              handleSelectStudent()
+            }}
+          >
+            {openCalendarStudent.firstName} {openCalendarStudent.lastName} ({openCalendarStudent.year})
+          </button>
+        </div>
+      {/if}
+    </div>
+
+    <div>
+      <span class="flex items-center mb-2 text-sm font-medium text-gray-900 dark:text-gray-500">Année</span>
+      <div>
+        <select
+          class="select"
+          bind:value={openCalendarYear}
+          on:change={handleSelectYear}
+        >
+          <option disabled selected>Choisis une année</option>
+          <option value="all">Toutes</option>
+          <option value="MM1">MM1</option>
+          <option value="MM2">MM2</option>
+          <option value="MM3">MM3</option>
+        </select>
+      </div>
+    </div>
+  </div>
+{/if}
+
+<div class="flex justify-between items-center flex-wrap mb-1 px-4">
   <div class="flex items-center my-2 justify-center w-full md:w-auto">
     <label class="relative inline-flex cursor-pointer">
       <input type="checkbox" class="sr-only peer" checked={isOnMarketPlaceOnly} on:change={handleIsOnMarketPlaceOnlyChanged}>
