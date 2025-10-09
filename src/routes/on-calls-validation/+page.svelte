@@ -59,8 +59,6 @@
     pb.realtime.unsubscribe('onCallSlots');
     pb.realtime.unsubscribe('users');
   })
-
-  $: currentUser.set(data.user as UserRecord);
 </script>
 
 <div class="flex justify-between mb-4">
