@@ -109,18 +109,6 @@
     pb.realtime.unsubscribe('onCallSlots');
     pb.realtime.unsubscribe('users');
   })
-
-  setContext('isEventModalOpen', {
-    handleEventModalClose: () => {
-      isEventModalOpen = false;
-    },
-  });
-
-  setContext('isAddSlotModalOpen', {
-    handleModalClose: () => {
-      isAddSlotModalOpen = false;
-    },
-  });
 </script>
 
 <div class="flex justify-between mb-4">
@@ -311,6 +299,15 @@
   </svg>
 </button>
 
-<ModalAddSlot {isAddSlotModalOpen} connectedStudent={data.currentStudent} />
-<ModalEvent {isEventModalOpen} {openedEvent} connectedStudent={data.currentStudent} />
+<ModalAddSlot
+  {isAddSlotModalOpen}
+  connectedStudent={data.currentStudent}
+  on:close={() => isAddSlotModalOpen = false}
+/>
+<ModalEvent
+  {isEventModalOpen}
+  {openedEvent}
+  connectedStudent={data.currentStudent}
+  on:close={() => isEventModalOpen = false}
+/>
 

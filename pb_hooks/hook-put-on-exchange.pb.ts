@@ -14,12 +14,28 @@ onRecordCreate((e) => {
   const slot = $app.findRecordById('onCallSlots', e.record.get('slot'))
   const toSlot = $app.findRecordById('onCallSlots', e.record.get('toSlot'))
 
+  const { slotStudentValidation } = require(`${__hooks}/helpers/utils.js`);
+
   if (toSlot.get('isOnMarket') || slot.get('isOnMarket')) {
     throw 'is on market right now'
   } else if (toSlot.get('isOnTransfer') || slot.get('isOnTransfer')) {
     throw 'is on transfer right now'
   } else if (toSlot.get('isOnExchange') || slot.get('isOnExchange')) {
     throw 'is on exchange right now'
+  }
+
+  $app.expandRecord(e.record, ['to'], null);
+  const toStudent = e.record.expandedOne('to');
+  const validation1 = slotStudentValidation(slot, toStudent)
+  if (validation1) {
+    throw validation1.toString()
+  }
+
+  $app.expandRecord(e.record, ['from'], null);
+  const fromStudent = e.record.expandedOne('from');
+  const validation2 = slotStudentValidation(toSlot, fromStudent)
+  if (validation2) {
+    throw validation2.toString()
   }
 
   e.next()

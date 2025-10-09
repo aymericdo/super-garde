@@ -62,12 +62,6 @@
     pb.realtime.unsubscribe('onCallSlots');
     pb.realtime.unsubscribe('users');
   })
-
-  setContext('isEventModalOpen', {
-    handleEventModalClose: () => {
-      isEventModalOpen = false;
-    },
-  });
 </script>
 
 <div class="flex justify-between mb-4">
@@ -89,7 +83,6 @@
           class:border-2={data.currentStudent && slot.student !== data.currentStudent.id}
           class:border-dashed={data.currentStudent && slot.student !== data.currentStudent.id}
           class:border-gray-400={data.currentStudent && slot.student !== data.currentStudent.id}
-          class:opacity-50={data.currentStudent && slot.student !== data.currentStudent.id}
           class:bg-[repeating-linear-gradient(45deg,rgba(0,0,0,0.2)_0,rgba(0,0,0,0.2)_10px,transparent_10px,transparent_20px)]={new Date(slot.end) < new Date()}
           on:click={() => {
             openedEvent = { ...onCallSlotRecordToCalendarEvent(slot) }
@@ -138,4 +131,9 @@
   </ul>
 {/if}
 
-<ModalEvent {isEventModalOpen} {openedEvent} connectedStudent={data.currentStudent} />
+<ModalEvent
+  {isEventModalOpen}
+  {openedEvent}
+  connectedStudent={data.currentStudent}
+  on:close={() => isEventModalOpen = false}
+/>

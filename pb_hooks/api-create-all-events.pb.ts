@@ -21,6 +21,8 @@ routerAdd("GET", "/api/create-all-events", (e) => {
     throw new UnauthorizedError('You are not important enough', {})
   }
 
+  const { randomItemFromList } = require(`${__hooks}/helpers/utils.js`);
+
   const studentsByDate = {};
   const eventByDate = {};
   const lastEventDateByStudent = {};
@@ -162,8 +164,7 @@ routerAdd("GET", "/api/create-all-events", (e) => {
         }
 
         if (relevantIds.length) {
-          const utils = require(`${__hooks}/helpers/utils.js`);
-          const currentStudentId = utils.randomItemFromList(relevantIds);
+          const currentStudentId = randomItemFromList(relevantIds);
 
           // Créer les dates en heure de Paris (fonctionne même si le serveur est en UTC)
           const year = currentDate.getFullYear();

@@ -1,13 +1,7 @@
 <script lang="ts">
-  import { getContext } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
 
-  const {
-    handleModalClose,
-    handleConfirm,
-  } = getContext('isConfirmationModalOpen') as {
-    handleModalClose: () => void,
-    handleConfirm: () => void,
-  };
+  const dispatch = createEventDispatcher();
 
   export let isConfirmationModalOpen: boolean = false;
   export let title: string;
@@ -26,15 +20,17 @@
     <div class="modal-action">
       <button 
         class="btn"
-        on:click={handleModalClose}
+        on:click={() => {
+          dispatch('close')
+        }}
       >
         Annuler
       </button>
       <button 
         class="btn btn-primary"
         on:click={() => {
-          handleConfirm();
-          handleModalClose();
+          dispatch('confirm')
+          dispatch('close')
         }}
       >
         { action ?? 'Confirmer' }
@@ -42,6 +38,6 @@
     </div>
   </div>
   <div class="modal-backdrop">
-    <button on:click={handleModalClose}>Fermer</button>
+    <button on:click={() => dispatch('close')}>Fermer</button>
   </div>
 </div>

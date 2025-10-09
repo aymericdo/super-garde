@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pb } from "$lib/pocketbase"
   import { ClientResponseError } from "pocketbase"
-  import { getContext, onDestroy, setContext } from "svelte"
+  import { createEventDispatcher, onDestroy } from "svelte"
   import { currentUser } from '$lib/stores/user';
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
   import ModalConfirmation from '$lib/components/ModalConfirmation.svelte'
@@ -12,6 +12,8 @@
   let selected: RecordModel | null = null
   let isConfirmationModalOpen = false
   let isOpen = false
+
+  const dispatch = createEventDispatcher();
 
   const fetch = async (): Promise<void> => {
     try {
@@ -51,17 +53,6 @@
     selected = null;
   };
 
-  const {
-    handleSelectSlot,
-  } = getContext('slotSelector') as {
-    handleSelectSlot: (slot: RecordModel) => void
-  }
-
-  setContext('isConfirmationModalOpen', {
-    handleModalClose: () => isConfirmationModalOpen = false,
-    handleConfirm: () => createConsent(),
-  });
-
   onDestroy(() => {
     selected = null;
     isOpen = false
@@ -78,6 +69,8 @@
   title={'Vous souhaitez voir les gardes de ' + selectedStudent.firstName + ' ' + selectedStudent.lastName}
   description={'Acceptez-vous que cette action soit enregistrée dans les logs pour des raisons de suivi ?'}
   action={'Accepter'}
+  on:close={() => isConfirmationModalOpen = false}
+  on:confirm={createConsent}
 />
 
 <div class="w-full p-4">
@@ -116,7 +109,7 @@
               disabled={selected?.id === slot.id}
               on:click={() => {
                 selected = slot
-                handleSelectSlot(slot)
+                dispatch('selectSlot', slot)
               }}
             >
               <div>

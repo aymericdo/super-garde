@@ -13,9 +13,9 @@ routerAdd("GET", "/api/import-all-students", (e) => {
   const studentsGoogleSheet = require(`${__hooks}/helpers/students-google-sheet.js`);
   const list = studentsGoogleSheet.fetch(googleSheetUrl, { e, $http });
   console.log(`${list.length} students in the list`);
+  const { csvParser } = require(`${__hooks}/helpers/utils.js`);
 
   list.forEach((line) => {
-    const utils = require(`${__hooks}/helpers/utils.js`);
     const {
       firstName,
       lastName,
@@ -25,7 +25,7 @@ routerAdd("GET", "/api/import-all-students", (e) => {
       UHCD,
       onCallCount2025,
       totalOnCallCount,
-    } = utils.csvParser(line, 'student')
+    } = csvParser(line, 'student')
 
     let userSameEmail = null;
     try {

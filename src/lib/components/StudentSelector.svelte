@@ -1,7 +1,7 @@
 <script lang="ts">
   import { pb } from "$lib/pocketbase"
   import { ClientResponseError } from "pocketbase"
-  import { getContext, onDestroy, onMount } from "svelte"
+  import { createEventDispatcher, onDestroy } from "svelte"
   import { debounce } from "$lib/utils"
   import type { RecordModel } from 'pocketbase'
 
@@ -9,6 +9,8 @@
   let query = "";
   let selected: RecordModel | null = null
   let isOpen = false
+
+  const dispatch = createEventDispatcher();
 
   const fetch = async (): Promise<void> => {
     try {
@@ -48,12 +50,6 @@
     selected = null;
     isOpen = false
   })
-  
-  const {
-    handleSelectStudent,
-  } = getContext('studentSelector') as {
-    handleSelectStudent: (student: RecordModel) => void
-  }
 
   export let selectedStudentError: string | null = null;
 </script>
@@ -83,7 +79,7 @@
               selected = student
               query = `${student.firstName} ${student.lastName}`;
               isOpen = false
-              handleSelectStudent(student)
+              dispatch('selectStudent', student);
             }}
           >
             {student.firstName} {student.lastName} ({student.year})
@@ -93,7 +89,7 @@
     </ul>
   {/if}
 
-  {#if selectedStudentError}
+  {#if !isOpen && selectedStudentError}
   <div role="alert" class="alert alert-error">
     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />

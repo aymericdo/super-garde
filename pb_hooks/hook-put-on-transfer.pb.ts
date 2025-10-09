@@ -12,12 +12,22 @@ onRecordCreate((e) => {
   if (!e.record) return;
 
   const slot = $app.findRecordById('onCallSlots', e.record.get('slot'))
+
+  const { slotStudentValidation } = require(`${__hooks}/helpers/utils.js`);
+
   if (slot.get('isOnMarket')) {
     throw 'is on market right now'
   } else if (slot.get('isOnTransfer')) {
     throw 'is on transfer right now'
   } else if (slot.get('isOnExchange')) {
     throw 'is on exchange right now'
+  }
+  
+  $app.expandRecord(e.record, ['to'], null);
+  const toStudent = e.record.expandedOne('to');
+  const validation = slotStudentValidation(slot, toStudent)
+  if (validation) {
+    throw validation.toString()
   }
 
   e.next()

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
-  import { getContext, onDestroy, onMount, setContext } from 'svelte'
-  import { displayDateRange } from '$lib/utils'
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
+  import { displayDateRange, onCallSlotRecordToCalendarEvent } from '$lib/utils'
   import { onCallErrorValidation } from '$lib/validations'
   import ClockTimeFiveOutline from 'svelte-material-icons/ClockTimeFiveOutline.svelte'
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
@@ -15,15 +15,18 @@
   import { pb } from '$lib/pocketbase'
   import AlertSuccess from './AlertSuccess.svelte'
   import ModalConfirmation from './ModalConfirmation.svelte'
+  import DisplayProof from './DisplayProof.svelte'
 
   import type { CalendarEvent } from '$lib/interfaces/calendar'
   import type { ClientResponseError, RecordModel } from 'pocketbase'
-    import DisplayProof from './DisplayProof.svelte'
+
+  const dispatch = createEventDispatcher();
 
   let modalStep: 'default' | 'exchange' | 'transfer' | 'studentList' | 'proof' = 'default'
 
   let selectedStudent: RecordModel | null = null
   let selectedStudentError: string | null = null
+  let selectedSlotError: string | null = null
   let selectedSlot: RecordModel | null = null
 
   let onTransferSlot: RecordModel | null = null
@@ -297,27 +300,40 @@
     }
   }
 
-  setContext('studentSelector', {
-    handleSelectStudent: (student: RecordModel) => {
-      if (!openedEvent) return
-      selectedStudent = { ...student }
-      selectedStudentError = onCallErrorValidation(openedEvent, selectedStudent)
-    },
-  })
+  const handleSelectStudent = (event: CustomEvent<RecordModel>) => {
+    const student = event.detail
 
-  setContext('slotSelector', {
-    handleSelectSlot: (slot: RecordModel) => {
-      if (!openedEvent) return
-      selectedSlot = { ...slot }
-    },
-  })
-  
+    if (!openedEvent) return
+    selectedSlot = null
+    selectedSlotError = null
+    selectedStudent = { ...student }
+    selectedStudentError = onCallErrorValidation(openedEvent, selectedStudent)
+  }
+
+  const handleSelectSlot = (event: CustomEvent<RecordModel>) => {
+    const slot = event.detail
+
+    if (!openedEvent) return
+    if (!connectedStudent) return
+    selectedSlot = { ...slot }
+    selectedSlotError = onCallErrorValidation(
+      onCallSlotRecordToCalendarEvent(selectedSlot),
+      connectedStudent,
+    )
+  }
+
   onMount(() => {
     baseUrl = pb.baseUrl
+    if (!!connectedStudent && openedEvent?.isOnMarket) {
+      selectedStudentError = onCallErrorValidation(
+        openedEvent,
+        connectedStudent,
+      )
+    }
   })
 
   onDestroy(() => {
-    modalStep = 'default'
+    resetModal()
   })
 
   $: if (openedEvent) {
@@ -348,35 +364,20 @@
 
   function closeModal() {
     resetModal()
-    handleEventModalClose()
+    dispatch('close')
   }
 
   function resetModal() {
     modalStep = 'default'
     selectedStudent = null
+    selectedStudentError = null
     selectedSlot = null
+    selectedSlotError = null
   }
-
-  const { handleEventModalClose } = getContext('isEventModalOpen') as {
-    handleEventModalClose: () => void
-  }
-
-  setContext('isConfirmationModalOpen', {
-    handleModalClose: () => isConfirmationModalOpen = null,
-    handleConfirm: () => {
-        isConfirmationModalOpen === 'exchange' ?
-      handlePutOnExchange() :
-        isConfirmationModalOpen === 'transfer' ?
-      handlePutOnTransfer() :
-        isConfirmationModalOpen === 'marketplace' ?
-      handlePutOnMarket() :
-        null
-    },
-  });
 
   export let isEventModalOpen: boolean = false
   export let openedEvent: CalendarEvent | undefined
-  export let connectedStudent: RecordModel | undefined
+  export let connectedStudent: RecordModel | undefined = undefined
 </script>
 
 {#if alertMessage}
@@ -550,6 +551,11 @@
                     {/if}
                     Prendre
                   </button>
+                  {#if selectedStudentError}
+                    <div class="alert alert-warning my-2">
+                      {selectedStudentError}
+                    </div>
+                  {/if}
                 {:else if openedEvent.isOnMarket && ['assistant', 'god'].includes($currentUser?.role ?? '')}
                   <button
                     class="btn btn-default btn-sm m-1"
@@ -625,7 +631,10 @@
         >
           <h3 class="font-bold text-lg">Choisir un étudiant</h3>
           <div class="py-4">
-            <StudentSelector {selectedStudentError} />
+            <StudentSelector
+              {selectedStudentError}
+              on:selectStudent={handleSelectStudent}
+            />
           </div>
         </div>
       {:else if modalStep === 'exchange'}
@@ -635,10 +644,17 @@
         >
           <h3 class="font-bold text-lg">Choisir un étudiant et une garde</h3>
           <div class="py-4">
-            <StudentSelector {selectedStudentError} />
+            <StudentSelector
+              {selectedStudentError}
+              on:selectStudent={handleSelectStudent}
+            />
 
             {#if selectedStudent}
-              <OnCallSelector {selectedStudent} />
+              <OnCallSelector
+                {selectedStudent}
+                {selectedSlotError}
+                on:selectSlot={handleSelectSlot}
+              />
             {/if}
           </div>
         </div>
@@ -709,7 +725,7 @@
               </button>
             </div>
           {/if}
-          <button class="btn" on:click={handleEventModalClose}>Fermer</button>
+          <button class="btn" on:click={() => dispatch('close')}>Fermer</button>
         {:else if modalStep === 'transfer'}
           <button class="btn btn-outline" on:click={resetModal}>Retour</button>
           <button
@@ -728,6 +744,7 @@
             class="btn btn-secondary"
             disabled={!selectedStudent ||
               !!selectedStudentError ||
+              !!selectedSlotError ||
               !selectedSlot ||
               loading}
             on:click={() => isConfirmationModalOpen = 'exchange'}
@@ -759,7 +776,7 @@
     </div>
 
     <div class="modal-backdrop">
-      <button on:click={handleEventModalClose}>Fermer</button>
+      <button on:click={() => dispatch('close')}>Fermer</button>
     </div>
   </div>
 {/if}
@@ -776,4 +793,14 @@
     ''
   }
   action={'Ok'}
+  on:close={() => isConfirmationModalOpen = null}
+  on:confirm={() => {
+    isConfirmationModalOpen === 'exchange' ?
+      handlePutOnExchange() :
+        isConfirmationModalOpen === 'transfer' ?
+      handlePutOnTransfer() :
+        isConfirmationModalOpen === 'marketplace' ?
+      handlePutOnMarket() :
+        null
+  }}
 />

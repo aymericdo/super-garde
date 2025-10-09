@@ -1,5 +1,28 @@
 /// <reference path="../pb_data/types.d.ts" />
 
+onRecordUpdate((e) => {
+  if (!e.record) return;
+
+  const { slotStudentValidation } = require(`${__hooks}/helpers/utils.js`);
+
+  const oldValue = e.record.original();
+  const newValue = e.record;
+
+  const oldIsOnMarketValue = oldValue.get("isOnMarket");
+  const newIsOnMarketValue = newValue.get("isOnMarket");
+
+  if (oldIsOnMarketValue && !newIsOnMarketValue) {
+    $app.expandRecord(e.record, ['student'], null);
+    const newStudent = e.record.expandedOne('student');
+    const validation = slotStudentValidation(e.record, newStudent)
+    if (validation) {
+      throw validation.toString()
+    }
+  }
+
+  e.next()
+}, "onCallSlots");
+
 onRecordAfterUpdateSuccess((e) => {
   if (!e.record) return;
 

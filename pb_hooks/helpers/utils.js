@@ -50,6 +50,15 @@ module.exports = {
 
     return `${formatFull(start)} - ${formatFull(end)}`;
   },
+  slotStudentValidation: (slot, student) => {
+    if (slot.get('sector') === 'URTC' && !['MM2', 'MM3'].includes(student.get('year'))) {
+      return "Pour faire la tâche URTC, l'étudiant doit être en MM2 ou MM3."
+    } else if (slot.get('sector') === 'UHCD' && !student.get('UHCD')) {
+      return "Pour faire la tâche UHCD, l'étudiant doit avoir fait la formation."
+    } else {
+      return null
+    }
+  },
   emailHtml: (message) => {
     return `<p>Bonjour,</p>
     <p>${message}</p>

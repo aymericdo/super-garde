@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { getContext, onMount } from 'svelte'
+  import { createEventDispatcher, onMount } from 'svelte'
   import { pb } from '$lib/pocketbase';
-    import type { RecordModel } from 'pocketbase'
+  import type { RecordModel } from 'pocketbase'
+
+  const dispatch = createEventDispatcher();
 
   let loading = true;
   let data: RecordModel[] = [];
@@ -87,12 +89,6 @@
     }
   })
 
-  const {
-    handleModalClose,
-  } = getContext('isDownloadModalOpen') as {
-    handleModalClose: () => void,
-  };
-
   export let isDownloadModalOpen: boolean = false;
 </script>
 
@@ -115,7 +111,7 @@
     <div class="modal-action">
       <button 
         class="btn"
-        on:click={handleModalClose}
+        on:click={() => dispatch('close')}
       >
         Annuler
       </button>
@@ -134,6 +130,6 @@
     </div>
   </div>
   <div class="modal-backdrop">
-    <button on:click={handleModalClose}>Fermer</button>
+    <button on:click={() => dispatch('close')}>Fermer</button>
   </div>
 </div>

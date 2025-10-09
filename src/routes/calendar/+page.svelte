@@ -329,24 +329,11 @@
     pb.realtime.unsubscribe('users');
   })
 
-  setContext('isEventModalOpen', {
-    handleEventModalClose,
-  });
-
   setContext('isPeriodPickerModalOpen', {
     handlePeriodPickerClose: () => {
       isPeriodPickerModalOpen = false;
     },
     handleGenerateSubmit,
-  });
-
-  setContext('isConfirmationModalOpen', {
-    handleModalClose: () => isConfirmationModalOpen = false,
-    handleConfirm: () => handleDelete(),
-  });
-  
-  setContext('isDownloadModalOpen', {
-    handleModalClose: () => isDownloadModalOpen = false,
   });
 </script>
 
@@ -391,18 +378,26 @@
 {/if}
 
 <ModalPeriodPicker {isPeriodPickerModalOpen} />
-<ModalEvent {isEventModalOpen} openedEvent={openedEvent?.event} connectedStudent={data.currentStudent} />
+<ModalEvent
+  {isEventModalOpen}
+  openedEvent={openedEvent?.event}
+  connectedStudent={data.currentStudent}
+  on:close={handleEventModalClose}
+/>
 
 <ModalConfirmation
   {isConfirmationModalOpen}
   title={'Confirmer la suppression'}
   description={'Voulez-vous vraiment supprimer ces événements ?'}
   action={'Supprimer'}
+  on:close={() => isConfirmationModalOpen = false}
+  on:confirm={handleDelete}
 />
 
 {#if isDownloadModalOpen}
   <ModalDownload
     {isDownloadModalOpen}
+    on:close={() => isDownloadModalOpen = false}
   />
 {/if}
 

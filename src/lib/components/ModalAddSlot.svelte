@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { getContext } from 'svelte'
+  import { createEventDispatcher } from 'svelte'
   import { pb } from '$lib/pocketbase'
   import type { RecordModel } from 'pocketbase'
+
+  const dispatch = createEventDispatcher();
 
   let date: string = ''
   let hospital: string = ''
@@ -61,19 +63,13 @@
     error = ''
     attestationFile = null
 
-    handleModalClose()
+    dispatch('close')
     loading = false
   }
 
   const setFile = (e: Event) => {
     attestationFile = (e.target as HTMLInputElement).files?.[0] || null
   }
-
-  const {
-    handleModalClose,
-  } = getContext('isAddSlotModalOpen') as {
-    handleModalClose: () => void,
-  };
 
   export let isAddSlotModalOpen: boolean = false;
   export let connectedStudent: RecordModel | undefined
@@ -142,7 +138,7 @@
     </div>
 
     <div class="modal-action">
-      <button class="btn" on:click={handleModalClose}>Annuler</button>
+      <button class="btn" on:click={() => dispatch('close')}>Annuler</button>
       <button
         class="btn btn-primary"
         disabled={loading}
@@ -155,6 +151,6 @@
     </div>
   </div>
   <div class="modal-backdrop">
-    <button on:click={handleModalClose}>Fermer</button>
+    <button on:click={() => dispatch('close')}>Fermer</button>
   </div>
 </div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount, setContext } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { currentUser, type UserRecord } from '$lib/stores/user';
   import ClockTimeFiveOutline from 'svelte-material-icons/ClockTimeFiveOutline.svelte'
   import MapMarker from 'svelte-material-icons/MapMarker.svelte'
@@ -59,12 +59,6 @@
     pb.realtime.unsubscribe('onCallSlots');
     pb.realtime.unsubscribe('users');
   })
-
-  setContext('isEventModalOpen', {
-    handleEventModalClose: () => {
-      isEventModalOpen = false;
-    },
-  });
 
   $: currentUser.set(data.user as UserRecord);
 </script>
@@ -155,5 +149,9 @@
   Tu n'es pas admin.
 {/if}
 
-<ModalEvent {isEventModalOpen} {openedEvent} connectedStudent={data.currentStudent} />
+<ModalEvent
+  {isEventModalOpen}
+  {openedEvent}
+  on:close={() => isEventModalOpen = false}
+/>
 
