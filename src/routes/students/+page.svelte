@@ -262,7 +262,7 @@
 </div>
 <div class="flex justify-between flex-wrap items-center mb-1">
   <div class="flex items-center">
-    <input type="text" placeholder="Nom de l'étudiant" on:input={handleSearch}
+    <input type="text" placeholder="Nom - Prénom - Année" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
     {#if selectedStudentsTotalCount}
       <span class="dark:text-gray-400 mx-2">({selectedStudentsTotalCount} {selectedStudentsTotalCount > 1 ? 'étudiants sélectionnés' : 'étudiant sélectionné'} sur {totalItemsAtBeginning})</span>

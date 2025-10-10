@@ -34,6 +34,7 @@
   let openCalendarStudent: RecordModel | null = null
   let openCalendarYear: string | null = 'all'
   let students: RecordModel[] = []
+  let totalItems: number = 0
 
   let alertMessage: string | null = null;
   let alertMessageTimeout: NodeJS.Timeout | null = null;
@@ -77,6 +78,7 @@
         options.filter += ' && isOnMarket = true';
       }
 
+      totalItems = (await pb.collection("onCallSlots").getList()).totalItems;
       const list = await pb.collection("onCallSlots").getFullList(options);
 
       if (list) {
@@ -109,6 +111,11 @@
       event.detail :
       null
     openCalendarStudent = student
+    if (student) {
+      openCalendarYear = student.year
+    } else {
+      openCalendarYear = 'all'
+    }
     await fetchAll()
   }
 
@@ -383,7 +390,7 @@
 
 {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
   <div class="flex flex-col justify-between flex-wrap px-4 my-2">
-    <div class="mb-4">
+    <div>
       <span class="flex items-center -mb-2 text-sm font-medium text-gray-900 dark:text-gray-500">Étudiant</span>
       <div class="-mx-4 -mb-4">
         <StudentSelector
@@ -409,6 +416,7 @@
       <div>
         <select
           class="select"
+          disabled={!!openCalendarStudent}
           bind:value={openCalendarYear}
           on:change={handleSelectYear}
         >
@@ -433,9 +441,11 @@
   </div>
   <div class="flex flex-1 flex-wrap items-center justify-end">
     {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
-      <button disabled={!options.events.length} on:click={() => isDownloadModalOpen = true} class="btn btn-outline text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Télécharger CSV</button>
-      <button disabled={!options.events.length} on:click={() => isConfirmationModalOpen = true} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
-      <button disabled={!!options.events.length} on:click={() => isPeriodPickerModalOpen = true} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
+      <button disabled={totalItems === 0} on:click={() => isDownloadModalOpen = true} class="btn btn-outline text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Télécharger CSV</button>
+      {#if ['god'].includes($currentUser?.role ?? '')}
+      <button disabled={totalItems === 0} on:click={() => isConfirmationModalOpen = true} class="btn btn-warning text-m btn-sm my-2 me-1 flex-1 md:flex-initial md:btn-md">Supprimer</button>
+      {/if}
+      <button disabled={totalItems > 0} on:click={() => isPeriodPickerModalOpen = true} class="btn btn-neutral text-m btn-sm my-2 flex-1 md:flex-initial md:btn-md">Générer</button>
     {/if}
   </div>
 </div>
