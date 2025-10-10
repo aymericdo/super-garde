@@ -2,10 +2,13 @@
   import { pb } from '$lib/pocketbase'
   import { currentUser } from '$lib/stores/user'
   import { onDestroy, onMount, setContext } from 'svelte';
+  import ArrowUpThin from 'svelte-material-icons/ArrowUpThin.svelte'
+  import ArrowDownThin from 'svelte-material-icons/ArrowDownThin.svelte'
   import ModalStudentSource from "$lib/components/ModalStudentSource.svelte"
   import AlertError from "$lib/components/AlertError.svelte"
   import AlertSuccess from "$lib/components/AlertSuccess.svelte"
   import InfiniteScroll from '$lib/components/InfiniteScroll.svelte'
+  import { writable } from 'svelte/store'
   
   import type { ClientResponseError, ListResult, RecordModel} from 'pocketbase'
 	import type { PageData } from './$types'
@@ -26,9 +29,17 @@
   let requestErrorMessage: string | null = null;
   let isAlertSuccessVisible: boolean = false;
 
+  const sortState = writable<{ attribute: string; direction: 'asc' | 'desc' } | null>(null);
+
+  async function sort(attribute: string, direction: 'asc' | 'desc') {
+    sortState.set({ attribute, direction });
+    const data = await fetch();
+    if (data) setStudents(data);
+  }
+
   const fetch = async (): Promise<ListResult<RecordModel> | undefined> => {
     try {
-      const options: { expand: string, filter?: string } = {
+      const options: { expand: string, filter?: string, sort?: string } = {
         expand: 'user',
       }
 
@@ -37,6 +48,10 @@
         options.filter = terms
           .map(term => `(firstName ~ "${term}" || lastName ~ "${term}") || (year ~ "${query}") || (user.email ~ "${query}")`)
           .join(" && ")
+      }
+
+      if ($sortState?.attribute) {
+        options.sort = `${$sortState.direction === 'desc' ? '-' : ''}${$sortState.attribute}`;
       }
 
       return await pb.collection("students").getList(data.page, data.perPage, options)
@@ -255,12 +270,12 @@
   $: selectedStudentsTotalCount = isAllStudentsChecked ? totalItemsAtBeginning : selectedStudents.length;
 </script>
 
-<div class="flex justify-between mb-1">
+<div class="flex space-x-2 mb-1">
   <h1 class="flex items-center font-bold text-gray-900 text-lg">
     La liste des étudiants
   </h1>
 </div>
-<div class="flex justify-between flex-wrap items-center mb-1">
+<div class="flex space-x-2 flex-wrap items-center mb-1">
   <div class="flex items-center">
     <input type="text" placeholder="Nom - Prénom - Année" on:input={handleSearch}
       class="input input-bordered input-primary input-sm max-w-xs" />
@@ -294,10 +309,86 @@
             <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
               indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
           </th>
-          <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Prénom</th>
-          <th class="basis-3/12 px-6 py-3 flex items-center min-w-[100px]">Nom</th>
-          <th class="basis-6/12 px-6 py-3 flex items-center min-w-[100px]">Email</th>
-          <th class="basis-2/12 px-6 py-3 flex items-center min-w-[100px]">Année</th>
+          <th class="basis-3/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+            <span>Prénom</span>
+            <div class="flex flex-col ml-1 leading-none">
+              <button
+                on:click={() => sort('firstName', 'asc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'firstName' && $sortState?.direction === 'asc'}
+              >
+                <ArrowUpThin size="16" />
+              </button>
+
+              <button
+                on:click={() => sort('firstName', 'desc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'firstName' && $sortState?.direction === 'desc'}
+              >
+                <ArrowDownThin size="16" />
+              </button>
+            </div>
+          </th>
+          <th class="basis-3/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+            <span>Nom</span>
+            <div class="flex flex-col ml-1 leading-none">
+              <button
+                on:click={() => sort('lastName', 'asc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'lastName' && $sortState?.direction === 'asc'}
+              >
+                <ArrowUpThin size="16" />
+              </button>
+
+              <button
+                on:click={() => sort('lastName', 'desc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'lastName' && $sortState?.direction === 'desc'}
+              >
+                <ArrowDownThin size="16" />
+              </button>
+            </div>
+          </th>
+          <th class="basis-6/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+            <span>Email</span>
+            <div class="flex flex-col ml-1 leading-none">
+              <button
+                on:click={() => sort('user.email', 'asc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'user.email' && $sortState?.direction === 'asc'}
+              >
+                <ArrowUpThin size="16" />
+              </button>
+
+              <button
+                on:click={() => sort('user.email', 'desc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'user.email' && $sortState?.direction === 'desc'}
+              >
+                <ArrowDownThin size="16" />
+              </button>
+            </div>
+          </th>
+          <th class="basis-2/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+            <span>Année</span>
+            <div class="flex flex-col ml-1 leading-none">
+              <button
+                on:click={() => sort('year', 'asc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'year' && $sortState?.direction === 'asc'}
+              >
+                <ArrowUpThin size="16" />
+              </button>
+
+              <button
+                on:click={() => sort('year', 'desc')}
+                class="cursor-pointer hover:text-blue-500 transition"
+                class:!text-blue-600={$sortState?.attribute === 'year' && $sortState?.direction === 'desc'}
+              >
+                <ArrowDownThin size="16" />
+              </button>
+            </div>
+          </th>
         </tr>
       </thead>
     </table>
