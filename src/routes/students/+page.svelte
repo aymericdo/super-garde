@@ -277,20 +277,25 @@
 </div>
 <div class="flex space-x-2 flex-wrap items-center mb-1">
   <div class="flex items-center">
-    <input type="text" placeholder="Nom - Prénom - Année" on:input={handleSearch}
-      class="input input-bordered input-primary input-sm max-w-xs" />
-    {#if selectedStudentsTotalCount}
-      <span class="dark:text-gray-400 mx-2">({selectedStudentsTotalCount} {selectedStudentsTotalCount > 1 ? 'étudiants sélectionnés' : 'étudiant sélectionné'} sur {totalItemsAtBeginning})</span>
-    {:else if query.length}
-      <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtBeginning})</span>
-    {:else}
-      <span class="dark:text-gray-400 mx-2">({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})</span>
-    {/if}
+    <div>
+      <input type="text" placeholder="Nom - Prénom - Année" on:input={handleSearch}
+        class="input input-bordered input-primary max-w-xs" />
+    </div>
+    <span class="dark:text-gray-400 mx-2">
+      {#if selectedStudentsTotalCount}
+        ({selectedStudentsTotalCount} {selectedStudentsTotalCount > 1 ? 'étudiants sélectionnés' : 'étudiant sélectionné'} sur {totalItemsAtBeginning})
+      {:else if query.length}
+        ({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtBeginning})
+      {:else}
+        ({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})
+      {/if}
+    </span>
 
     {#if isNewStudentsNotVisible}
       <button on:click={handleRefresh} class="btn btn-outline btn-warning btn-sm mx-1">Rafraichir</button>
     {/if}
   </div>
+  
   {#if ['assistant', 'god'].includes($currentUser?.role ?? '')}
     <div class="flex flex-1 flex-wrap items-center justify-end">
       {#if selectedStudents.length}
