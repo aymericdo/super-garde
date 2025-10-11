@@ -15,7 +15,7 @@
 
   export let data: PageData
   
-  const totalItemsAtBeginning = data.studentList.totalItems;
+  let totalItemsAtCount = data.studentList.totalItems;
   let isNewStudentsNotVisible = false;
   let isStudentSourceModalOpen = false;
   let query = '';
@@ -54,7 +54,18 @@
         options.sort = `${$sortState.direction === 'desc' ? '-' : ''}${$sortState.attribute}`;
       }
 
-      return await pb.collection("students").getList(data.page, data.perPage, options)
+      const result: ListResult<RecordModel> = await pb.collection("students").getList(data.page, data.perPage, options)
+      const studentIds = result.items.map((item: RecordModel) => item.id)
+
+      const countByStudent = await pb.send("/api/get-slot-count-student", {
+        params: {
+          'studentIds[]': studentIds,
+        }
+      });
+
+      console.log(countByStudent)
+
+      return result
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
@@ -84,9 +95,12 @@
         ...newData.items,
       ],
     };
+
     if (isAllStudentsChecked) {
       selectedStudents = [...selectedStudents, ...newData.items.map(item => item.id)]
     }
+
+    totalItemsAtCount = data.studentList.totalItems
     loading = false;
   };
 
@@ -97,6 +111,7 @@
     if (isAllStudentsChecked) {
       selectedStudents = [...newData.items.map(item => item.id)]
     }
+    totalItemsAtCount = data.studentList.totalItems
     loading = false;
   };
 
@@ -179,7 +194,7 @@
       selectedStudents = [...selectedStudents, item.id];
     }
 
-    if (selectedStudents.length === totalItemsAtBeginning) {
+    if (selectedStudents.length === totalItemsAtCount) {
       isAllStudentsChecked = true;
     } else {
       isAllStudentsChecked = false;
@@ -221,6 +236,7 @@
             totalPages: Math.floor((data.studentList.totalItems - 1) / data.studentList.perPage) + 1,
             items: data.studentList.items.filter((item) => item.id !== e.record.id),
           };
+          totalItemsAtCount = data.studentList.totalItems
           break;
         }
         case 'create': {
@@ -231,6 +247,8 @@
             totalItems: data.studentList.totalItems + 1,
             totalPages: Math.floor((data.studentList.totalItems + 1) / data.studentList.perPage) + 1,
           };
+
+          totalItemsAtCount = data.studentList.totalItems;
 
           if (newStudent && data.studentList.totalPages === data.page) {
             data.studentList = {
@@ -267,7 +285,7 @@
 
   setContext('isStudentSourceModalOpen', { handleStudentSourceModalClose, handleGenerateStudents });
 
-  $: selectedStudentsTotalCount = isAllStudentsChecked ? totalItemsAtBeginning : selectedStudents.length;
+  $: selectedStudentsTotalCount = isAllStudentsChecked ? totalItemsAtCount : selectedStudents.length;
 </script>
 
 <div class="flex space-x-2 mb-1">
@@ -283,9 +301,9 @@
     </div>
     <span class="dark:text-gray-400 mx-2">
       {#if selectedStudentsTotalCount}
-        ({selectedStudentsTotalCount} {selectedStudentsTotalCount > 1 ? 'étudiants sélectionnés' : 'étudiant sélectionné'} sur {totalItemsAtBeginning})
+        ({selectedStudentsTotalCount} {selectedStudentsTotalCount > 1 ? 'étudiants sélectionnés' : 'étudiant sélectionné'} sur {totalItemsAtCount})
       {:else if query.length}
-        ({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtBeginning})
+        ({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''} sur {totalItemsAtCount})
       {:else}
         ({data.studentList.totalItems} étudiant{data.studentList.totalItems > 1 ? 's' : ''})
       {/if}

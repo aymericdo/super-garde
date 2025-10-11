@@ -85,5 +85,20 @@ module.exports = {
       Merci,<br/>
       L’équipe Super Garde
     </p>`
+  },
+  getTotalYearCount: (slots) => {
+    let count = 0;
+    const { holidays } = require(`${__hooks}/helpers/utils.js`);
+
+    for (const slot of slots) {
+      const start = new Date(slot.get('start'));
+      const isWeekend = start.getDay() === 0 || start.getDay() === 6; // dimanche=0, samedi=6
+      const isHoliday = holidays().some((h) => h.toDateString() === start.toDateString());
+      const weight = (isWeekend || isHoliday) ? 2 : 1;
+      count += weight;
+    }
+
+    return count;
   }
+  },
 };

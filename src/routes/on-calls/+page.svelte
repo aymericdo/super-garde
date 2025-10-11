@@ -70,8 +70,9 @@
       threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
 
       past3YearsCount = await getTotalYearCount({
-          ...options,
-          filter: `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now) && (manualSaved = false || validated = true)`})
+        ...options,
+        filter: `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now) && (manualSaved = false || validated = true)`}
+      )
 
       if (data.currentStudent.year !== 'MM3') {
         currentYearCount = await getTotalYearCount({

@@ -25,22 +25,19 @@ routerAdd("GET", "/api/get-your-colleagues", (e) => {
   })
   const onCallSlots = $app.findAllRecords("onCallSlots", hospitalFilter, dateFilter)
   $app.expandRecords(onCallSlots, ['student'], null);
-  const sameDayStudents = onCallSlots.reduce(
-    (acc, slot) => {
-      if (slot?.get('expand').student) {
-        const studentFullName = `${slot.get('expand').student.get('firstName')} ${
-          slot.get('expand').student.get('lastName')} (${
-            slot.get('expand').student.get('year')})`
-        if (acc.hasOwnProperty(slot?.get('sector'))) {
-          acc[slot.get('sector')].push(studentFullName)
-        } else {
-          acc[slot.get('sector')] = [studentFullName]
-        }
+  const sameDayStudents = onCallSlots.reduce((acc, slot) => {
+    if (slot?.get('expand').student) {
+      const studentFullName = `${slot.get('expand').student.get('firstName')} ${
+        slot.get('expand').student.get('lastName')} (${
+          slot.get('expand').student.get('year')})`
+      if (acc.hasOwnProperty(slot?.get('sector'))) {
+        acc[slot.get('sector')].push(studentFullName)
+      } else {
+        acc[slot.get('sector')] = [studentFullName]
       }
-      return acc
-    },
-    {},
-  )
+    }
+    return acc
+  }, {})
 
   return e.json(200, sameDayStudents);
 });
