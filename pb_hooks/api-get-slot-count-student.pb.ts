@@ -4,17 +4,19 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
   const authRecord = e.auth
 
   if (!['god', 'assistant'].includes(authRecord?.get('role'))) {
-    // throw new UnauthorizedError('You are not important enough', {})
+    throw new UnauthorizedError('You are not important enough', {})
   }
 
-  const studentIds = e.request.url.query().get("studentIds[]")
-  console.log(JSON.stringify(studentIds))
+  const { getTotalYearCount } = require(`${__hooks}/helpers/utils.js`);
   
-  if (!studentIds) {
+  const studentIdsStr = e.requestInfo().query["studentIds"]
+  
+  if (!studentIdsStr) {
     throw 'studentIds is required'
   }
+
+  const studentIds = studentIdsStr.split(',')
   
-  const { getTotalYearCount } = require(`${__hooks}/helpers/utils.js`);
   const currentDate = new Date()
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
@@ -28,14 +30,30 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
     // Mai à septembre
     [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
 
-  const uhcdFilter = $dbx.exp("sector != {:uhcdFilter}", { uhcdFilter: 'UHCD' })
+  const manualFilter = $dbx.exp("manualSaved = false OR validated = true")
   const dateFilter = $dbx.exp("start > {:start} AND end <= {:end}", {
     start: period[0].toISOString(),
     end: period[1].toISOString(),
   })
-  const onCallSlots = $app.findAllRecords("onCallSlots", dateFilter, uhcdFilter)
+  const dateFilterDone = $dbx.exp("start > {:start} AND end <= {:now}", {
+    start: period[0].toISOString(),
+    now: new Date().toISOString(),
+  })
+  const onCallSlots = $app.findAllRecords("onCallSlots", dateFilter, manualFilter)
+  const onCallSlotsDone = $app.findAllRecords("onCallSlots", dateFilterDone, manualFilter)
 
   const slotsByStudentId = onCallSlots.reduce((acc, slot) => {
+    if (slot?.get('student')) {
+      if (acc.hasOwnProperty(slot?.get('student'))) {
+        acc[slot.get('student')].push(slot)
+      } else {
+        acc[slot.get('student')] = [slot]
+      }
+    }
+    return acc
+  }, {})
+
+  const slotsDoneByStudentId = onCallSlotsDone.reduce((acc, slot) => {
     if (slot?.get('student')) {
       if (acc.hasOwnProperty(slot?.get('student'))) {
         acc[slot.get('student')].push(slot)
@@ -52,7 +70,12 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
     start: threeYearsAgo.toISOString(),
     end: period[1].toISOString(),
   })
-  const totalOnCallSlots = $app.findAllRecords("onCallSlots", totalDateFilter)
+  const totalDateFilterDone = $dbx.exp("start > {:start} AND end <= {:now}", {
+    start: threeYearsAgo.toISOString(),
+    now: new Date().toISOString(),
+  })
+  const totalOnCallSlots = $app.findAllRecords("onCallSlots", totalDateFilter, manualFilter)
+  const totalOnCallSlotsDone = $app.findAllRecords("onCallSlots", totalDateFilterDone, manualFilter)
 
   const totalSlotsByStudentId = totalOnCallSlots.reduce((acc, slot) => {
     if (slot?.get('student')) {
@@ -65,21 +88,27 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
     return acc
   }, {})
 
+  const totalSlotsDoneByStudentId = totalOnCallSlotsDone.reduce((acc, slot) => {
+    if (slot?.get('student')) {
+      if (acc.hasOwnProperty(slot?.get('student'))) {
+        acc[slot.get('student')].push(slot)
+      } else {
+        acc[slot.get('student')] = [slot]
+      }
+    }
+    return acc
+  }, {})
+
   const countsByStudent = studentIds.reduce((acc, studentId) => {
-    if (acc.hasOwnProperty(studentId)) {
-      acc[studentId].push({
-        year: slotsByStudentId[studentId] ?? getTotalYearCount(slotsByStudentId[studentId]),
-        threeYear: totalSlotsByStudentId[studentId] ?? getTotalYearCount(totalSlotsByStudentId[studentId]),
-      })
-    } else {
-      acc[studentId] = [{
-        year: slotsByStudentId[studentId] ?? getTotalYearCount(slotsByStudentId[studentId]),
-        threeYear: totalSlotsByStudentId[studentId] ?? getTotalYearCount(totalSlotsByStudentId[studentId]),
-      }]
+    acc[studentId] = {
+      year: (slotsByStudentId.hasOwnProperty(studentId) ? getTotalYearCount(slotsByStudentId[studentId]) : 0),
+      yearDone: (slotsDoneByStudentId.hasOwnProperty(studentId) ? getTotalYearCount(slotsDoneByStudentId[studentId]) : 0),
+      threeYear: (totalSlotsByStudentId.hasOwnProperty(studentId) ? getTotalYearCount(totalSlotsByStudentId[studentId]) : 0),
+      threeYearDone: (totalSlotsDoneByStudentId.hasOwnProperty(studentId) ? getTotalYearCount(totalSlotsDoneByStudentId[studentId]) : 0),
     }
 
     return acc
   }, {})
 
-  return e.json(200, { countsByStudent });
+  return e.json(200, { ...countsByStudent });
 })

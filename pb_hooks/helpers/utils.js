@@ -88,7 +88,7 @@ module.exports = {
   },
   getTotalYearCount: (slots) => {
     let count = 0;
-    const { holidays } = require(`${__hooks}/helpers/utils.js`);
+    const { holidays } = require(`${__hooks}/helpers/data.js`);
 
     for (const slot of slots) {
       const start = new Date(slot.get('start'));
@@ -99,6 +99,5 @@ module.exports = {
     }
 
     return count;
-  }
   },
 };

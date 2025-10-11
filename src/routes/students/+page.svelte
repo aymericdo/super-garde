@@ -14,8 +14,7 @@
 	import type { PageData } from './$types'
 
   export let data: PageData
-  
-  let totalItemsAtCount = data.studentList.totalItems;
+
   let isNewStudentsNotVisible = false;
   let isStudentSourceModalOpen = false;
   let query = '';
@@ -34,10 +33,15 @@
   async function sort(attribute: string, direction: 'asc' | 'desc') {
     sortState.set({ attribute, direction });
     const data = await fetch();
-    if (data) setStudents(data);
+    if (data) {
+      setStudents(data.studentList, data.countByStudent);
+    }
   }
 
-  const fetch = async (): Promise<ListResult<RecordModel> | undefined> => {
+  const fetch = async (): Promise<{
+    studentList: ListResult<RecordModel>,
+    countByStudent: { [studentId: string]: { year: number, threeYear: number } },
+  } | undefined> => {
     try {
       const options: { expand: string, filter?: string, sort?: string } = {
         expand: 'user',
@@ -54,18 +58,19 @@
         options.sort = `${$sortState.direction === 'desc' ? '-' : ''}${$sortState.attribute}`;
       }
 
-      const result: ListResult<RecordModel> = await pb.collection("students").getList(data.page, data.perPage, options)
-      const studentIds = result.items.map((item: RecordModel) => item.id)
+      const studentList: ListResult<RecordModel> = await pb.collection("students").getList(data.page, data.perPage, options)
+      const studentIds = studentList.items.map((item: RecordModel) => item.id)
 
       const countByStudent = await pb.send("/api/get-slot-count-student", {
         params: {
-          'studentIds[]': studentIds,
-        }
+          studentIds: studentIds.join(','),
+        },
       });
 
-      console.log(countByStudent)
-
-      return result
+      return {
+        studentList,
+        countByStudent,
+      }
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
@@ -87,13 +92,21 @@
     }
   }
 
-  const appendStudents = async (newData: ListResult<RecordModel>) => {
+  const appendStudents = async (
+    newData: ListResult<RecordModel>,
+    countByStudent: { [studentId: string]: { year: number, threeYear: number } },
+  ) => {
     data.studentList = {
       ...newData,
       items: [
         ...data.studentList.items,
         ...newData.items,
       ],
+    };
+
+    data.countByStudent = {
+      ...data.countByStudent,
+      ...countByStudent,
     };
 
     if (isAllStudentsChecked) {
@@ -104,10 +117,18 @@
     loading = false;
   };
 
-  const setStudents = async (newData: ListResult<RecordModel>) => {
+  const setStudents = async (
+    newData: ListResult<RecordModel>,
+    countByStudent: { [studentId: string]: { year: number, threeYear: number } },
+  ) => {
     data.studentList = {
       ...newData,
     };
+
+    data.countByStudent = {
+      ...countByStudent,
+    }
+
     if (isAllStudentsChecked) {
       selectedStudents = [...newData.items.map(item => item.id)]
     }
@@ -140,7 +161,9 @@
     data.page = 1;
     isNewStudentsNotVisible = false;
     const newData = await fetch();
-    if (newData) setStudents(newData);
+    if (newData) {
+      setStudents(newData.studentList, newData.countByStudent);
+    }
   }
 
   const handleDelete = async () => {
@@ -165,7 +188,9 @@
       loading = true;
       data.page += 1;
       const newData = await fetch();
-      if (newData) appendStudents(newData);
+      if (newData) {
+        appendStudents(newData.studentList, newData.countByStudent);
+      }
     }
   }
 
@@ -174,7 +199,9 @@
     query = (<HTMLInputElement>inputEvent.target).value.trim() || '';
     data.page = 1;
     const newData = await fetch();
-    if (newData) setStudents(newData);
+    if (newData) {
+      setStudents(newData.studentList, newData.countByStudent);
+    }
   }
 
   const handleCheckAll = () => {
@@ -285,6 +312,7 @@
 
   setContext('isStudentSourceModalOpen', { handleStudentSourceModalClose, handleGenerateStudents });
 
+  $: totalItemsAtCount = data.studentList.totalItems
   $: selectedStudentsTotalCount = isAllStudentsChecked ? totalItemsAtCount : selectedStudents.length;
 </script>
 
@@ -323,16 +351,26 @@
     </div>
   {/if}
 </div>
-<div class="students-table relative overflow-y-hidden shadow-md sm:rounded-lg">
-  <div class="thead-container w-full">
-    <table class="w-full">
-      <thead class="block text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
-        <tr class="flex w-full">
-          <th class="basis-1/12 px-6 py-3 min-w-[36px] -checkbox">
-            <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
+
+<div
+  class="overflow-x-auto bg-white h-[500px] sm:h-[700px] lg:h-[700px]"
+  bind:this={scrollContainer}
+>
+  <InfiniteScroll
+    threshold={200}
+    hasMore={data.studentList.totalPages > data.page}
+    rootEl={scrollContainer}
+    on:loadMore={handleLoadMore}
+  >
+  <table class="table">
+    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+      <tr>
+        <th>
+          <input type="checkbox" class="checkbox checkbox-accent" checked={isAllStudentsChecked} disabled={!data.studentList.items.length}
               indeterminate={!isAllStudentsChecked && !!selectedStudents.length} on:input={handleCheckAll} />
-          </th>
-          <th class="basis-3/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+        </th>
+        <th>
+          <div class="flex items-center select-none">
             <span>Prénom</span>
             <div class="flex flex-col ml-1 leading-none">
               <button
@@ -351,8 +389,10 @@
                 <ArrowDownThin size="16" />
               </button>
             </div>
-          </th>
-          <th class="basis-3/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center select-none">
             <span>Nom</span>
             <div class="flex flex-col ml-1 leading-none">
               <button
@@ -371,8 +411,10 @@
                 <ArrowDownThin size="16" />
               </button>
             </div>
-          </th>
-          <th class="basis-6/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center select-none">
             <span>Email</span>
             <div class="flex flex-col ml-1 leading-none">
               <button
@@ -391,8 +433,10 @@
                 <ArrowDownThin size="16" />
               </button>
             </div>
-          </th>
-          <th class="basis-2/12 px-6 py-3 flex items-center gap-1 min-w-[100px] space-x-2 select-none">
+          </div>
+        </th>
+        <th>
+          <div class="flex items-center select-none">
             <span>Année</span>
             <div class="flex flex-col ml-1 leading-none">
               <button
@@ -411,54 +455,59 @@
                 <ArrowDownThin size="16" />
               </button>
             </div>
+          </div>
+        </th>
+        <th>
+          <span>Garde(s) sur <br>l'année</span>
+        </th>
+        <th>
+          <div class="max-w-xs">
+            <span>Garde(s) sur <br>les 3 dernières<br> années</span>
+          </div>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      {#each data.studentList.items as item}
+        <tr>
+          <th>
+            <input
+              type="checkbox" checked="{selectedStudents.includes(item.id)}"
+              on:input={() => handleCheck(item)}
+              class="checkbox checkbox-ghost" />
           </th>
+          <td>
+            <span>{item.firstName}</span>
+          </td>
+          <td>
+            <span>{item.lastName}</span>
+          </td>
+          <td>
+            {#if item.expand?.user?.email}
+              <span>{item.expand?.user?.email}</span>
+            {/if}
+          </td>
+          <td>
+            <span>{item.year}</span>
+          </td>
+          <td>
+            <span class="font-bold text-success">{data.countByStudent[item.id]?.yearDone}/4</span> -
+            <span>{data.countByStudent[item.id]?.year}/4</span>
+          </td>
+          <td>
+            <span class="font-bold text-success">{data.countByStudent[item.id]?.threeYearDone}/25</span> -
+            <span>{data.countByStudent[item.id]?.threeYear}/25</span>
+          </td>
         </tr>
-      </thead>
+        {/each}
+        {#if loading}
+          <div class="flex justify-center px-6 py-4">
+            <span class="loading loading-ball loading-lg text-accent"></span>
+          </div>
+        {/if}
+      </tbody>
     </table>
-  </div>
-  <div
-    class="block w-full overflow-y-auto bg-white pb-8 h-[500px] sm:h-[700px] lg:h-[700px]"
-    bind:this={scrollContainer}
-  >
-    <InfiniteScroll
-      threshold={100}
-      hasMore={data.studentList.totalPages > data.page}
-      rootEl={scrollContainer}
-      on:loadMore={handleLoadMore}
-    >
-      <table class="table-fixed w-full">
-        <tbody class="w-full">
-          {#each data.studentList.items as item}
-            <tr class="flex w-full">
-              <td class="basis-1/12 px-6 py-4 flex items-center min-w-[36px] -checkbox">
-                <input type="checkbox" checked="{selectedStudents.includes(item.id)}"
-                  on:input={() => handleCheck(item)}
-                  class="checkbox checkbox-ghost checkbox-md" />
-              </td>
-              <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-900 min-w-[100px]">
-                <span>{item.firstName}</span>
-              </td>
-              <td class="basis-3/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
-                <span>{item.lastName}</span>
-              </td>
-              <td class="basis-6/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[300px]">
-                {#if item.expand?.user?.email}<span>{item.expand?.user?.email}</span>{/if}
-              </td>
-              <td class="basis-2/12 px-6 py-4 flex items-center font-medium text-gray-500 min-w-[100px]">
-                <span>{item.year}</span>
-              </td>
-            </tr>
-          {/each}
-          <InfiniteScroll threshold={100} on:loadMore={handleLoadMore} />
-          {#if loading}
-            <div class="flex justify-center px-6 py-4">
-              <span class="loading loading-ball loading-lg text-accent"></span>
-            </div>
-          {/if}
-        </tbody>
-      </table>
-    </InfiniteScroll>
-  </div>
+  </InfiniteScroll>
 </div>
 
 {#if error}
