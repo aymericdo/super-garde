@@ -17,9 +17,14 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
 
   const studentIds = studentIdsStr.split(',')
 
-  const studentRecord = $app.findFirstRecordByFilter('students', "user = {:user}", { user: authRecord.id });
+  let studentRecord = null
+  try {
+    studentRecord = $app.findFirstRecordByFilter('students', "user = {:user}", { user: authRecord.id });
+  } catch (error) {
+    console.error("no student");
+  }
 
-  const validStudent = (studentIds.length === 1 && studentIds[0] === studentRecord.id);
+  const validStudent = studentRecord ? (studentIds.length === 1 && studentIds[0] === studentRecord.id) : false;
 
   if (!(validStudent || ['god', 'assistant'].includes(authRecord?.get('role')))) {
     throw new UnauthorizedError('You are not important enough', {})
