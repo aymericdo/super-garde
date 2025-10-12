@@ -21,7 +21,7 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
   try {
     studentRecord = $app.findFirstRecordByFilter('students', "user = {:user}", { user: authRecord.id });
   } catch (error) {
-    console.error("no student");
+    // console.error("no student");
   }
 
   const validStudent = studentRecord ? (studentIds.length === 1 && studentIds[0] === studentRecord.id) : false;
