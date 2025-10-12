@@ -3,8 +3,8 @@
 routerAdd("GET", "/api/get-slot-count-student", (e) => {
   const authRecord = e.auth
 
-  if (!['god', 'assistant'].includes(authRecord?.get('role'))) {
-    throw new UnauthorizedError('You are not important enough', {})
+  if (!authRecord) {
+    throw 'unauthorized'
   }
 
   const { getTotalYearCount } = require(`${__hooks}/helpers/utils.js`);
@@ -16,6 +16,14 @@ routerAdd("GET", "/api/get-slot-count-student", (e) => {
   }
 
   const studentIds = studentIdsStr.split(',')
+
+  const studentRecord = $app.findFirstRecordByFilter('students', "user = {:user}", { user: authRecord.id });
+
+  const validStudent = (studentIds.length === 1 && studentIds[0] === studentRecord.id);
+
+  if (!(validStudent || ['god', 'assistant'].includes(authRecord?.get('role')))) {
+    throw new UnauthorizedError('You are not important enough', {})
+  }
   
   const currentDate = new Date()
   const month = currentDate.getMonth() + 1;

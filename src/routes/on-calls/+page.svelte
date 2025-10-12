@@ -26,21 +26,6 @@
   let currentYearCount: number = 0;
   let past3YearsCount: number = 0;
 
-  const getTotalYearCount = async (options: { expand: string, filter: string, sort: string }) => {
-    const slots = (await pb.collection("onCallSlots").getFullList(options));
-
-    let count = 0;
-    for (const slot of slots) {
-      const start = new Date(slot.start);
-      const isWeekend = start.getDay() === 0 || start.getDay() === 6; // dimanche=0, samedi=6
-      const isHoliday = holidays.some((h) => h.toDateString() === start.toDateString());
-      const weight = (isWeekend || isHoliday) ? 2 : 1;
-      count += weight;
-    }
-
-    return count;
-  }
-
   const fetchAll = async () => {
     if (!data.currentStudent?.id) return;
 
@@ -51,34 +36,18 @@
         sort: '-start',
       };
 
-      const currentDate = new Date()
-      const month = currentDate.getMonth() + 1;
-      const year = currentDate.getFullYear();
-      const period = (month >= 10) ?
-        // Octobre à décembre
-        [new Date(year, 9, 1), new Date(year + 1, 8, 30)]
-      : (month <= 4) ?
-        // Janvier à avril
-        [new Date(year - 1, 9, 1), new Date(year, 8, 30)]
-      :
-        // Mai à septembre
-        [new Date(year - 1, 9, 1), new Date(year, 8, 30)];
-
       slots = await pb.collection("onCallSlots").getFullList(options);
 
-      const threeYearsAgo = new Date(period[0])
-      threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 2)
-
-      past3YearsCount = await getTotalYearCount({
-        ...options,
-        filter: `student = "${data.currentStudent?.id}" && (start > "${threeYearsAgo.toISOString()}" && end <= @now) && (manualSaved = false || validated = true)`}
-      )
+      const countByStudent = await pb.send("/api/get-slot-count-student", {
+        params: {
+          studentIds: data.currentStudent.id,
+        },
+      });
 
       if (data.currentStudent.year !== 'MM3') {
-        currentYearCount = await getTotalYearCount({
-          ...options,
-          filter: `student = "${data.currentStudent?.id}" && (start > "${period[0].toISOString()}" && end <= @now) && (manualSaved = false || validated = true)`})
+        currentYearCount = countByStudent[data.currentStudent.id].yearDone
       }
+      past3YearsCount = countByStudent[data.currentStudent.id].threeYearDone
     } catch (error) {
       if (!(error as ClientResponseError).isAbort) {
         console.error(error);
